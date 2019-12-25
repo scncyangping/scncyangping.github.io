@@ -6,9 +6,9 @@ email: scncyangping@163.com
 description: ""
 keyword: ""
 # your host, for absolute URL
-url: "http://scncys.cn"
+url: "https://scncyangping.github.io"
 # for example, '/blog' if your blog hosted on 'host/blog'
-baseurl: "https://scncyangping.github.io"
+baseurl: "/YaPiBlog"
 
 
 
