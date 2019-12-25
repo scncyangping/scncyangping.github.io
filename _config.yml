@@ -8,7 +8,7 @@ keyword: ""
 # your host, for absolute URL
 url: "http://scncys.cn"
 # for example, '/blog' if your blog hosted on 'host/blog'
-baseurl: "/YaPiBlog"
+baseurl: "https://scncyangping.github.io"
 
 
 
