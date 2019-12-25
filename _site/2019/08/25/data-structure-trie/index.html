@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="keyword"  content="">
+    <link rel="shortcut icon" href="/YaPiBlog/img/favicon.ico">
+
+    <title>数据结构(八)Trie 字典树 - YaPiBlog</title>
+
+    <link rel="canonical" href="http://localhost:4000/YaPiBlog/2019/08/25/data-structure-trie/">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/YaPiBlog/css/bootstrap.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/YaPiBlog/css/yapi-blog.min.css">
+
+    <!-- Pygments Github CSS -->
+    <link rel="stylesheet" href="/YaPiBlog/css/syntax.css">
+
+    <!-- Custom Fonts -->
+    <!-- <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <link href="http://cdn.staticfile.org/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+
+    <!-- Hux Delete, sad but pending in China
+    <link href='http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/
+    css'>
+    -->
+
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- ga & ba script hoook -->
+    <script></script>
+</head>
+
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <!--<a class="navbar-brand" href="/YaPiBlog/">YaPiBlog</a>-->
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <!-- Known Issue, found by Hux:
+            <nav>'2019-06-20-HDFS-base.markdown height woule be hold on by its content.
+            so, when navbar scale out, the <nav> will cover tags.
+            also mask any touch event of tags, unfortunately.
+        -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <!--
+                     <li>
+                         <a href="/YaPiBlog/"><span style="font-size: 20px">主页</span></a>
+                     </li>
+
+                     <li>
+                         <a href="/YaPiBlog/tags"><span style="font-size: 20px">分类</span></a>
+                     </li>
+
+                     <li>
+                         <a href="/YaPiBlog/about/"><span style="font-size: 20px">关于</span></a>
+                     </li>
+                    -->
+
+                    <li>
+                        <a href="/YaPiBlog/">Home</a>
+                    </li>
+                     
+                     <li>
+                         <a href="/YaPiBlog/about/">ABOUT</a>
+                     </li>
+                     
+                     <li>
+                         <a href="/YaPiBlog/tags/">Tags</a>
+                     </li>
+                     
+
+
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        // CLOSE
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        // OPEN
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+    <!-- Image to hack wechat -->
+<!-- <img src="/img/icon_wechat.png" width="0" height="0"> -->
+<!-- <img src="/YaPiBlog/" width="0" height="0"> -->
+
+<!-- Post Header -->
+<style type="text/css">
+    header.intro-header{
+        background-image: url('/YaPiBlog/')
+    }
+</style>
+<header class="intro-header" >
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                        <a class="tag" href="/YaPiBlog/tags/#数据结构" title="数据结构">数据结构</a>
+                        
+                    </div>
+                    <h1>数据结构(八)Trie 字典树</h1>
+                    
+                    
+                    <h2 class="subheading"></h2>
+                    
+                    <span class="meta">Posted by YaPi on August 25, 2019</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+
+    <!-- Post Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+				<h4 id="什么是前缀树-trie">什么是前缀树 Trie</h4>
+
+<p>多用来进行字符串匹配</p>
+
+<ul>
+  <li>多叉树</li>
+</ul>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>// 如果不仅仅是英文单词的话，还会加上特殊字符等
+// 所以一般不会设置next为指定容量的结构
+type Node struct {
+    // 当前节点的值
+    s       string
+    // 是否代表了一个单词的结尾
+    isWord  bool
+    next    []Node
+}
+</code></pre></div></div>
+
+<p>缺点：</p>
+
+<p>空间需求增大，通常来说，对于单词来说，每一个节点，至少需要26个空间的子节点，所以是原单词的27倍空间</p>
+
+<p>解决方法：</p>
+
+<ul>
+  <li>压缩Trie
+    <blockquote>
+      <p>将cat这种单词放在一个节点，而不是三个节点，维护成本增大</p>
+    </blockquote>
+  </li>
+  <li>Ternary Search Trie(三分搜索Trie)
+    <blockquote>
+      <p>所有节点子孩子只有三个节点， 通常大于在左，等于在中，小于在右</p>
+    </blockquote>
+  </li>
+</ul>
+
+<h4 id="实现">实现</h4>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">/*</span>
+<span class="p">@</span><span class="n">date</span> <span class="p">:</span> <span class="m">2019</span><span class="p">/</span><span class="m">09</span><span class="p">/</span><span class="m">16</span>
+<span class="p">@</span><span class="n">author</span> <span class="p">:</span> <span class="n">YaPi</span>
+<span class="p">@</span><span class="n">desc</span> <span class="p">:</span> <span class="err">字典树</span> <span class="err">本质就是一个多叉树</span>
+<span class="p">*/</span>
+<span class="k">package</span> <span class="n">tree</span>
+
+<span class="n">import</span> <span class="s2">"strings"</span>
+
+<span class="n">type</span> <span class="n">TrieNode</span> <span class="n">struct</span> <span class="p">{</span>
+	<span class="p">//</span> <span class="err">表示该节点是否是单词节点</span>
+	<span class="n">isWord</span>		<span class="n">bool</span>
+	<span class="p">//</span> <span class="err">该节点的值</span>
+	<span class="n">value</span> 		<span class="k">string</span>
+	<span class="p">//</span> <span class="err">该节点的子节点指针数组</span>
+	<span class="p">//</span> <span class="n">nodes</span>		<span class="p">[]*</span><span class="n">TrieNode</span>
+	<span class="p">//</span> <span class="err">使用</span><span class="n">map</span><span class="err">方便获取指定节点</span>
+	<span class="n">nodes</span> 		<span class="n">map</span><span class="p">[</span><span class="k">string</span><span class="p">]*</span><span class="n">TrieNode</span>
+<span class="p">}</span>
+
+<span class="n">func</span> <span class="n">NewTrieNode</span><span class="p">()</span> <span class="p">*</span><span class="n">TrieNode</span> <span class="p">{</span>
+	<span class="n">return</span> <span class="p">&amp;</span><span class="n">TrieNode</span><span class="p">{</span><span class="n">isWord</span><span class="p">:</span> <span class="nb">false</span><span class="p">,</span><span class="n">nodes</span><span class="p">:</span><span class="n">make</span><span class="p">(</span><span class="n">map</span><span class="p">[</span><span class="k">string</span><span class="p">]*</span><span class="n">TrieNode</span><span class="p">)}</span>
+<span class="p">}</span>
+
+<span class="n">func</span> <span class="n">NewTrieNodeByValue</span><span class="p">(</span><span class="n">value</span> <span class="k">string</span><span class="p">,</span><span class="n">isWord</span> <span class="n">bool</span><span class="p">)</span> <span class="p">*</span><span class="n">TrieNode</span> <span class="p">{</span>
+	<span class="n">return</span> <span class="p">&amp;</span><span class="n">TrieNode</span><span class="p">{</span><span class="n">isWord</span><span class="p">:</span> <span class="n">isWord</span><span class="p">,</span><span class="n">nodes</span><span class="p">:</span><span class="n">make</span><span class="p">(</span><span class="n">map</span><span class="p">[</span><span class="k">string</span><span class="p">]*</span><span class="n">TrieNode</span><span class="p">),</span><span class="n">value</span><span class="p">:</span><span class="n">value</span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="n">type</span> <span class="n">Trie</span> <span class="n">struct</span> <span class="p">{</span>
+	<span class="n">root</span> 		<span class="p">*</span><span class="n">TrieNode</span>
+	<span class="n">size</span> 		<span class="n">int</span>
+<span class="p">}</span>
+
+<span class="n">func</span> <span class="n">Constructor</span><span class="p">()</span> <span class="p">*</span><span class="n">Trie</span> <span class="p">{</span>
+	<span class="n">return</span> <span class="p">&amp;</span><span class="n">Trie</span><span class="p">{</span><span class="n">root</span><span class="p">:</span><span class="n">NewTrieNode</span><span class="p">()}</span>
+<span class="p">}</span>
+
+<span class="n">func</span> <span class="p">(</span><span class="n">t</span> <span class="p">*</span><span class="n">Trie</span><span class="p">)</span><span class="nf">GetSize</span><span class="p">()</span><span class="n">int</span><span class="p">{</span>
+	<span class="n">return</span> <span class="n">t</span><span class="p">.</span><span class="n">size</span>
+<span class="p">}</span>
+
+<span class="n">func</span> <span class="p">(</span><span class="n">t</span> <span class="p">*</span><span class="n">Trie</span><span class="p">)</span><span class="n">Add</span><span class="p">(</span><span class="n">word</span> <span class="k">string</span><span class="p">)</span>  <span class="p">{</span>
+	<span class="n">node</span> <span class="p">:=</span> <span class="n">t</span><span class="p">.</span><span class="n">root</span>
+	<span class="n">for</span> <span class="n">_</span><span class="p">,</span><span class="n">v</span> <span class="p">:=</span> <span class="k">range</span> <span class="n">word</span><span class="p">{</span>
+		<span class="n">n</span> <span class="p">:=</span> <span class="n">node</span><span class="p">.</span><span class="n">nodes</span><span class="p">[</span><span class="k">string</span><span class="p">(</span><span class="n">v</span><span class="p">)]</span>
+		<span class="k">if</span> <span class="n">n</span> <span class="p">==</span> <span class="n">nil</span> <span class="p">{</span>
+			<span class="n">node</span><span class="p">.</span><span class="n">nodes</span><span class="p">[</span><span class="k">string</span><span class="p">(</span><span class="n">v</span><span class="p">)]</span> <span class="p">=</span> <span class="n">NewTrieNodeByValue</span><span class="p">(</span><span class="k">string</span><span class="p">(</span><span class="n">v</span><span class="p">),</span><span class="nb">false</span><span class="p">)</span>
+
+		<span class="p">}</span>
+		<span class="n">node</span> <span class="p">=</span> <span class="n">node</span><span class="p">.</span><span class="n">nodes</span><span class="p">[</span><span class="k">string</span><span class="p">(</span><span class="n">v</span><span class="p">)]</span>
+	<span class="p">}</span>
+	<span class="p">//</span> <span class="err">该节点是插入单词对应的最后一个节点</span>
+	<span class="k">if</span> <span class="c1">! node.isWord {
+</span>		<span class="n">node</span><span class="p">.</span><span class="n">isWord</span> <span class="p">=</span> <span class="nb">true</span>
+		<span class="n">t</span><span class="p">.</span><span class="n">size</span> <span class="p">++</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+
+<span class="p">//</span> <span class="err">查看是否包含某个单词</span>
+<span class="n">func</span> <span class="p">(</span><span class="n">t</span> <span class="p">*</span><span class="n">Trie</span><span class="p">)</span><span class="n">Contains</span><span class="p">(</span><span class="n">word</span> <span class="k">string</span><span class="p">)</span><span class="n">bool</span>  <span class="p">{</span>
+	<span class="n">node</span> <span class="p">:=</span> <span class="n">t</span><span class="p">.</span><span class="n">root</span>
+	<span class="n">for</span> <span class="n">_</span><span class="p">,</span><span class="n">v</span> <span class="p">:=</span> <span class="k">range</span> <span class="n">word</span><span class="p">{</span>
+		<span class="n">n</span> <span class="p">:=</span> <span class="n">node</span><span class="p">.</span><span class="n">nodes</span><span class="p">[</span><span class="k">string</span><span class="p">(</span><span class="n">v</span><span class="p">)]</span>
+		<span class="k">if</span> <span class="n">n</span> <span class="p">==</span> <span class="n">nil</span> <span class="p">{</span>
+			<span class="n">return</span> <span class="nb">false</span>
+		<span class="p">}</span>
+		<span class="n">node</span> <span class="p">=</span> <span class="n">node</span><span class="p">.</span><span class="n">nodes</span><span class="p">[</span><span class="k">string</span><span class="p">(</span><span class="n">v</span><span class="p">)]</span>
+	<span class="p">}</span>
+	<span class="p">//</span> <span class="err">判断该节点是否是一个单词节点</span>
+	<span class="k">if</span> <span class="n">node</span><span class="p">.</span><span class="n">isWord</span> <span class="p">{</span>
+		<span class="n">return</span> <span class="nb">true</span>
+	<span class="p">}</span><span class="k">else</span> <span class="p">{</span>
+		<span class="n">return</span> <span class="nb">false</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+
+<span class="p">//</span> <span class="err">用</span><span class="p">.</span><span class="err">号匹配任意字符</span>
+<span class="n">func</span> <span class="p">(</span><span class="n">t</span> <span class="p">*</span><span class="n">Trie</span><span class="p">)</span><span class="n">Match</span><span class="p">(</span><span class="n">word</span> <span class="k">string</span><span class="p">)</span><span class="n">bool</span>  <span class="p">{</span>
+	<span class="n">return</span> <span class="n">t</span><span class="p">.</span><span class="n">match</span><span class="p">(</span><span class="n">t</span><span class="p">.</span><span class="n">root</span><span class="p">,</span><span class="n">strings</span><span class="p">.</span><span class="n">Split</span><span class="p">(</span><span class="n">word</span><span class="p">,</span><span class="s2">""</span><span class="p">),</span><span class="m">0</span><span class="p">)</span>
+<span class="p">}</span>
+<span class="p">//</span> <span class="err">查看是否包含某个单词</span>
+<span class="n">func</span> <span class="p">(</span><span class="n">t</span> <span class="p">*</span><span class="n">Trie</span><span class="p">)</span><span class="n">match</span><span class="p">(</span><span class="n">node</span> <span class="p">*</span><span class="n">TrieNode</span><span class="p">,</span><span class="n">word</span> <span class="p">[]</span><span class="k">string</span><span class="p">,</span><span class="n">index</span> <span class="n">int</span><span class="p">)</span><span class="n">bool</span>  <span class="p">{</span>
+	<span class="k">if</span> <span class="n">index</span> <span class="p">==</span> <span class="n">len</span><span class="p">(</span><span class="n">word</span><span class="p">){</span>
+		<span class="n">return</span> <span class="n">node</span><span class="p">.</span><span class="n">isWord</span>
+	<span class="p">}</span>
+	<span class="n">s</span> <span class="p">:=</span> <span class="n">word</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+
+	<span class="k">if</span> <span class="n">s</span> <span class="c1">!= "."{
+</span>		<span class="k">if</span> <span class="n">node</span><span class="p">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="p">==</span> <span class="n">nil</span> <span class="p">{</span>
+			<span class="n">return</span> <span class="nb">false</span>
+		<span class="p">}</span>
+		<span class="n">return</span> <span class="n">t</span><span class="p">.</span><span class="n">match</span><span class="p">(</span><span class="n">node</span><span class="p">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">s</span><span class="p">],</span><span class="n">word</span><span class="p">,</span><span class="n">index</span> <span class="p">+</span> <span class="m">1</span><span class="p">)</span>
+	<span class="p">}</span><span class="k">else</span> <span class="p">{</span>
+		<span class="n">for</span> <span class="n">_</span><span class="p">,</span><span class="n">v</span> <span class="p">:=</span> <span class="k">range</span> <span class="n">node</span><span class="p">.</span><span class="n">nodes</span><span class="p">{</span>
+			<span class="k">if</span> <span class="n">t</span><span class="p">.</span><span class="n">match</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="n">word</span><span class="p">,</span><span class="n">index</span> <span class="p">+</span> <span class="m">1</span><span class="p">){</span>
+				<span class="n">return</span> <span class="nb">true</span>
+			<span class="p">}</span>
+		<span class="p">}</span>
+		<span class="n">return</span> <span class="nb">false</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+
+<span class="p">//</span> <span class="err">查询是否有以</span><span class="n">prefix</span><span class="err">前缀的单词</span>
+<span class="n">func</span> <span class="p">(</span><span class="n">t</span> <span class="p">*</span><span class="n">Trie</span><span class="p">)</span><span class="n">IsPrefix</span><span class="p">(</span><span class="n">prefix</span> <span class="k">string</span><span class="p">)</span><span class="n">bool</span>  <span class="p">{</span>
+	<span class="n">node</span> <span class="p">:=</span> <span class="n">t</span><span class="p">.</span><span class="n">root</span>
+	<span class="n">for</span> <span class="n">_</span><span class="p">,</span><span class="n">v</span> <span class="p">:=</span> <span class="k">range</span> <span class="n">prefix</span><span class="p">{</span>
+		<span class="n">n</span> <span class="p">:=</span> <span class="n">node</span><span class="p">.</span><span class="n">nodes</span><span class="p">[</span><span class="k">string</span><span class="p">(</span><span class="n">v</span><span class="p">)]</span>
+		<span class="k">if</span> <span class="n">n</span> <span class="p">==</span> <span class="n">nil</span> <span class="p">{</span>
+			<span class="n">return</span> <span class="nb">false</span>
+		<span class="p">}</span>
+		<span class="n">node</span> <span class="p">=</span> <span class="n">node</span><span class="p">.</span><span class="n">nodes</span><span class="p">[</span><span class="k">string</span><span class="p">(</span><span class="n">v</span><span class="p">)]</span>
+	<span class="p">}</span>
+	<span class="n">return</span> <span class="nb">true</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+
+<h4 id="扩展">扩展</h4>
+
+<h5 id="后缀树">后缀树</h5>
+
+<p>后缀树，就是把一串字符的所有后缀保存并且压缩的字典树。相对于字典树来说，后缀树并不是针对大量字符串的，而是针对一个或几个字符串来解决问题。比如字符串的回文子串，两个字符串的最长公共子串等等。
+性质：一个字符串构造了一棵树，树中保存了该字符串所有的后缀。
+操作：就是建立和应用。</p>
+
+<p>后缀树能解决大多数字符串的问题</p>
+
+<p>（1）查找某个字符串s1是否在另外一个字符串s2中。这个很简单，如果s1在字符串s2中，那么s1必定是s2中某个后缀串的前缀。理解以下后缀串的前缀这个词，其实每个后缀串也就是起始地点不同而已，前缀也就是从开头开始结尾不定。后缀串的前缀就可以组合成该原先字符串的任意子串了。比如banana，anan是anana这个后缀串的前缀。
+（2）指定字符串s1在字符串s2中重复的次数
+比如说banana是s1，an是s2，那么计算an出现的次数实际上就是看an是几个后缀串的前缀。上图的a节点是保存所有起始为a字母的后缀串，我们看a字母后的n字母的引用计数即可。
+（3）两个字符串S1，S2的最长公共部分（广义后缀树）
+（4）最长回文串（广义后缀树）</p>
+
+
+                <hr>
+
+                
+
+
+                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="/YaPiBlog/2019/08/25/data-structure-%E7%BA%BF%E6%AE%B5%E6%A0%91/" data-toggle="tooltip" data-placement="top" title="数据结构(七)线段树">&larr; Previous Post</a>
+                    </li>
+                    
+                    
+                    <li class="next">
+                        <a href="/YaPiBlog/2019/08/25/data-structure-bingchaji/" data-toggle="tooltip" data-placement="top" title="数据结构(九)并查集">Next Post &rarr;</a>
+                    </li>
+                    
+                </ul>
+
+
+                
+
+                
+
+            </div>
+
+    <!-- Sidebar Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+                <section>
+                    <hr class="hidden-sm hidden-xs">
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+        				
+                            
+                				<a href="/YaPiBlog/tags/#JVM" title="JVM" rel="7">
+                                    JVM
+                                </a>
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#docker" title="docker" rel="4">
+                                    docker
+                                </a>
+                            
+        				
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#mongodb" title="mongodb" rel="4">
+                                    mongodb
+                                </a>
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#redis" title="redis" rel="5">
+                                    redis
+                                </a>
+                            
+        				
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#golang" title="golang" rel="12">
+                                    golang
+                                </a>
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#设计模式" title="设计模式" rel="24">
+                                    设计模式
+                                </a>
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#大数据" title="大数据" rel="5">
+                                    大数据
+                                </a>
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#数据结构" title="数据结构" rel="11">
+                                    数据结构
+                                </a>
+                            
+        				
+        			</div>
+                </section>
+                
+
+                <!-- Friends Blog -->
+                
+                <hr>
+                <h5>FRIENDS</h5>
+                <ul class="list-inline">
+                    
+                        <li><a href="http://server.scncys.cn">YaPi Blog</a></li>
+                    
+                </ul>
+                
+            </div>
+        </div>
+    </div>
+</article>
+
+
+
+
+
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("http://cdn.bootcss.com/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'always',
+          placement: 'right',
+          icon: '#'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading').remove('.sidebar-container h5');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
+
+
+
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                    
+                    
+
+                    <!-- add Weibo, Zhihu by Hux, add target = "_blank" to <a> by Hux -->
+                    
+                    
+
+
+                    
+                    
+                </ul>
+
+                <p class="copyright text-muted">
+                    蜀ICP备18030170号-2    Copyright &copy; YaPiBlog 2019
+                    <br>
+
+                    <!---->
+                    <!--Theme by <a href="http://huangxuan.me">Hux</a> |-->
+                    <!--<iframe-->
+                        <!--style="margin-left: 2px; margin-bottom:-5px;"-->
+                        <!--frameborder="0" scrolling="0" width="91px" height="20px"-->
+                        <!--src="https://ghbtns.com/github-btn.html?user=huxpro&repo=huxpro.github.io&type=star&count=true" >-->
+                    <!--</iframe>-->
+
+
+                </p>
+
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/YaPiBlog/js/jquery.min.js "></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="/YaPiBlog/js/bootstrap.min.js "></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/YaPiBlog/js/yapi-blog.min.js "></script>
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- 
+     Because of the native support for backtick-style fenced code blocks 
+     right within the Markdown is landed in Github Pages, 
+     From V1.6, There is no need for Highlight.js, 
+     so Huxblog drops it officially.
+
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0  
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/    
+-->
+<!--
+    <script>
+        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
+            hljs.initHighlightingOnLoad();
+        })
+    </script>
+    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+-->
+
+
+<!-- jquery.tagcloud.js -->
+<script>
+    // only load tagcloud.js in tag.html
+    if($('#tag_cloud').length !== 0){
+        async("/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                //size: {start: 1, end: 1, unit: 'em'},
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+<!--fastClick.js -->
+<script>
+    async("http://cdn.bootcss.com/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+
+
+<!-- Baidu Tongji -->
+
+
+
+
+<!-- Image to hack wechat -->
+<!--<img src="../img/icon_wechat.png" width="0" height="0" />-->
+<!-- Migrate from head to bottom, no longer block render and still work -->
+
+</body>
+
+</html>

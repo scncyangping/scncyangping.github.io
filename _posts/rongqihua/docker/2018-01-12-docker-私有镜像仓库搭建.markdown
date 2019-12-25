@@ -1,0 +1,159 @@
+---
+layout:     post
+title:      "docker私有镜像仓库搭建"
+subtitle:   ""
+date:       2018-01-12 12:02:00
+author:     "YaPi"
+header-img: ""
+tags:
+    - docker
+---
+
+#### 搭建本地docker hub 仓库
+
+
+- 私有仓库服务器执行
+
+
+```
+创建用户
+
+为用户创建一个带有一个条目的密码文件testuser，密码为 testpassword：
+
+$ mkdir auth
+$ docker run   --entrypoint htpasswd   registry -Bbn dockerpull ypazl1314 > /auth/htpasswd
+```
+
+启动
+
+```
+sudo docker run -d  \
+-v /opt/docker/registry:/var/lib/registry \
+-p 15000:5000 --restart=always \
+--privileged=true \
+--name registry \
+-v /auth:/auth \
+-e "REGISTRY_AUTH=htpasswd" \
+-e "REGISTRY_AUTH_HTPASSWD_REALM=Registry Realm" \
+-e REGISTRY_AUTH_HTPASSWD_PATH=/auth/htpasswd \
+
+registry:latest
+
+```
+
+参数说明：
+
+- -v /opt/docker/registry:/var/lib/registry 默认情况下，会将仓库存放于容器内的/var/lib/registry目录下，指定本地目录挂载到容器。
+
+- -p 5000:5000 端口映射
+
+- --restart=always 在容器退出时总是重启容器,主要应用在生产环境
+
+- --privileged=true
+
+```
+在CentOS7中的安全模块selinux把权限禁掉了，参数给容
+器加特权，不加上传镜像会报权限错误OSError:[Errno 13] Permission denied: ‘/tmp/registry/repositories/liibrary’)或者（Received unexpected HTTP status: 500 Internal Server Error）错误
+```
+
+- --name registry 指定容器的名称
+
+---
+
+#### 其他服务器上将image push到仓库里
+
+登陆
+
+>docker login -u testuser -p testpassword         192.168.1.163:5000
+
+构建镜像
+>docker build -t 私有仓库地址：端口/image名称
+
+提交
+> docker push
+
+报错解决
+
+```
+1.使用的服务器上配置
+
+进入docker安装目录  /etc/docker,找到daemon.json 添加信任
+
+{"insecure-registries":["10.75.44.222:5000"]}
+
+2 sudo vim /lib/systemd/system/docker.service
+
+在 [Service] 下面添加
+
+EnvironmentFile=-/etc/docker/daemon.json
+
+4.解决https报错问题
+
+修改配置，解决HTTPS证书报错问题（不常用配置）
+修改/etc/sysconfig/docker（Ubuntu下配置文件地址为：/etc/init/docker.conf），增加启动选项(已有参数的在后面追加)，之后重启docker，不添加报错，https证书问题。
+
+OPTIONS='--insecure-registry 10.0.11.151:5000'    #CentOS 7系统
+other_args='--insecure-registry 10.0.11.151:5000' #CentOS 6系统
+因为Docker从1.3.X之后，与docker registry交互默认使用的是https，而此处搭建的私有仓库只提供http服务
+
+
+```
+
+查看镜像仓库上传的镜像
+
+http://镜像仓库ip:端口/v2/_catalog
+
+
+#### 身份验证
+
+```
+$ mkdir auth
+$ docker run \
+  --entrypoint htpasswd \
+  registry:2 -Bbn testuser testpassword > auth/htpasswd
+```
+
+
+
+### Harbor配置
+
+#### 安装
+
+```
+$ wget https://github.com/vmware/harbor/releases/download/v1.1.2/harbor-online-installer-v1.1.2.tgz
+
+$ tar xvf harbor-online-installer-v1.1.2.tgz
+
+
+安装不了将https 换成 http
+```
+
+#### 配置
+
+1. docker-compose.yml
+    > 配置端口映射
+    > 将80 改为 1180 将443 改为1443
+2. harbor.cfg
+
+```
+配置https
+
+hostname = registry.sccdnb.xyz:1443
+ui_url_protocol = https
+customize_crt = off
+ssl_cert = /data/cert/server.crt
+ssl_cert_key = /data/cert/server.key
+
+编译
+./install.sh
+
+```
+
+#### 使用
+
+1. 获取
+    >docker pull registry.sccdnb.xyz:1443/codechain/hello-world:latest
+2. push
+    >docker tag SOURCE_IMAGE[:TAG] registry.sccdnb.xyz:1443/codechain/IMAGE[:TAG]
+
+    >docker push registry.sccdnb.xyz:1443/codechain/IMAGE[:TAG]

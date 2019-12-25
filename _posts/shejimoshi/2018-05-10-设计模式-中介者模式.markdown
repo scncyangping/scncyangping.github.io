@@ -1,0 +1,63 @@
+---
+layout:     post
+title:      "设计模式-行为型-中介者模式"
+subtitle:   ""
+date:       2018-05-10 12:21:00
+author:     "YaPi"
+header-img: ""
+tags:
+    - 设计模式
+---
+#### 基础定义
+
+- 定义一个封装一组对象如何交互的对象
+- 通过使对象明确地相互引用来促进松散耦合，并允许独立地改变它们的交互
+- 类型：行为型
+
+就是把各个对象的交互放在一个公共的场所，也可以理解为第三方。就好像是房屋中介和婚姻介绍所。最典型的例子就是MVC。
+
+#### 源码实例
+timer 中介者来协调各个timerTask
+#### 代码实例
+
+```
+public class User {
+    private String name;
+
+    public User(String name) {
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void sendMessage(String message){
+        StudyGroup.showMessage(this,message);
+    }
+}
+
+
+public class StudyGroup {
+    public static void showMessage(User user,String message){
+        System.out.println(new Date().toString()+user.getName()+
+               message );
+    }
+}
+
+// 使用
+
+public class Test {
+
+    public static void main(String[] args){
+        User user = new User("tome");
+        User user1 = new User("zhangsna");
+        user.sendMessage("caonima");
+        user1.sendMessage("wocaonima");
+    }
+}
+```

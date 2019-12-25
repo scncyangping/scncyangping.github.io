@@ -1,0 +1,142 @@
+---
+layout:     post
+title:      "设计模式-结构型-桥接模式"
+subtitle:   ""
+date:       2018-05-10 12:12:00
+author:     "YaPi"
+header-img: ""
+tags:
+    - 设计模式
+---
+#### 基础与定义
+
+- 将抽象部分与它的具体实现部分分离，使它们都可以独立地变化
+- 通过组合的方式建立两个类之间的联系，而不是继承
+- 类型：结构型
+
+使用场景：
+1. 抽象和具体实现之间增加更多的灵活性
+2. 一个类存在两个或多个独立变化的维度
+3. 不希望使用继承
+
+优点：
+1. 分离抽象部分及具体实现部分
+2. 提高类系统的可扩展性
+3. 符合开闭原则
+4. 符合合成复用原则
+缺点：
+1. 增加了系统的理解和设计难度
+
+
+相关模式：
+
+桥接模式强调平行级别上的组合，组合模式强调部分和整体间的组合
+
+桥接模式和适配器模式都是为了让两个东西配合工作，适配器是改变两个接口使两个接口协同工作起来，桥接模式是把类的抽象和类的实现分离开。
+
+##### 源码实例
+
+1. mysql的 Driver
+
+
+##### 代码实例
+银行有工商和农业银行，每个银行有活期和定期账户
+
+```
+// 账户
+public interface Account {
+    // 获取账户
+    Account getAccount();
+    // 现实账户类型 活期、定期
+    void showAccountType();
+}
+
+// 活期账户
+public class DepositAccount implements Account {
+    @Override
+    public Account getAccount() {
+        System.out.println("打开定期账号");
+        return new DepositAccount();
+    }
+
+    @Override
+    public void showAccountType() {
+        System.out.println("这是一个定期账号");
+    }
+}
+
+// 定期账户
+public class SavingAccount implements  Account{
+    @Override
+    public Account getAccount() {
+        System.out.println("打开定期账号");
+        return new SavingAccount();
+    }
+
+    @Override
+    public void showAccountType() {
+        System.out.println("这是一个活期账号");
+    }
+}
+
+
+
+// 银行
+public abstract class Bank {
+    protected Account account;
+    public Bank(Account account){
+        this.account = account;
+    }
+
+    abstract Account openAccount();
+}
+
+
+// 工商银行
+public class ICBCBank extends Bank {
+    public ICBCBank(Account account) {
+        super(account);
+    }
+
+    @Override
+    Account openAccount() {
+        System.out.println("打开中国工商银行bank");
+        account.getAccount();
+        return account;
+    }
+}
+
+// 农业银行
+public class ABCBank extends Bank {
+    public ABCBank(Account account) {
+        super(account);
+    }
+
+    @Override
+    Account openAccount() {
+        System.out.println("打开中国农业银行bank");
+        account.getAccount();
+        return account;
+    }
+}
+
+// 使用
+
+public class Test {
+    public static void main(String[] args){
+        Bank icbcBank = new ICBCBank(new DepositAccount());
+        Account icbcAccount = icbcBank.openAccount();
+        icbcAccount.showAccountType();
+
+        Bank icbcBank2 = new ICBCBank(new SavingAccount());
+        Account icbcAccount2 = icbcBank2.openAccount();
+        icbcAccount2.showAccountType();
+
+
+        Bank abcBank = new ICBCBank(new DepositAccount());
+        Account abcAccount = abcBank.openAccount();
+        abcAccount.showAccountType();
+    }
+}
+
+```

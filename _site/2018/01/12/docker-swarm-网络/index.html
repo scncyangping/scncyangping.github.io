@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="keyword"  content="">
+    <link rel="shortcut icon" href="/YaPiBlog/img/favicon.ico">
+
+    <title>docker网络 + docker-swarm - YaPiBlog</title>
+
+    <link rel="canonical" href="http://localhost:4000/YaPiBlog/2018/01/12/docker-swarm-%E7%BD%91%E7%BB%9C/">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/YaPiBlog/css/bootstrap.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/YaPiBlog/css/yapi-blog.min.css">
+
+    <!-- Pygments Github CSS -->
+    <link rel="stylesheet" href="/YaPiBlog/css/syntax.css">
+
+    <!-- Custom Fonts -->
+    <!-- <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <link href="http://cdn.staticfile.org/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+
+    <!-- Hux Delete, sad but pending in China
+    <link href='http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/
+    css'>
+    -->
+
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- ga & ba script hoook -->
+    <script></script>
+</head>
+
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <!--<a class="navbar-brand" href="/YaPiBlog/">YaPiBlog</a>-->
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <!-- Known Issue, found by Hux:
+            <nav>'2019-06-20-HDFS-base.markdown height woule be hold on by its content.
+            so, when navbar scale out, the <nav> will cover tags.
+            also mask any touch event of tags, unfortunately.
+        -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <!--
+                     <li>
+                         <a href="/YaPiBlog/"><span style="font-size: 20px">主页</span></a>
+                     </li>
+
+                     <li>
+                         <a href="/YaPiBlog/tags"><span style="font-size: 20px">分类</span></a>
+                     </li>
+
+                     <li>
+                         <a href="/YaPiBlog/about/"><span style="font-size: 20px">关于</span></a>
+                     </li>
+                    -->
+
+                    <li>
+                        <a href="/YaPiBlog/">Home</a>
+                    </li>
+                     
+                     <li>
+                         <a href="/YaPiBlog/about/">ABOUT</a>
+                     </li>
+                     
+                     <li>
+                         <a href="/YaPiBlog/tags/">Tags</a>
+                     </li>
+                     
+
+
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        // CLOSE
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        // OPEN
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+    <!-- Image to hack wechat -->
+<!-- <img src="/img/icon_wechat.png" width="0" height="0"> -->
+<!-- <img src="/YaPiBlog/" width="0" height="0"> -->
+
+<!-- Post Header -->
+<style type="text/css">
+    header.intro-header{
+        background-image: url('/YaPiBlog/')
+    }
+</style>
+<header class="intro-header" >
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                        <a class="tag" href="/YaPiBlog/tags/#docker" title="docker">docker</a>
+                        
+                    </div>
+                    <h1>docker网络 + docker-swarm</h1>
+                    
+                    
+                    <h2 class="subheading"></h2>
+                    
+                    <span class="meta">Posted by YaPi on January 12, 2018</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+
+    <!-- Post Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+				<h3 id="docker-网络">Docker 网络</h3>
+
+<h4 id="ping-telnet">ping telnet</h4>
+<p>ping 验证IP的可达性</p>
+
+<p>telnet 检查服务的可用性</p>
+
+<p>安装telnet</p>
+<ol>
+  <li>yum install telnet-server</li>
+  <li>yum install telnet</li>
+</ol>
+
+<p>telnet 127.0.0.1 8080</p>
+
+<h4 id="linux-网络命名空间">Linux 网络命名空间</h4>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>添加
+
+ip netns add test1
+
+查看
+
+ip netns list
+
+删除
+
+ip netns delete
+
+查看信息
+
+ip netns exec test1 ip a （包含端口信息）
+
+ip netns exec test1 ip link (link信息)
+
+启动
+
+ip netns exec test1 ip link set dev lo up
+
+</code></pre></div></div>
+
+<h4 id="通讯模式">通讯模式</h4>
+
+<ul>
+  <li>
+    <p>第一步：</p>
+
+    <p>创建
+  ip netns add test1
+  ip netns add test2</p>
+  </li>
+  <li>
+    <p>第二步：</p>
+
+    <p>本机添加一对link</p>
+
+    <p>ip link add veth-test1 type veth peer name veth-test2</p>
+  </li>
+  <li>
+    <p>第三步：</p>
+
+    <p>将生成的link添加到前面创建的test1和test2</p>
+
+    <p>ip link set veth-test1 netns test1</p>
+
+    <p>ip link set veth-test2 netns test2</p>
+  </li>
+  <li>
+    <p>第四步：</p>
+
+    <p>为test1 和 test2 添加 ip地址</p>
+
+    <p>ip netns exec test1 ip addr add 192.168.1.1/24 dev veth-test1</p>
+
+    <p>ip netns exec test2 ip addr add 192.168.1.2/24 dev veth-test2</p>
+  </li>
+  <li>
+    <p>第五步：</p>
+
+    <p>启动test1 和 test2</p>
+
+    <p>ip netns exec test1 ip link set dev veth-test1 up</p>
+
+    <p>ip netns exec test2 ip link set dev  veth-test2 up</p>
+  </li>
+  <li>
+    <p>第六步：</p>
+
+    <p>ip netns exec test1 ping 192.168.0.2</p>
+
+    <p>能够连接成功 这个大概就是docker 容器间通讯的方式</p>
+  </li>
+</ul>
+
+<h4 id="docker-网络bridge-host-none">docker 网络(bridge host none)</h4>
+
+<p>查看网络情况</p>
+
+<p>docker network ls</p>
+
+<p>bridge 为内部使用</p>
+
+<p>host 为外部使用</p>
+
+<p>docker network inspect brige网络id</p>
+
+<p>安装
+yum install bridge-utils</p>
+
+<p>brctl show</p>
+
+<p>有一个容器 就会有一个连到docker 的线路</p>
+
+<p>所有的容器都是痛殴docker0进行通讯的</p>
+
+<p>创建连接 (不经常使用)</p>
+
+<p>docker run -d –name=test2 –link test1  busybox /bin/sh -c “while true;do sleep 3600;done”</p>
+
+<p>这里 –link test1 就可以直接使用</p>
+
+<h4 id="让容器之间能够不加link直接ping通">让容器之间能够不加link直接ping通</h4>
+
+<p>1.创建自动网络集
+    docker network create -d bridge my-bridge</p>
+
+<p>2.启动的时候指定</p>
+
+<blockquote>
+  <p>docker run -d –name=test3 –network my-bridge  busybox /bin/sh -c “while true;do sleep 3600;done”</p>
+</blockquote>
+
+<p>或者将已经建立了默认的网络连接到自定义的网络</p>
+
+<blockquote>
+  <p>docker network connect my-bridge test2</p>
+</blockquote>
+
+<h4 id="端口映射">端口映射</h4>
+
+<p>通过 -p  指定</p>
+
+<blockquote>
+  <p>docker run –name web -d -p 9069:80 nginx</p>
+</blockquote>
+
+<h4 id="nonehost-网络">none、host 网络</h4>
+
+<p>docker run -d –name test –network none busybox /bin/sh -c “while true;do sleep 3600;done”</p>
+
+<p>和本机完全一样的网络
+docker run -d –name test –network host busybox /bin/sh -c “while true;do sleep 3600;done”</p>
+
+<h4 id="启动时指定环境变量--e">启动时指定环境变量 -e</h4>
+<p>docker run -d –link redis –name flsk-redis -e REDIS_HOST=redis yangping/flask-redis</p>
+
+<h4 id="多机器通信-etcd">多机器通信 (etcd)</h4>
+
+<p>除bridge、host、none之外的网络 overlay</p>
+
+<p>使用 –net 指定网络</p>
+
+<h4 id="docker-持久化数据">Docker 持久化数据</h4>
+
+<ol>
+  <li>基于本地文件系统的Volume
+ 1.1 受管理的data Volume 由docker后台自动创建
+ 1.2 绑定挂载的Volume，挂载位置由用户指定</li>
+  <li>第三方存储 如aws</li>
+</ol>
+
+<p>Volume 使用</p>
+
+<p>在dockerfile 中 使用关键字 volume 指定本地映射路径</p>
+
+<p>查看所有的volume</p>
+
+<p>docker volume ls</p>
+
+<p>创建的volume的名字不太友好，需指定</p>
+
+<p>-v 自定义名称:volume映射的本地路径</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker run -d -v mysql:/var/lib/mysql --name mysql2 -e MYSQL_ALLOW_EMPTY_PASSWORD=true mysql
+</code></pre></div></div>
+
+<p>把当前容器删除掉，后续创建新的容器 -v 指定的和上述相同，则会数据共享</p>
+
+<p>Bind Mouting(不需要在dockerfile指定volume)</p>
+
+<p>docker run -v /home/aaa:/root/aaa</p>
+
+<h3 id="docker-swarm">Docker Swarm</h3>
+
+<h4 id="docker-swarm-1">docker swarm</h4>
+
+<ul>
+  <li>创建节点
+    <ol>
+      <li>
+        <p>创建maneger
+  docker swarm init –advertise-addr=192.168.0.2</p>
+      </li>
+      <li>
+        <p>会生成一个token，在需要设置为worker的节点上执行 docker swarm join -token SWMTKEN-1-3xxxx 192.168.0.0:2377</p>
+      </li>
+    </ol>
+  </li>
+  <li>
+    <p>查看当前swarm的节点  docker node  ls</p>
+  </li>
+  <li>创建service
+```
+docker service create –name demo busybox sh -c “while true;do sleep 3600;done”</li>
+</ul>
+
+<p>查看service</p>
+
+<p>docker service ls</p>
+
+<p>docker service ps demo</p>
+
+<p>横向扩展</p>
+
+<p>docker service scale demo=5</p>
+
+<p>会在节点中分配并启动5个服务，若某一服务挂掉了，会重新启动一个</p>
+
+<p>删除</p>
+
+<p>docker service rm demo</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+==只有manager节点才能用 docker service 的命令==
+
+#### 构建 wordpress
+
+- 创建overlay网络
+    1.docker network create -d overlay demo
+- 创建mysql服务
+    &gt;docker service create --name mysql --env MYSQL_ROOT_PASSWORD=root --env MYSQL_DATABASE=wordpress --network demo --mount type=volume,source=mysql-data,destination=/var/lib/mysql mysql
+
+- 创建wordpress服务
+    &gt;docker service create --name wordpress -p 80:80 --env WORDPRESS_DB_PASSWORD=root --env WORDPRESS_DB_HOST=mysql --network demo wordpress
+
+创建过后 访问manager或节点的ip都能访问到服务
+
+#### docker swarm 网络
+
+- 创建一个返回服务ip的服务
+    &gt; docker service create --name whoami -p 8000:8000 --network demo -d jwilder/whoami
+
+- 查看DNS    nslookup www.baidu.com
+
+
+
+#### 类似docker-compose部署
+
+配置文件
+
+</code></pre></div></div>
+<p>version: ‘3’  # order 必须要3.4以上</p>
+
+<p>services:</p>
+
+<p>web:
+    image: wordpress
+    ports:
+      - 8080:80
+    secrets:
+      - my-pw
+    environment:
+      WORDPRESS_DB_HOST: mysql
+      WORDPRESS_DB_PASSWORD_FILE: /run/secrets/my-pw
+    networks:
+      - my-network
+    depends_on: # 依赖于某个服务，需要先创建此服务
+      - mysql
+    deploy:
+      mode: replicated  #可扩展
+      replicas: 3  # 启动3个服务
+      restart_policy: # 重启的规则
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+      update_config: # 更新的规则
+        parallelism: 1
+        delay: 10s</p>
+
+<p>mysql:
+    image: mysql
+    secrets:
+      - my-pw
+    environment:
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/my-pw
+      MYSQL_DATABASE: wordpress
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - my-network
+    deploy:
+      mode: global
+      placement:
+        constraints:
+          - node.role == manager</p>
+
+<p>volumes:
+  mysql-data:</p>
+
+<p>networks:
+  my-network:
+    driver: overlay</p>
+
+<h1 id="secrets">secrets:</h1>
+<h1 id="my-pw">my-pw:</h1>
+<h1 id="file-password">file: ./password</h1>
+<p>```</p>
+
+<p>docker stack 命令</p>
+
+<ul>
+  <li>deploy
+    <blockquote>
+      <p>docker stack deploy 服务名称 –compose-file=文件名称</p>
+    </blockquote>
+  </li>
+  <li>ls</li>
+  <li>ps</li>
+  <li>rm</li>
+  <li>services</li>
+</ul>
+
+<h4 id="docker-secret">docker secret</h4>
+
+<p>应用docker manager 节点的分布式存储里面</p>
+
+<ul>
+  <li>存在swarm manager 节点的Raft database 里面</li>
+  <li>secret 可以assign给一个service，这个service就能看到这个secret</li>
+  <li>
+    <p>在container内部secret看起来就像文件，但是实际在内存中</p>
+  </li>
+  <li>创建 docker secret create
+    <ol>
+      <li>从文件中创建
+        <blockquote>
+          <p>docker secret create my-pw 文件名</p>
+        </blockquote>
+      </li>
+      <li>标准输入中创建
+        <blockquote>
+          <table>
+            <tbody>
+              <tr>
+                <td>echo ‘adminadmin’</td>
+                <td>docker secret create my-pw2 -</td>
+              </tr>
+            </tbody>
+          </table>
+        </blockquote>
+      </li>
+    </ol>
+  </li>
+  <li>查看 docker secret ls</li>
+  <li>删除 docker secret rm 名称</li>
+</ul>
+
+<p>-使用 启动service的时候指定 –secret mypwd
+    &gt;进入到节点中在 /run/secrets里面就会有这个文件，内容就是密码</p>
+
+
+                <hr>
+
+                
+
+
+                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="/YaPiBlog/2018/01/12/docker-base/" data-toggle="tooltip" data-placement="top" title="docker基础">&larr; Previous Post</a>
+                    </li>
+                    
+                    
+                    <li class="next">
+                        <a href="/YaPiBlog/2018/01/12/docker-%E7%A7%81%E6%9C%89%E9%95%9C%E5%83%8F%E4%BB%93%E5%BA%93%E6%90%AD%E5%BB%BA/" data-toggle="tooltip" data-placement="top" title="docker私有镜像仓库搭建">Next Post &rarr;</a>
+                    </li>
+                    
+                </ul>
+
+
+                
+
+                
+
+            </div>
+
+    <!-- Sidebar Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+                <section>
+                    <hr class="hidden-sm hidden-xs">
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+        				
+                            
+                				<a href="/YaPiBlog/tags/#JVM" title="JVM" rel="7">
+                                    JVM
+                                </a>
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#docker" title="docker" rel="4">
+                                    docker
+                                </a>
+                            
+        				
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#mongodb" title="mongodb" rel="4">
+                                    mongodb
+                                </a>
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#redis" title="redis" rel="5">
+                                    redis
+                                </a>
+                            
+        				
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#golang" title="golang" rel="12">
+                                    golang
+                                </a>
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#设计模式" title="设计模式" rel="24">
+                                    设计模式
+                                </a>
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#大数据" title="大数据" rel="5">
+                                    大数据
+                                </a>
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#数据结构" title="数据结构" rel="11">
+                                    数据结构
+                                </a>
+                            
+        				
+        			</div>
+                </section>
+                
+
+                <!-- Friends Blog -->
+                
+                <hr>
+                <h5>FRIENDS</h5>
+                <ul class="list-inline">
+                    
+                        <li><a href="http://server.scncys.cn">YaPi Blog</a></li>
+                    
+                </ul>
+                
+            </div>
+        </div>
+    </div>
+</article>
+
+
+
+
+
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("http://cdn.bootcss.com/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'always',
+          placement: 'right',
+          icon: '#'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading').remove('.sidebar-container h5');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
+
+
+
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                    
+                    
+
+                    <!-- add Weibo, Zhihu by Hux, add target = "_blank" to <a> by Hux -->
+                    
+                    
+
+
+                    
+                    
+                </ul>
+
+                <p class="copyright text-muted">
+                    蜀ICP备18030170号-2    Copyright &copy; YaPiBlog 2019
+                    <br>
+
+                    <!---->
+                    <!--Theme by <a href="http://huangxuan.me">Hux</a> |-->
+                    <!--<iframe-->
+                        <!--style="margin-left: 2px; margin-bottom:-5px;"-->
+                        <!--frameborder="0" scrolling="0" width="91px" height="20px"-->
+                        <!--src="https://ghbtns.com/github-btn.html?user=huxpro&repo=huxpro.github.io&type=star&count=true" >-->
+                    <!--</iframe>-->
+
+
+                </p>
+
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/YaPiBlog/js/jquery.min.js "></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="/YaPiBlog/js/bootstrap.min.js "></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/YaPiBlog/js/yapi-blog.min.js "></script>
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- 
+     Because of the native support for backtick-style fenced code blocks 
+     right within the Markdown is landed in Github Pages, 
+     From V1.6, There is no need for Highlight.js, 
+     so Huxblog drops it officially.
+
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0  
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/    
+-->
+<!--
+    <script>
+        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
+            hljs.initHighlightingOnLoad();
+        })
+    </script>
+    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+-->
+
+
+<!-- jquery.tagcloud.js -->
+<script>
+    // only load tagcloud.js in tag.html
+    if($('#tag_cloud').length !== 0){
+        async("/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                //size: {start: 1, end: 1, unit: 'em'},
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+<!--fastClick.js -->
+<script>
+    async("http://cdn.bootcss.com/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+
+
+<!-- Baidu Tongji -->
+
+
+
+
+<!-- Image to hack wechat -->
+<!--<img src="../img/icon_wechat.png" width="0" height="0" />-->
+<!-- Migrate from head to bottom, no longer block render and still work -->
+
+</body>
+
+</html>

@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="keyword"  content="">
+    <link rel="shortcut icon" href="/YaPiBlog/img/favicon.ico">
+
+    <title>Redis主从复制、分片 - YaPiBlog</title>
+
+    <link rel="canonical" href="http://localhost:4000/YaPiBlog/2018/04/13/redis-%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6/">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/YaPiBlog/css/bootstrap.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/YaPiBlog/css/yapi-blog.min.css">
+
+    <!-- Pygments Github CSS -->
+    <link rel="stylesheet" href="/YaPiBlog/css/syntax.css">
+
+    <!-- Custom Fonts -->
+    <!-- <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <link href="http://cdn.staticfile.org/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+
+    <!-- Hux Delete, sad but pending in China
+    <link href='http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/
+    css'>
+    -->
+
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- ga & ba script hoook -->
+    <script></script>
+</head>
+
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <!--<a class="navbar-brand" href="/YaPiBlog/">YaPiBlog</a>-->
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <!-- Known Issue, found by Hux:
+            <nav>'2019-06-20-HDFS-base.markdown height woule be hold on by its content.
+            so, when navbar scale out, the <nav> will cover tags.
+            also mask any touch event of tags, unfortunately.
+        -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <!--
+                     <li>
+                         <a href="/YaPiBlog/"><span style="font-size: 20px">主页</span></a>
+                     </li>
+
+                     <li>
+                         <a href="/YaPiBlog/tags"><span style="font-size: 20px">分类</span></a>
+                     </li>
+
+                     <li>
+                         <a href="/YaPiBlog/about/"><span style="font-size: 20px">关于</span></a>
+                     </li>
+                    -->
+
+                    <li>
+                        <a href="/YaPiBlog/">Home</a>
+                    </li>
+                     
+                     <li>
+                         <a href="/YaPiBlog/about/">ABOUT</a>
+                     </li>
+                     
+                     <li>
+                         <a href="/YaPiBlog/tags/">Tags</a>
+                     </li>
+                     
+
+
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        // CLOSE
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        // OPEN
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+    <!-- Image to hack wechat -->
+<!-- <img src="/img/icon_wechat.png" width="0" height="0"> -->
+<!-- <img src="/YaPiBlog/" width="0" height="0"> -->
+
+<!-- Post Header -->
+<style type="text/css">
+    header.intro-header{
+        background-image: url('/YaPiBlog/')
+    }
+</style>
+<header class="intro-header" >
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                        <a class="tag" href="/YaPiBlog/tags/#redis" title="redis">redis</a>
+                        
+                    </div>
+                    <h1>Redis主从复制、分片</h1>
+                    
+                    
+                    <h2 class="subheading"></h2>
+                    
+                    <span class="meta">Posted by YaPi on April 13, 2018</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+
+    <!-- Post Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+				<h4 id="主从复制与集群分片">主从复制与集群分片</h4>
+
+<h4 id="主从复制">主从复制</h4>
+
+<p>Redis支持一主多从的主从复制架构。一个Master实例负责处理所有的写请求，Master将写操作同步至所有Slave。</p>
+
+<ul>
+  <li>实时性要求不是特别高的读请求，可以在Slave上完成，提升效率。特别是一些周期性执行的统计任务，这些任务可能需要执行一些长耗时的Redis命令，可以专门规划出1个或几个Slave用于服务这些统计任务</li>
+  <li>借助Redis Sentinel可以实现高可用，当Master crash后，Redis Sentinel能够自动将一个Slave晋升为Master，继续提供服务</li>
+</ul>
+
+<p>启用主从复制非常简单，只需要配置多个Redis实例，仅在作为Slave的Redis实例中配置：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>slaveof 192.168.1.1 6379  #指定Master的IP和端口
+
+可以通过slaveof no one断开
+</code></pre></div></div>
+<p>当Slave启动后，会从Master进行一次冷启动数据同步，由Master触发BGSAVE生成RDB文件推送给Slave进行导入，导入完成后Master再将增量数据通过Redis Protocol同步给Slave。之后主从之间的数据便一直以Redis Protocol进行同步</p>
+
+<h4 id="主从复制过程">主从复制过程</h4>
+
+<ul>
+  <li>建立连接
+    <ol>
+      <li>从节点 发送slaveof命令到主节点,主节点返回ok</li>
+      <li>返回ok过后,从节点建立与主节点那的socket连接</li>
+      <li>从节点发送ping命令
+        <ol>
+          <li>返回pong：说明socket连接正常，且主节点当前可以处理请求，复制过程继续</li>
+          <li>超时：一定时间后从节点仍未收到主节点的回复，说明socket连接不可用，则从节点断开socket连接，并重连</li>
+          <li>返回pong以外的结果：如果主节点返回其他结果，如正在处理超时运行的脚本，说明主节点当前无法处理命令，则从节点断开socket连接，并重连</li>
+        </ol>
+      </li>
+      <li>如果从节点中设置了masterauth选项，则从节点需要向主节点进行身份验证；没有设置该选项，则不需要验证。从节点进行身份验证是通过向主节点发送auth命令进行的，auth命令的参数即为配置文件中的masterauth的值。
+  如果主节点设置密码的状态，与从节点masterauth的状态一致（一致是指都存在，且密码相同，或者都不存在），则身份验证通过，复制过程继续；如果不一致，则从节点断开socket连接，并重连</li>
+      <li>身份验证之后，从节点会向主节点发送其监听的端口号（前述例子中为6380），主节点将该信息保存到该从节点对应的客户端的slave_listening_port字段中；该端口信息除了在主节点中执行info Replication时显示以外，没有其他作用</li>
+    </ol>
+  </li>
+  <li>数据同步阶段
+    <ol>
+      <li>从节点向主节点发送psync命令（Redis2.8以前是sync命令），开始同步。</li>
+      <li>需要注意的是，在数据同步阶段之前，从节点是主节点的客户端，主节点不是从节点的客户端；而到了这一阶段及以后，主从节点互为客户端。原因在于：在此之前，主节点只需要响应从节点的请求即可，不需要主动发请求，而在数据同步阶段和后面的命令传播阶段，主节点需要主动向从节点发送请求（如推送缓冲区中的写命令），才能完成复制</li>
+    </ol>
+  </li>
+</ul>
+
+<h5 id="复制过程">复制过程</h5>
+
+<p>Redis通过psync命令进行全量复制的过程如下</p>
+
+<ol>
+  <li>从节点判断无法进行部分复制，向主节点发送全量复制的请求；或从节点发送部分复制的请求，但主节点判断无法进行全量复制；</li>
+  <li>主节点收到全量复制的命令后，执行bgsave，在后台生成RDB文件，并使用一个缓冲区（称为复制缓冲区）记录从现在开始执行的所有写命令</li>
+  <li>主节点的bgsave执行完成后，将RDB文件发送给从节点；从节点首先清除自己的旧数据，然后载入接收的RDB文件，将数据库状态更新至主节点执行bgsave时的数据库状态</li>
+  <li>主节点将前述复制缓冲区中的所有写命令发送给从节点，从节点执行这些写命令，将数据库状态更新至主节点的最新状态</li>
+  <li>如果从节点开启了AOF，则会触发bgrewriteaof的执行，从而保证AOF文件更新至主节点的最新状态</li>
+</ol>
+
+<p>需要注意的是，复制缓冲区是客户端输出缓冲区的一种，主节点会为每一个从节点分别分配复制缓冲区；而复制积压缓冲区则是一个主节点只有一个，无论它有多少个从节点。</p>
+
+<ul>
+  <li>全量复制注意点
+    <ol>
+      <li>主节点通过bgsave命令fork子进程进行RDB持久化，该过程是非常消耗CPU、内存(页表复制)、硬盘IO的；</li>
+      <li>主节点通过网络将RDB文件发送给从节点，对主从节点的带宽都会带来很大的消耗</li>
+      <li>从节点清空老数据、载入新RDB文件的过程是阻塞的，无法响应客户端的命令；如果从节点执行bgrewriteaof，也会带来额外的消耗</li>
+    </ol>
+  </li>
+</ul>
+
+<h5 id="部分复制">部分复制</h5>
+
+<p>用于网络中断等情况后的复制，只将中断期间主节点执行的写命令发送给从节点，与全量复制相比更加高效。需要注意的是，如果网络中断时间过长，导致主节点没有能够完整地保存中断期间执行的写命令，则无法进行部分复制，仍使用全量复制。</p>
+
+<h6 id="概念">概念</h6>
+<ol>
+  <li>复制偏移量
+    <ol>
+      <li>主节点和从节点分别维护一个复制偏移量（offset），代表的是主节点向从节点传递的字节数；主节点每次向从节点传播N个字节数据时，主节点的offset增加N；从节点每次收到主节点传来的N个字节数据时，从节点的offset增加N。</li>
+    </ol>
+  </li>
+  <li>复制积压缓冲区
+    <ol>
+      <li>复制积压缓冲区是由主节点维护的、固定长度的、先进先出(FIFO)队列，默认大小1MB；当主节点开始有从节点时创建，其作用是备份主节点最近发送给从节点的数据。注意，无论主节点有一个还是多个从节点，都只需要一个复制积压缓冲区。</li>
+      <li>在命令传播阶段，主节点除了将写命令发送给从节点，还会发送一份给复制积压缓冲区，作为写命令的备份；除了存储写命令，复制积压缓冲区中还存储了其中的每个字节对应的复制偏移量（offset）。由于复制积压缓冲区定长且是先进先出，所以它保存的是主节点最近执行的写命令；时间较早的写命令会被挤出缓冲区。</li>
+      <li>由于该缓冲区长度固定且有限，因此可以备份的写命令也有限，当主从节点offset的差距过大超过缓冲区长度时，将无法执行部分复制，只能执行全量复制。反过来说，为了提高网络中断时部分复制执行的概率，可以根据需要增大复制积压缓冲区的大小(通过配置repl-backlog-size)；例如如果网络中断的平均时间是60s，而主节点平均每秒产生的写命令(特定协议格式)所占的字节数为100KB，则复制积压缓冲区的平均需求为6MB，保险起见，可以设置为12MB，来保证绝大多数断线情况都可以使用部分复制</li>
+    </ol>
+  </li>
+  <li>服务器运行ID(runid)
+    <ol>
+      <li>每个Redis节点(无论主从)，在启动时都会自动生成一个随机ID(每次启动都不一样)，由40个随机的十六进制字符组成；runid用来唯一识别一个Redis节点。通过info Server命令，可以查看节点的runid</li>
+      <li>主从节点初次复制时，主节点将自己的runid发送给从节点，从节点将这个runid保存起来；当断线重连时，从节点会将这个runid发送给主节点；主节点根据runid判断能否进行部分复制
+        <ol>
+          <li>如果从节点保存的runid与主节点现在的runid相同，说明主从节点之前同步过，主节点会继续尝试使用部分复制(到底能不能部分复制还要看offset和复制积压缓冲区的情况)；</li>
+          <li>如果从节点保存的runid与主节点现在的runid不同，说明从节点在断线前同步的Redis节点并不是当前的主节点，只能进行全量复制。</li>
+        </ol>
+      </li>
+    </ol>
+  </li>
+</ol>
+
+<p>从节点将offset发送给主节点后，主节点根据offset和缓冲区大小决定能否执行部分复制：</p>
+
+<ul>
+  <li>如果offset偏移量之后的数据，仍然都在复制积压缓冲区里，则执行部分复制</li>
+  <li>如果offset偏移量之后的数据已不在复制积压缓冲区中（数据已被挤出），则执行全量复制。</li>
+</ul>
+
+<h5 id="复制过程-1">复制过程</h5>
+
+<ol>
+  <li>从节点根据当前状态，决定如何调用psync命令
+    <ol>
+      <li>如果从节点之前未执行过slaveof或最近执行了slaveof no one，则从节点发送命令为psync ? -1，向主节点请求全量复制</li>
+      <li>如果从节点之前执行了slaveof，则发送命令为psync <runid> <offset>，其中runid为上次复制的主节点的runid，offset为上次复制截止时从节点保存的复制偏移量</offset></runid></li>
+    </ol>
+  </li>
+  <li>主节点根据收到的psync命令，及当前服务器状态，决定执行全量复制还是部分复制
+    <ol>
+      <li>如果主节点版本低于Redis2.8，则返回-ERR回复，此时从节点重新发送sync命令执行全量复制</li>
+      <li>如果主节点版本够新，且runid与从节点发送的runid相同，且从节点发送的offset之后的数据在复制积压缓冲区中都存在，则回复+CONTINUE，表示将进行部分复制，从节点等待主节点发送其缺少的数据即可</li>
+      <li>如果主节点版本够新，但是runid与从节点发送的runid不同，或从节点发送的offset之后的数据已不在复制积压缓冲区中(在队列中被挤出了)，则回复+FULLRESYNC <runid> <offset>，表示要进行全量复制，其中runid表示主节点当前的runid，offset表示主节点当前的offset，从节点保存这两个值，以备使用</offset></runid></li>
+    </ol>
+  </li>
+</ol>
+
+<h4 id="复制相关的配置">复制相关的配置</h4>
+
+<p>这一节总结一下与复制有关的配置，说明这些配置的作用、起作用的阶段，以及配置方法等；通过了解这些配置，一方面加深对Redis复制的了解，另一方面掌握这些配置的方法，可以优化Redis的使用，少走坑。</p>
+
+<p>配置大致可以分为主节点相关配置、从节点相关配置以及与主从节点都有关的配置，下面分别说明。</p>
+
+<ul>
+  <li>与主从节点都有关的配置
+首先介绍最特殊的配置，它决定了该节点是主节点还是从节点
+    <ol>
+      <li>slaveof <masterip> <masterport>：Redis启动时起作用；作用是建立复制关系，开启了该配置的Redis服务器在启动后成为从节点。该注释默认注释掉，即Redis服务器默认都是主节点。</masterport></masterip></li>
+    </ol>
+  </li>
+</ul>
+
+<ol>
+  <li>repl-timeout 60：与各个阶段主从节点连接超时判断有关，见前面的介绍。</li>
+</ol>
+
+<ul>
+  <li>主节点相关配置
+    <ol>
+      <li>repl-diskless-sync no：作用于全量复制阶段，控制主节点是否使用diskless复制（无盘复制）。所谓diskless复制，是指在全量复制时，主节点不再先把数据写入RDB文件，而是直接写入slave的socket中，整个过程中不涉及硬盘；diskless复制在磁盘IO很慢而网速很快时更有优势。需要注意的是，截至Redis3.0，diskless复制处于实验阶段，默认是关闭的。</li>
+    </ol>
+  </li>
+</ul>
+
+<ol>
+  <li>
+    <p>repl-diskless-sync-delay 5：该配置作用于全量复制阶段，当主节点使用diskless复制时，该配置决定主节点向从节点发送之前停顿的时间，单位是秒；只有当diskless复制打开时有效，默认5s。之所以设置停顿时间，是基于以下两个考虑：(1)向slave的socket的传输一旦开始，新连接的slave只能等待当前数据传输结束，才能开始新的数据传输 (2)多个从节点有较大的概率在短时间内建立主从复制。</p>
+  </li>
+  <li>
+    <p>client-output-buffer-limit slave 256MB 64MB 60：与全量复制阶段主节点的缓冲区大小有关，见前面的介绍。</p>
+  </li>
+  <li>
+    <p>repl-disable-tcp-nodelay no：与命令传播阶段的延迟有关，见前面的介绍。</p>
+  </li>
+  <li>
+    <p>masterauth <master-password>：与连接建立阶段的身份验证有关，见前面的介绍。</master-password></p>
+  </li>
+  <li>
+    <p>repl-ping-slave-period 10：与命令传播阶段主从节点的超时判断有关，见前面的介绍。</p>
+  </li>
+  <li>
+    <p>repl-backlog-size 1mb：复制积压缓冲区的大小，见前面的介绍。</p>
+  </li>
+  <li>
+    <p>repl-backlog-ttl 3600：当主节点没有从节点时，复制积压缓冲区保留的时间，这样当断开的从节点重新连进来时，可以进行全量复制；默认3600s。如果设置为0，则永远不会释放复制积压缓冲区。</p>
+  </li>
+  <li>
+    <p>min-slaves-to-write 3与min-slaves-max-lag 10：规定了主节点的最小从节点数目，及对应的最大延迟，见前面的介绍。</p>
+  </li>
+</ol>
+
+<ul>
+  <li>从节点相关配置
+    <ol>
+      <li>slave-serve-stale-data yes：与从节点数据陈旧时是否响应客户端命令有关，见前面的介绍。</li>
+    </ol>
+  </li>
+</ul>
+
+<ol>
+  <li>slave-read-only yes：从节点是否只读；默认是只读的。由于从节点开启写操作容易导致主从节点的数据不一致，因此该配置尽量不要修改。</li>
+</ol>
+
+<p>参考 <a href="https://www.cnblogs.com/kismetv/p/9236731.html">https://www.cnblogs.com/kismetv/p/9236731.html</a></p>
+
+<h4 id="集群分片">集群分片</h4>
+
+<p>为和要做集群分片:</p>
+
+<ul>
+  <li>Redis中存储的数据量大，一台主机的物理内存已经无法容纳</li>
+  <li>Redis的写请求并发量大，一个Redis实例以无法承载</li>
+</ul>
+
+<h5 id="redis-cluster的能力">Redis Cluster的能力</h5>
+
+<ul>
+  <li>能够自动将数据分散在多个节点上</li>
+  <li>当访问的key不在当前分片上时，能够自动将请求转发至正确的分片</li>
+  <li>当集群中部分节点失效时仍能提供服务</li>
+</ul>
+
+<p>其中第三点是基于主从复制来实现的，Redis Cluster的每个数据分片都采用了主从复制的结构，原理和前文所述的主从复制完全一致，唯一的区别是省去了Redis Sentinel这一额外的组件，由Redis Cluster负责进行一个分片内部的节点监控和自动failover。</p>
+
+<h5 id="redis-cluster分片原理">Redis Cluster分片原理</h5>
+
+<p>Redis Cluster中共有16384个hash slot，Redis会计算每个key的CRC16，将结果与16384取模，来决定该key存储在哪一个hash slot中，同时需要指定Redis Cluster中每个数据分片负责的Slot数。Slot的分配在任何时间点都可以进行重新分配。
+客户端在对key进行读写操作时，可以连接Cluster中的任意一个分片，如果操作的key不在此分片负责的Slot范围内，Redis Cluster会自动将请求重定向到正确的分片上。</p>
+
+<p>在基础的分片原则上，Redis还支持hash tags功能，以hash tags要求的格式明明的key，将会确保进入同一个Slot中。例如：{uiv}user:1000和{uiv}user:1001拥有同样的hash tag {uiv}，会保存在同一个Slot中。
+使用Redis Cluster时，pipelining、事务和LUA Script功能涉及的key必须在同一个数据分片上，否则将会返回错误。如要在Redis Cluster中使用上述功能，就必须通过hash tags来确保一个pipeline或一个事务中操作的所有key都位于同一个Slot中。</p>
+
+<h4 id="主从复制-vs-集群分片">主从复制 VS 集群分片</h4>
+
+<p>从各个方面看，Redis Cluster都是优于主从复制的方案</p>
+
+<ul>
+  <li>Redis Cluster能够解决单节点上数据量过大的问题</li>
+  <li>Redis Cluster能够解决单节点访问压力过大的问题</li>
+  <li>Redis Cluster包含了主从复制的能力</li>
+</ul>
+
+<p>弊端</p>
+
+<ul>
+  <li>维护难度增加。在使用Redis Cluster时，需要维护的Redis实例数倍增，需要监控的主机数量也相应增加，数据备份/持久化的复杂度也会增加。同时在进行分片的增减操作时，还需要进行reshard操作，远比主从模式下增加一个Slave的复杂度要高。</li>
+  <li>客户端资源消耗增加。当客户端使用连接池时，需要为每一个数据分片维护一个连接池，客户端同时需要保持的连接数成倍增多，加大了客户端本身和操作系统资源的消耗。</li>
+  <li>性能优化难度增加。你可能需要在多个分片上查看Slow Log和Swap日志才能定位性能问题。</li>
+  <li>
+    <h2 id="事务和lua-script的使用成本增加在redis-cluster中使用事务和lua-script特性有严格的限制条件事务和script中操作的key必须位于同一个分片上这就使得在开发时必须对相应场景下涉及的key进行额外的规划和规范要求如果应用的场景中大量涉及事务和script的使用如何在保证这两个功能的正常运作前提下把数据平均分到多个数据分片中就会成为难点">事务和LUA Script的使用成本增加。在Redis Cluster中使用事务和LUA Script特性有严格的限制条件，事务和Script中操作的key必须位于同一个分片上，这就使得在开发时必须对相应场景下涉及的key进行额外的规划和规范要求。如果应用的场景中大量涉及事务和Script的使用，如何在保证这两个功能的正常运作前提下把数据平均分到多个数据分片中就会成为难点</h2>
+  </li>
+</ul>
+
+
+
+                <hr>
+
+                
+
+
+                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="/YaPiBlog/2018/04/13/redis-%E6%8C%81%E4%B9%85%E5%8C%96/" data-toggle="tooltip" data-placement="top" title="Redis持久化">&larr; Previous Post</a>
+                    </li>
+                    
+                    
+                    <li class="next">
+                        <a href="/YaPiBlog/2018/04/13/redis-%E5%93%A8%E5%85%B5/" data-toggle="tooltip" data-placement="top" title="Redis哨兵">Next Post &rarr;</a>
+                    </li>
+                    
+                </ul>
+
+
+                
+
+                
+
+            </div>
+
+    <!-- Sidebar Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+                <section>
+                    <hr class="hidden-sm hidden-xs">
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+        				
+                            
+                				<a href="/YaPiBlog/tags/#JVM" title="JVM" rel="7">
+                                    JVM
+                                </a>
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#docker" title="docker" rel="4">
+                                    docker
+                                </a>
+                            
+        				
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#mongodb" title="mongodb" rel="4">
+                                    mongodb
+                                </a>
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#redis" title="redis" rel="5">
+                                    redis
+                                </a>
+                            
+        				
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#golang" title="golang" rel="12">
+                                    golang
+                                </a>
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#设计模式" title="设计模式" rel="24">
+                                    设计模式
+                                </a>
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#大数据" title="大数据" rel="5">
+                                    大数据
+                                </a>
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#数据结构" title="数据结构" rel="11">
+                                    数据结构
+                                </a>
+                            
+        				
+        			</div>
+                </section>
+                
+
+                <!-- Friends Blog -->
+                
+                <hr>
+                <h5>FRIENDS</h5>
+                <ul class="list-inline">
+                    
+                        <li><a href="http://server.scncys.cn">YaPi Blog</a></li>
+                    
+                </ul>
+                
+            </div>
+        </div>
+    </div>
+</article>
+
+
+
+
+
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("http://cdn.bootcss.com/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'always',
+          placement: 'right',
+          icon: '#'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading').remove('.sidebar-container h5');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
+
+
+
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                    
+                    
+
+                    <!-- add Weibo, Zhihu by Hux, add target = "_blank" to <a> by Hux -->
+                    
+                    
+
+
+                    
+                    
+                </ul>
+
+                <p class="copyright text-muted">
+                    蜀ICP备18030170号-2    Copyright &copy; YaPiBlog 2019
+                    <br>
+
+                    <!---->
+                    <!--Theme by <a href="http://huangxuan.me">Hux</a> |-->
+                    <!--<iframe-->
+                        <!--style="margin-left: 2px; margin-bottom:-5px;"-->
+                        <!--frameborder="0" scrolling="0" width="91px" height="20px"-->
+                        <!--src="https://ghbtns.com/github-btn.html?user=huxpro&repo=huxpro.github.io&type=star&count=true" >-->
+                    <!--</iframe>-->
+
+
+                </p>
+
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/YaPiBlog/js/jquery.min.js "></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="/YaPiBlog/js/bootstrap.min.js "></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/YaPiBlog/js/yapi-blog.min.js "></script>
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- 
+     Because of the native support for backtick-style fenced code blocks 
+     right within the Markdown is landed in Github Pages, 
+     From V1.6, There is no need for Highlight.js, 
+     so Huxblog drops it officially.
+
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0  
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/    
+-->
+<!--
+    <script>
+        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
+            hljs.initHighlightingOnLoad();
+        })
+    </script>
+    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+-->
+
+
+<!-- jquery.tagcloud.js -->
+<script>
+    // only load tagcloud.js in tag.html
+    if($('#tag_cloud').length !== 0){
+        async("/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                //size: {start: 1, end: 1, unit: 'em'},
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+<!--fastClick.js -->
+<script>
+    async("http://cdn.bootcss.com/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+
+
+<!-- Baidu Tongji -->
+
+
+
+
+<!-- Image to hack wechat -->
+<!--<img src="../img/icon_wechat.png" width="0" height="0" />-->
+<!-- Migrate from head to bottom, no longer block render and still work -->
+
+</body>
+
+</html>

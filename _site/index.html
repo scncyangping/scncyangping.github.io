@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="keyword"  content="">
+    <link rel="shortcut icon" href="/YaPiBlog/img/favicon.ico">
+
+    <title>YaPiBlog</title>
+
+    <link rel="canonical" href="http://localhost:4000/YaPiBlog/">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/YaPiBlog/css/bootstrap.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/YaPiBlog/css/yapi-blog.min.css">
+
+    <!-- Pygments Github CSS -->
+    <link rel="stylesheet" href="/YaPiBlog/css/syntax.css">
+
+    <!-- Custom Fonts -->
+    <!-- <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <link href="http://cdn.staticfile.org/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+
+    <!-- Hux Delete, sad but pending in China
+    <link href='http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/
+    css'>
+    -->
+
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- ga & ba script hoook -->
+    <script></script>
+</head>
+
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <!--<a class="navbar-brand" href="/YaPiBlog/">YaPiBlog</a>-->
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <!-- Known Issue, found by Hux:
+            <nav>'2019-06-20-HDFS-base.markdown height woule be hold on by its content.
+            so, when navbar scale out, the <nav> will cover tags.
+            also mask any touch event of tags, unfortunately.
+        -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <!--
+                     <li>
+                         <a href="/YaPiBlog/"><span style="font-size: 20px">主页</span></a>
+                     </li>
+
+                     <li>
+                         <a href="/YaPiBlog/tags"><span style="font-size: 20px">分类</span></a>
+                     </li>
+
+                     <li>
+                         <a href="/YaPiBlog/about/"><span style="font-size: 20px">关于</span></a>
+                     </li>
+                    -->
+
+                    <li>
+                        <a href="/YaPiBlog/">Home</a>
+                    </li>
+                     
+                     <li>
+                         <a href="/YaPiBlog/about/">ABOUT</a>
+                     </li>
+                     
+                     <li>
+                         <a href="/YaPiBlog/tags/">Tags</a>
+                     </li>
+                     
+
+
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        // CLOSE
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        // OPEN
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+    <!-- Page Header -->
+<header class="intro-header" style="background-image: url('/YaPiBlog/img/longmao.jpeg')">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1 ">
+                <div class="site-heading">
+                    <h1>YaPiBlog</h1>
+                    <hr class="small">
+                    <span class="subheading">You look look you one day day de</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Main Content -->
+<div class="container">
+	<div class="row">
+        
+
+<!-- USE SIDEBAR -->
+    <!-- Post Container -->
+    		<div class="
+                col-lg-8 col-lg-offset-1
+                col-md-8 col-md-offset-1
+                col-sm-12
+                col-xs-12
+                post-container
+            ">
+    			
+<div class="post-preview">
+    <a href="/YaPiBlog/2019/08/28/Golang-base-binfa-%E5%90%8C%E6%AD%A5-%E9%94%81/">
+        <h2 class="post-title">
+            Go并发编程 - (四)同步、锁
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            锁
+
+sync.Mutex
+读写锁 sync.RWmutex
+
+读写锁包含了四种基本方法
+
+
+  func(*RWMutex) Lock()
+  func(*RWMutex) UnLock()
+  func(*RWMutex) RLock()
+  func(*RWMutex) RUnLock()
+
+
+读锁并不影响其他的读，但是会阻塞对应的写锁。写解锁会试图唤醒所有因欲进行读锁定而被阻塞的go...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on August 28, 2019
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/YaPiBlog/2019/08/28/Golang-base-binfa-Goroutine/">
+        <h2 class="post-title">
+            Go并发编程 - (三)Goroutine
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            示例
+
+package main
+
+import (
+	"fmt"
+	"time"
+)
+func main() {
+	name := []string{"Eric", "Harry", "Robert", "Jim"}
+
+	for _, d := range name {
+		go func() {
+			fmt.Printf("Hello,%s!\n", d)
+		}()
+	}
+
+	tim...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on August 28, 2019
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/YaPiBlog/2019/08/28/Golang-base-binfa-Go%E7%BA%BF%E7%A8%8B%E6%A8%A1%E5%9E%8B%E5%AE%9E%E7%8E%B0/">
+        <h2 class="post-title">
+            Go并发编程 - (二)Go线程模型实现
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            线程模型实现
+
+goroutine是GO特有的应用程序线程。
+有3个必知的核心元素，它们支撑起了这个模型的主要框架
+
+
+  M：machine的缩写。一个M代表一个内核线程，或称“工作线程”
+  P：processor的缩写。一个P代表一个GO代码片段所必须的资源(或称上下文环境)
+  G：goroutine的缩写。一个G代表一个Go代码片段。
+
+
+简单来说，一个G的执行需要P和M的支持。一...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on August 28, 2019
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/YaPiBlog/2019/08/28/Golang-base-binfa-%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B%E5%9F%BA%E7%A1%80/">
+        <h2 class="post-title">
+            Go并发编程 - (一)并发编程基础
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            并发编程基础
+
+所谓并发编程是指在一台处理器上“同时”处理多个任务。并发是在同一实体上的多个事件。多个事件在同一时间间隔发生。
+
+串行程序与并发程序
+
+串行程序特指只能被顺序执行的指令列表,并发程序则是可以被并发执行的两个及以上的串行程序的综合体。并发程序允许其中的串行程序运行在一个或个可共享的CPU上,同时也允许每个串行程序都运行在专门为它服务的CPU上。前一种方式也被成为多元程序,由操作...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on August 28, 2019
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/YaPiBlog/2019/08/25/data-structure-readBlackTree/">
+        <h2 class="post-title">
+            数据结构(十一)红黑树
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            2-3树
+
+满足二分搜索树的基本性质，但是它不是一种二叉树，它有两种节点，节点可以存放一个元素或这两个元素，存放一个元素时有左右两个孩子，存在两个元素的节点有三个孩子
+
+2-3树添加节点不会添加到一个null的位置，比如从头开始添加节点，添加c，而后添加b的时候不会成为c的孩子节点。而会成为c的左孩子，当继续添加d的时候还是会添加到b旁边，成为3个节点，然后，从b进行分裂，d,c成为他的子孩...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on August 25, 2019
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/YaPiBlog/2019/08/25/data-structure-avl/">
+        <h2 class="post-title">
+            数据结构(十)AVL
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            二分搜索树的缺陷
+
+根据添加入树的顺序不同，树可能会退化称为链表，所以需要有一定的机制去避免。
+
+AVL树 (两个俄罗斯人的名字简写)
+
+通常被认为是最早的自平衡的二叉树,二分搜索树的变种
+
+AVL树中定义的平衡二叉树
+
+对于任意一个节点，左子树和右子树的高度差不能超过1(可以左边比右边高，也可以右边比左边高)，
+平衡二叉树的高度和节点数量之间的关系也是O(logn)的
+
+平衡因子： 左右子...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on August 25, 2019
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/YaPiBlog/2019/08/25/data-structure-bingchaji/">
+        <h2 class="post-title">
+            数据结构(九)并查集
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            并查集
+
+并查集，在一些有N个元素的集合应用问题中，我们通常是在开始时让每个元素构成一个单元素的集合，然后按一定顺序将属于同一组的元素所在的集合合并，其间要反复查找一个元素在哪个集合中。这一类问题近几年来反复出现在信息学的国际国内赛题中，其特点是看似并不复杂，但数据量极大，若用正常的数据结构来描述的话，往往在空间上过大，计算机无法承受；即使在空间上勉强通过，运行的时间复杂度也极高，根本就不可...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on August 25, 2019
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/YaPiBlog/2019/08/25/data-structure-trie/">
+        <h2 class="post-title">
+            数据结构(八)Trie 字典树
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            什么是前缀树 Trie
+
+多用来进行字符串匹配
+
+
+  多叉树
+
+
+// 如果不仅仅是英文单词的话，还会加上特殊字符等
+// 所以一般不会设置next为指定容量的结构
+type Node struct {
+    // 当前节点的值
+    s       string
+    // 是否代表了一个单词的结尾
+    isWord  bool
+    next    []Node
+}
+
+
+缺...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on August 25, 2019
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/YaPiBlog/2019/08/25/data-structure-%E7%BA%BF%E6%AE%B5%E6%A0%91/">
+        <h2 class="post-title">
+            数据结构(七)线段树
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            线段树
+
+平衡树
+
+平衡树，即平衡二叉树（Balanced Binary Tree），具有以下性质：它是一棵空树或它的左右两个子树的高度差的绝对值不超过1，并且左右两个子树都是一棵平衡二叉树。
+平衡二叉树的常用算法有红黑树、AVL、Treap、伸展树、SBT等
+
+线段树不是一个完全二叉树，但是是一颗平衡二叉树，如果把最下层空节点看成空的节点，那么它也是一颗满二叉树。
+
+对于一颗满二叉树来说有...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on August 25, 2019
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/YaPiBlog/2019/08/25/data-structure-%E5%A0%86%E5%92%8C%E4%BC%98%E5%85%88%E9%98%9F%E5%88%97/">
+        <h2 class="post-title">
+            数据结构(六)堆和优先队列
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            优先队列
+
+普通队列：先进先出、后进后出
+优先队列：出队顺序和入队顺序无关；和优先级有关
+
+操作系统中进行任务的调用就是优先队列，会动态的选择优先级最高的任务执行。
+
+优先队列经典问题
+
+在N个元素中选出M个元素
+
+使用优先队列，维护当前看到的前M的元素
+
+使用最小堆，每次将根节点的那个最小的元素提出来
+
+java 中的PriorityQueue默认实现就是最小堆
+
+堆
+
+堆的基本结构
+
+最...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on August 25, 2019
+    </p>
+</div>
+<hr>
+
+
+<!-- Pager -->
+
+<ul class="pager">
+    
+    
+    <li class="next">
+        <a href="/YaPiBlog/page2">Older Posts &rarr;</a>
+    </li>
+    
+</ul>
+
+
+    		</div>
+    <!-- Sidebar Container -->
+            <div class="
+                col-lg-3 col-lg-offset-0
+                col-md-3 col-md-offset-0
+                col-sm-12
+                col-xs-12
+                sidebar-container
+            ">
+                <!-- Featured Tags -->
+                
+                <section>
+                    <hr class="hidden-sm hidden-xs">
+                    <h5><a href="/YaPiBlog/tags/">Hot Tags</a></h5>
+                    <div class="tags">
+                        
+                            
+                                <a href="/YaPiBlog/tags/#JVM" title="JVM" rel="7">
+                                    JVM
+                                </a>
+                            
+                        
+                            
+                                <a href="/YaPiBlog/tags/#docker" title="docker" rel="4">
+                                    docker
+                                </a>
+                            
+                        
+                            
+                        
+                            
+                                <a href="/YaPiBlog/tags/#mongodb" title="mongodb" rel="4">
+                                    mongodb
+                                </a>
+                            
+                        
+                            
+                                <a href="/YaPiBlog/tags/#redis" title="redis" rel="5">
+                                    redis
+                                </a>
+                            
+                        
+                            
+                        
+                            
+                                <a href="/YaPiBlog/tags/#golang" title="golang" rel="12">
+                                    golang
+                                </a>
+                            
+                        
+                            
+                                <a href="/YaPiBlog/tags/#设计模式" title="设计模式" rel="24">
+                                    设计模式
+                                </a>
+                            
+                        
+                            
+                                <a href="/YaPiBlog/tags/#大数据" title="大数据" rel="5">
+                                    大数据
+                                </a>
+                            
+                        
+                            
+                                <a href="/YaPiBlog/tags/#数据结构" title="数据结构" rel="11">
+                                    数据结构
+                                </a>
+                            
+                        
+                    </div>
+                </section>
+                
+
+                <!-- Short About -->
+                <section class="visible-md visible-lg">
+                    <hr><h5><a href="/YaPiBlog/about/">About Me</a></h5>
+                    <div class="short-about">
+                        
+                            <img src="/YaPiBlog/img/labi.jpg" />
+                        
+                        
+                            <p>待到秋来九月八  我花开后百花杀</p>
+                        
+                        <!-- SNS Link -->
+                        <ul class="list-inline">
+                            
+                            
+                            
+                            
+                            
+                            
+                        </ul>
+                    </div>
+                </section>
+                <!-- Friends Blog -->
+                
+                <hr>
+                <h5>Links</h5>
+                <ul class="list-inline">
+                    
+                        <li><a href="http://server.scncys.cn">YaPi Blog</a></li>
+                    
+                </ul>
+                
+    		</div>
+        
+	</div>
+</div>
+
+
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                    
+                    
+
+                    <!-- add Weibo, Zhihu by Hux, add target = "_blank" to <a> by Hux -->
+                    
+                    
+
+
+                    
+                    
+                </ul>
+
+                <p class="copyright text-muted">
+                    蜀ICP备18030170号-2    Copyright &copy; YaPiBlog 2019
+                    <br>
+
+                    <!---->
+                    <!--Theme by <a href="http://huangxuan.me">Hux</a> |-->
+                    <!--<iframe-->
+                        <!--style="margin-left: 2px; margin-bottom:-5px;"-->
+                        <!--frameborder="0" scrolling="0" width="91px" height="20px"-->
+                        <!--src="https://ghbtns.com/github-btn.html?user=huxpro&repo=huxpro.github.io&type=star&count=true" >-->
+                    <!--</iframe>-->
+
+
+                </p>
+
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/YaPiBlog/js/jquery.min.js "></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="/YaPiBlog/js/bootstrap.min.js "></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/YaPiBlog/js/yapi-blog.min.js "></script>
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- 
+     Because of the native support for backtick-style fenced code blocks 
+     right within the Markdown is landed in Github Pages, 
+     From V1.6, There is no need for Highlight.js, 
+     so Huxblog drops it officially.
+
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0  
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/    
+-->
+<!--
+    <script>
+        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
+            hljs.initHighlightingOnLoad();
+        })
+    </script>
+    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+-->
+
+
+<!-- jquery.tagcloud.js -->
+<script>
+    // only load tagcloud.js in tag.html
+    if($('#tag_cloud').length !== 0){
+        async("/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                //size: {start: 1, end: 1, unit: 'em'},
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+<!--fastClick.js -->
+<script>
+    async("http://cdn.bootcss.com/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+
+
+<!-- Baidu Tongji -->
+
+
+
+
+<!-- Image to hack wechat -->
+<!--<img src="../img/icon_wechat.png" width="0" height="0" />-->
+<!-- Migrate from head to bottom, no longer block render and still work -->
+
+</body>
+
+</html>

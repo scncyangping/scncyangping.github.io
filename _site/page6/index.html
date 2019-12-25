@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="keyword"  content="">
+    <link rel="shortcut icon" href="/YaPiBlog/img/favicon.ico">
+
+    <title>YaPiBlog</title>
+
+    <link rel="canonical" href="http://localhost:4000/YaPiBlog/page6/">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/YaPiBlog/css/bootstrap.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/YaPiBlog/css/yapi-blog.min.css">
+
+    <!-- Pygments Github CSS -->
+    <link rel="stylesheet" href="/YaPiBlog/css/syntax.css">
+
+    <!-- Custom Fonts -->
+    <!-- <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <link href="http://cdn.staticfile.org/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+
+    <!-- Hux Delete, sad but pending in China
+    <link href='http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/
+    css'>
+    -->
+
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- ga & ba script hoook -->
+    <script></script>
+</head>
+
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <!--<a class="navbar-brand" href="/YaPiBlog/">YaPiBlog</a>-->
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <!-- Known Issue, found by Hux:
+            <nav>'2019-06-20-HDFS-base.markdown height woule be hold on by its content.
+            so, when navbar scale out, the <nav> will cover tags.
+            also mask any touch event of tags, unfortunately.
+        -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <!--
+                     <li>
+                         <a href="/YaPiBlog/"><span style="font-size: 20px">主页</span></a>
+                     </li>
+
+                     <li>
+                         <a href="/YaPiBlog/tags"><span style="font-size: 20px">分类</span></a>
+                     </li>
+
+                     <li>
+                         <a href="/YaPiBlog/about/"><span style="font-size: 20px">关于</span></a>
+                     </li>
+                    -->
+
+                    <li>
+                        <a href="/YaPiBlog/">Home</a>
+                    </li>
+                     
+                     <li>
+                         <a href="/YaPiBlog/about/">ABOUT</a>
+                     </li>
+                     
+                     <li>
+                         <a href="/YaPiBlog/tags/">Tags</a>
+                     </li>
+                     
+
+
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        // CLOSE
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        // OPEN
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+    <!-- Page Header -->
+<header class="intro-header" style="background-image: url('/YaPiBlog/img/longmao.jpeg')">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1 ">
+                <div class="site-heading">
+                    <h1>YaPiBlog</h1>
+                    <hr class="small">
+                    <span class="subheading">You look look you one day day de</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Main Content -->
+<div class="container">
+	<div class="row">
+        
+
+<!-- USE SIDEBAR -->
+    <!-- Post Container -->
+    		<div class="
+                col-lg-8 col-lg-offset-1
+                col-md-8 col-md-offset-1
+                col-sm-12
+                col-xs-12
+                post-container
+            ">
+    			
+<div class="post-preview">
+    <a href="/YaPiBlog/2018/04/15/Go%E5%9C%A3%E7%BB%8F-%E6%95%B0%E6%8D%AE/">
+        <h2 class="post-title">
+            Go语言圣经(二)数据类型
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            类型分类
+
+
+  基础类型 (数字、字符串、布尔类型)
+  复合类型 (数组、结构体)
+  引用类型 (指针、切片、字典、函数、通道)
+  接口类型
+
+
+数字类型
+无符号整形：int8、int16、int32、int64
+有符号整形：uint8、uint16、uint32、uint64
+
+unicode字符rune类型是和int32等价的整形。byte也是uint8类型的等价类型
+
+int类...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on April 15, 2018
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/YaPiBlog/2018/04/15/Go%E5%9C%A3%E7%BB%8F-%E5%9F%BA%E7%A1%80/">
+        <h2 class="post-title">
+            Go语言圣经(一)基础知识
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            命令行参数
+
+程序的命令行参数可从os包的Args变量获取；os包外部使用os.Args访问该变量
+
+os.Args变量是一个字符串（string）的切片（slice）
+
+os.Args的第一个元素，os.Args[0],是命令本身的名字；其它的元素则是程序启动时传给它的参数。s[m:n]形式的切片表达式，产生从第m个元素到第n-1个元素的切片，下个例子用到的元素包含在os.Args[1:l...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on April 15, 2018
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/YaPiBlog/2018/04/14/mysql-%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6/">
+        <h2 class="post-title">
+            Mysql主从复制
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            复制类型
+
+
+  基于语句复制
+```
+主服务器上面执行的语句在从服务器上面再执行一遍，在MySQL-3.23版本以后支持。
+
+
+存在的问题：时间上可能不完全同步造成偏差，执行语句的用户也可能是不同一个用户。
+- 基于行复制
+
+把主服务器上面改编后的内容直接复制过去，而不关心到底改变该内容是由哪条语句引发的，在MySQL-5.0版本以后引入。
+存在的问题：比如一个工资表中有一万个用户，我们把...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on April 14, 2018
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/YaPiBlog/2018/04/14/mysql-%E7%B4%A2%E5%BC%95/">
+        <h2 class="post-title">
+            Mysql 索引
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            类别
+
+Mysql 中 :
+
+  如果一个主键被定义了，那么这个主键就是作为聚集索引
+  如果没有主键被定义，那么该表的第一个唯一非空索引被作为聚集索引
+  如果没有主键也没有合适的唯一索引，那么innodb内部会生成一个隐藏的主键作为聚集索引，这个隐藏的主键是一个6个字节的列，改列的值会随着数据的插入自增。
+
+
+InnoDB引擎会为每张表都加一个聚集索引，而聚集索引指向的的数据又是以物理磁...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on April 14, 2018
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/YaPiBlog/2018/04/14/mysql-%E9%87%8D%E7%82%B9/">
+        <h2 class="post-title">
+            Mysql基础
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            存储引擎 MyISAM和InnoDB区别
+
+
+  MyISAM不支持外键和事务，innodb支持
+  MyISAM锁的粒度是表级，而InnoDB支持行级锁定
+  MyISAM支持全文类型索引，而InnoDB不支持全文索引
+  MyISAM相对简单，所以在效率上要优于InnoDB，小型应用可以考虑使用MyISAM
+  Myisam创建表生成三个文件：.frm数据表结构  .myd数据文件 .m...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on April 14, 2018
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/YaPiBlog/2018/04/13/redis-%E6%80%A7%E8%83%BD%E8%B0%83%E4%BC%98/">
+        <h2 class="post-title">
+            Redis性能调优
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            性能调优
+
+尽管Redis是一个非常快速的内存数据存储媒介，也并不代表Redis不会产生性能问题。Redis采用单线程模型，所有的命令都是由一个线程串行执行的，所以当某个命令执行耗时较长时，会拖慢其后的所有命令，这使得Redis对每个任务的执行效率更加敏感。
+
+
+  性能优化
+    
+      确保没有让Redis执行耗时长的命令
+    
+    
+      不要把List当做列表使...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on April 13, 2018
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/YaPiBlog/2018/04/13/redis-%E5%93%A8%E5%85%B5/">
+        <h2 class="post-title">
+            Redis哨兵
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            Redis Sentinel 哨兵
+
+Redis Sentinel，即Redis哨兵，在Redis 2.8版本开始引入。哨兵的核心功能是主节点的自动故障转移
+它由两部分组成，哨兵节点和数据节点：
+
+
+  哨兵节点：哨兵系统由一个或多个哨兵节点组成，哨兵节点是特殊的redis节点，不存储数据。
+  数据节点：主节点和从节点都是数据节点。
+
+
+Redis的主从复制功能本身只是做数据同步，并不提供...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on April 13, 2018
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/YaPiBlog/2018/04/13/redis-%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6/">
+        <h2 class="post-title">
+            Redis主从复制、分片
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            主从复制与集群分片
+
+主从复制
+
+Redis支持一主多从的主从复制架构。一个Master实例负责处理所有的写请求，Master将写操作同步至所有Slave。
+
+
+  实时性要求不是特别高的读请求，可以在Slave上完成，提升效率。特别是一些周期性执行的统计任务，这些任务可能需要执行一些长耗时的Redis命令，可以专门规划出1个或几个Slave用于服务这些统计任务
+  借助Redis Sent...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on April 13, 2018
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/YaPiBlog/2018/04/13/redis-%E6%8C%81%E4%B9%85%E5%8C%96/">
+        <h2 class="post-title">
+            Redis持久化
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            持久化
+
+持久化的功能：Redis是内存数据库，数据都是存储在内存中，为了避免进程退出导致数据的永久丢失，需要定期将Redis中的数据以某种形式(数据或命令)从内存保存到硬盘；当下次Redis重启时，利用持久化文件实现数据恢复。除此之外，为了进行灾难备份，可以将持久化文件拷贝到一个远程位置。
+
+Redis持久化分为RDB持久化和AOF持久化：前者将当前数据保存到硬盘，后者则是将每次执行的写命...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on April 13, 2018
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/YaPiBlog/2018/04/13/redis-base/">
+        <h2 class="post-title">
+            Redis基础命令及内存划分
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            基本数据类型
+string
+String类型是包含很多种类型的特殊类型，并且是二进制安全的。比如序列化的对象进行储存，比如一张图片进行二进制储存，比如一个简单的字符串数值等等
+
+set和get方法：
+设置值set  name realValue
+取值 get name
+说明：set设置name的时候，如果name重复，设置的值会进行覆盖。
+
+setnx 方法
+设置值setnx name re...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on April 13, 2018
+    </p>
+</div>
+<hr>
+
+
+<!-- Pager -->
+
+<ul class="pager">
+    
+    <li class="previous">
+        <a href="/YaPiBlog/page5">&larr; Newer Posts</a>
+    </li>
+    
+    
+    <li class="next">
+        <a href="/YaPiBlog/page7">Older Posts &rarr;</a>
+    </li>
+    
+</ul>
+
+
+    		</div>
+    <!-- Sidebar Container -->
+            <div class="
+                col-lg-3 col-lg-offset-0
+                col-md-3 col-md-offset-0
+                col-sm-12
+                col-xs-12
+                sidebar-container
+            ">
+                <!-- Featured Tags -->
+                
+                <section>
+                    <hr class="hidden-sm hidden-xs">
+                    <h5><a href="/YaPiBlog/tags/">Hot Tags</a></h5>
+                    <div class="tags">
+                        
+                            
+                                <a href="/YaPiBlog/tags/#JVM" title="JVM" rel="7">
+                                    JVM
+                                </a>
+                            
+                        
+                            
+                                <a href="/YaPiBlog/tags/#docker" title="docker" rel="4">
+                                    docker
+                                </a>
+                            
+                        
+                            
+                        
+                            
+                                <a href="/YaPiBlog/tags/#mongodb" title="mongodb" rel="4">
+                                    mongodb
+                                </a>
+                            
+                        
+                            
+                                <a href="/YaPiBlog/tags/#redis" title="redis" rel="5">
+                                    redis
+                                </a>
+                            
+                        
+                            
+                        
+                            
+                                <a href="/YaPiBlog/tags/#golang" title="golang" rel="12">
+                                    golang
+                                </a>
+                            
+                        
+                            
+                                <a href="/YaPiBlog/tags/#设计模式" title="设计模式" rel="24">
+                                    设计模式
+                                </a>
+                            
+                        
+                            
+                                <a href="/YaPiBlog/tags/#大数据" title="大数据" rel="5">
+                                    大数据
+                                </a>
+                            
+                        
+                            
+                                <a href="/YaPiBlog/tags/#数据结构" title="数据结构" rel="11">
+                                    数据结构
+                                </a>
+                            
+                        
+                    </div>
+                </section>
+                
+
+                <!-- Short About -->
+                <section class="visible-md visible-lg">
+                    <hr><h5><a href="/YaPiBlog/about/">About Me</a></h5>
+                    <div class="short-about">
+                        
+                            <img src="/YaPiBlog/img/labi.jpg" />
+                        
+                        
+                            <p>待到秋来九月八  我花开后百花杀</p>
+                        
+                        <!-- SNS Link -->
+                        <ul class="list-inline">
+                            
+                            
+                            
+                            
+                            
+                            
+                        </ul>
+                    </div>
+                </section>
+                <!-- Friends Blog -->
+                
+                <hr>
+                <h5>Links</h5>
+                <ul class="list-inline">
+                    
+                        <li><a href="http://server.scncys.cn">YaPi Blog</a></li>
+                    
+                </ul>
+                
+    		</div>
+        
+	</div>
+</div>
+
+
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                    
+                    
+
+                    <!-- add Weibo, Zhihu by Hux, add target = "_blank" to <a> by Hux -->
+                    
+                    
+
+
+                    
+                    
+                </ul>
+
+                <p class="copyright text-muted">
+                    蜀ICP备18030170号-2    Copyright &copy; YaPiBlog 2019
+                    <br>
+
+                    <!---->
+                    <!--Theme by <a href="http://huangxuan.me">Hux</a> |-->
+                    <!--<iframe-->
+                        <!--style="margin-left: 2px; margin-bottom:-5px;"-->
+                        <!--frameborder="0" scrolling="0" width="91px" height="20px"-->
+                        <!--src="https://ghbtns.com/github-btn.html?user=huxpro&repo=huxpro.github.io&type=star&count=true" >-->
+                    <!--</iframe>-->
+
+
+                </p>
+
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/YaPiBlog/js/jquery.min.js "></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="/YaPiBlog/js/bootstrap.min.js "></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/YaPiBlog/js/yapi-blog.min.js "></script>
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- 
+     Because of the native support for backtick-style fenced code blocks 
+     right within the Markdown is landed in Github Pages, 
+     From V1.6, There is no need for Highlight.js, 
+     so Huxblog drops it officially.
+
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0  
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/    
+-->
+<!--
+    <script>
+        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
+            hljs.initHighlightingOnLoad();
+        })
+    </script>
+    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+-->
+
+
+<!-- jquery.tagcloud.js -->
+<script>
+    // only load tagcloud.js in tag.html
+    if($('#tag_cloud').length !== 0){
+        async("/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                //size: {start: 1, end: 1, unit: 'em'},
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+<!--fastClick.js -->
+<script>
+    async("http://cdn.bootcss.com/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+
+
+<!-- Baidu Tongji -->
+
+
+
+
+<!-- Image to hack wechat -->
+<!--<img src="../img/icon_wechat.png" width="0" height="0" />-->
+<!-- Migrate from head to bottom, no longer block render and still work -->
+
+</body>
+
+</html>

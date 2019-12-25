@@ -1,0 +1,115 @@
+---
+layout:     post
+title:      "设计模式-抽象工厂"
+subtitle:   ""
+date:       2018-05-10 12:04:00
+author:     "YaPi"
+header-img: ""
+tags:
+    - 设计模式
+---
+
+#### 基础与定义
+
+- 抽象工厂模式提供一个创建一些列相关或相互依赖对象的接口
+- 无须指定他们具体的类
+- 类型：创建型
+
+适用场景
+1. 客户端不依赖产品实例实现等细节
+2. 强调一系列相关产品对象(属于同一产品族)一起适用创建对象需要大量重复的代码
+3. 提供一个产品类的库，所有的产品以同样的接口出现，从而使客户端不依赖于具体实现
+
+
+优点：
+1. 将一个系列的产品族统一到一起创建
+
+
+抽象工厂关注产品族、工厂方法关注产品方法
+
+```
+美的空调    美的冰箱    美的电视
+海尔空调    海尔冰箱    海尔电视
+
+// 横向：同一产品族
+// 纵向：统一产品等级
+```
+
+缺点：
+1. 增加系统的抽象性和理解难度
+2. 规定类所有可能被创建的产品集合，产品族中扩展新的产品困难，需要修改抽象工厂的接口
+
+
+##### 源码实例
+
+1. java.sql: connection
+2. mybatis: SqlSessionFactory
+
+##### 代码实例
+```
+public abstract class Video {
+    public abstract void produce();
+}
+
+public class JavaVideo extends Video {
+    @Override
+    public void produce() {
+        System.out.println("java 视频");
+    }
+}
+
+public class PythonVideo extends Video {
+    @Override
+    public void produce() {
+        System.out.println("python 视频");
+    }
+}
+
+public abstract class Article {
+    public abstract void article();
+}
+
+public class JavaArticle extends Article {
+    @Override
+    public void article() {
+        System.out.println("java 手记");
+    }
+}
+
+public class PythonArticle extends Article {
+    @Override
+    public void article() {
+
+        System.out.println("python 手记");
+    }
+}
+
+public interface CourseFactory {
+    Video getVideo();
+    Article getArticle();
+}
+
+public class JavaCourseFacotry implements CourseFactory {
+    @Override
+    public Video getVideo() {
+        return new JavaVideo();
+    }
+
+    @Override
+    public Article getArticle() {
+        return new JavaArticle();
+    }
+}
+
+public class PythonCourseFacotry implements CourseFactory {
+    @Override
+    public Video getVideo() {
+        return new PythonVideo();
+    }
+
+    @Override
+    public Article getArticle() {
+        return new PythonArticle();
+    }
+}
+```

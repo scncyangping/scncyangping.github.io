@@ -1,0 +1,77 @@
+---
+layout:     post
+title:      "K8S基本命令"
+subtitle:   ""
+date:       2018-01-12 12:11:00
+author:     "YaPi"
+header-img: ""
+tags:
+    - Kubernetes
+---
+
+#### 基本命令
+
+###### 镜像分发打包
+
+```
+docker save -o calico-v319.tar.gz  `docker image ls |grep calico |awk '{position=$1":"$2;print $1,position}' |awk '{print $2}'`
+
+```
+
+
+###### 获取集群中有多少个Node
+
+kubectl get nodes
+
+###### 分析node详情
+kubectl describe node xxxxx
+
+
+##### RC
+
+###### 创建RC
+kubectl create -f mysql-rc.yaml
+
+###### 查看创建的RC
+kubectl get rc
+
+###### 修改RC的副本数量
+
+kubectl scale rc xxxxx --replicas=3
+
+##### POD
+
+###### 查看Pod创建情况
+kubectl get pods
+
+kubectl describe pod mysql-xxx
+
+显示更多信息
+kubectl get pod xxx -o wide
+
+以yaml格式显示Pod的详细信息
+kubectl get pod xxx -o yaml
+
+还可以自定义输出列
+
+指定排序的顺序
+kubectl get pods --sort-by=.metadata.name
+##### Service
+
+###### 创建service
+kubectl create -f mysql-svc.yaml
+
+###### 查看service
+
+kubectl get svc
+
+
+##### Deployment
+
+###### 创建Deployment
+
+kubectl create -f xxxxx.yaml
+
+###### 查看Deployment 信息
+
+kubectl get deployements

@@ -1,0 +1,104 @@
+---
+layout:     post
+title:      "设计模式-结构型-外观模式"
+subtitle:   ""
+date:       2018-05-10 12:07:00
+author:     "YaPi"
+header-img: ""
+tags:
+    - 设计模式
+---
+#### 定义
+
+- 又叫门面模式，提供了一个统一的接口，用来访问子系统中的一群接口
+- 外观模式定义了一个高成接口，让子系统更容易使用
+- 类型：结构型
+
+
+使用场景：
+1. 子系统越来越复杂，增加外观模式提供简单调用接口
+2. 构建多层系统调用，利用外观对象作为每层的入口，简化层间调用
+
+优点：
+1. 简化调用过程，无须了解深入子系统
+2. 减少系统依赖，松散耦合
+3. 更好的划分访问层次
+4. 复合迪米特法则
+
+缺点：
+1. 不符合开闭原则
+2. 增加子系统容易带来风险
+
+外观模式关注的是外界和子系统的交互
+中介者模式关注内部的交互
+
+##### 源码实例
+1. spring jdbc中的JdbcUtils，内部就封装类很多方法
+2. Mybatis里的configuration。内部很多创建的方法。
+
+##### 代码实例
+购买一个礼物，会涉及到校验礼物的库存，以及支付的流程，而对于外部来说，就只是一个购买的流程，所以可以用外观模式来提供一个统一的接口，处理子系统的这些接口
+```
+public class PointsGift {
+    private String name;
+
+    public PointsGift(String name) {
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+}
+// 库存校验
+public class QualifyService {
+    public boolean isAvailable(PointsGift pointsGift){
+        System.out.println("校验："+pointsGift.getName()+
+                "库存");
+        return true;
+    }
+}
+
+// 支付校验
+public class PointsPaymentService {
+    public boolean pay(PointsGift pointsGift){
+        System.out.println("支付成功");
+        return true;
+    }
+}
+
+
+// 外观类
+public class GiftExchangeService {
+    // 用spring框架可以直接注入
+    private QualifyService qualifyService = new QualifyService();
+    private PointsPaymentService pointsPaymentService = new PointsPaymentService();
+
+    // 统一购买礼物的接口
+    public void giftExchange(PointsGift pointsGift){
+        if (qualifyService.isAvailable(pointsGift)){
+            // 资格校验通过
+
+            if (pointsPaymentService.pay(pointsGift)){
+                // 支付成功
+                System.out.println("礼物购买成功");
+            }
+        }
+    }
+}
+
+
+// 使用
+// 使用类只调用外观类，不调用子系统的类
+public class Test {
+    public static void main(String[] args){
+        PointsGift pointsGift = new PointsGift("二狗");
+        GiftExchangeService giftExchangeService = new GiftExchangeService();
+        giftExchangeService.giftExchange(pointsGift);
+    }
+}
+```

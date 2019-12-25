@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="keyword"  content="">
+    <link rel="shortcut icon" href="/YaPiBlog/img/favicon.ico">
+
+    <title>YaPiBlog</title>
+
+    <link rel="canonical" href="http://localhost:4000/YaPiBlog/page8/">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/YaPiBlog/css/bootstrap.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/YaPiBlog/css/yapi-blog.min.css">
+
+    <!-- Pygments Github CSS -->
+    <link rel="stylesheet" href="/YaPiBlog/css/syntax.css">
+
+    <!-- Custom Fonts -->
+    <!-- <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <link href="http://cdn.staticfile.org/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+
+    <!-- Hux Delete, sad but pending in China
+    <link href='http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/
+    css'>
+    -->
+
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- ga & ba script hoook -->
+    <script></script>
+</head>
+
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <!--<a class="navbar-brand" href="/YaPiBlog/">YaPiBlog</a>-->
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <!-- Known Issue, found by Hux:
+            <nav>'2019-06-20-HDFS-base.markdown height woule be hold on by its content.
+            so, when navbar scale out, the <nav> will cover tags.
+            also mask any touch event of tags, unfortunately.
+        -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <!--
+                     <li>
+                         <a href="/YaPiBlog/"><span style="font-size: 20px">主页</span></a>
+                     </li>
+
+                     <li>
+                         <a href="/YaPiBlog/tags"><span style="font-size: 20px">分类</span></a>
+                     </li>
+
+                     <li>
+                         <a href="/YaPiBlog/about/"><span style="font-size: 20px">关于</span></a>
+                     </li>
+                    -->
+
+                    <li>
+                        <a href="/YaPiBlog/">Home</a>
+                    </li>
+                     
+                     <li>
+                         <a href="/YaPiBlog/about/">ABOUT</a>
+                     </li>
+                     
+                     <li>
+                         <a href="/YaPiBlog/tags/">Tags</a>
+                     </li>
+                     
+
+
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        // CLOSE
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        // OPEN
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+    <!-- Page Header -->
+<header class="intro-header" style="background-image: url('/YaPiBlog/img/longmao.jpeg')">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1 ">
+                <div class="site-heading">
+                    <h1>YaPiBlog</h1>
+                    <hr class="small">
+                    <span class="subheading">You look look you one day day de</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Main Content -->
+<div class="container">
+	<div class="row">
+        
+
+<!-- USE SIDEBAR -->
+    <!-- Post Container -->
+    		<div class="
+                col-lg-8 col-lg-offset-1
+                col-md-8 col-md-offset-1
+                col-sm-12
+                col-xs-12
+                post-container
+            ">
+    			
+<div class="post-preview">
+    <a href="/YaPiBlog/2018/01/12/docker-base/">
+        <h2 class="post-title">
+            docker基础
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            基础
+
+Docker Platform
+Docker 提供了一个开发、打包、运行app的平台,把app和底层infrastructure隔离开来
+
+Docker Engine
+
+
+  后台进程
+  Rest API Server
+  CLI接口
+
+
+Docker Image 概述
+
+
+  文件和meta data 的集合
+  分层的，并且每一层都可以添加改变删除文件，成为一个新的image
+...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on January 12, 2018
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/YaPiBlog/2017/04/21/JVM07/">
+        <h2 class="post-title">
+            JVM高级特性-线程同步及锁优化
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            线程安全实现
+
+互斥同步
+主要实现方式：临界区、互斥量和信号量都是主要的互斥实现方式
+
+在java中，最基本的同步手段就是synchronized关键字，synchronized关键字在经过编译过后，会在同步块前后分别形成monitorenter和monitorexit两个字节码指令。这两个指令都需要一个reference类型的参数来指明要锁定和解锁的对象。指定了对象参数就取对应对象参数，没...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on April 21, 2017
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/YaPiBlog/2017/04/20/JVM06/">
+        <h2 class="post-title">
+            JVM高级特性-内存模型与线程
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            硬件效率一致性处理
+由于计算机存储设备与处理器的运算速度有几个数量级的差距，为了尽可能提升效率，计算机系统加入了一层读写速度尽可能接近处理器运算速度的高速缓存来作为内存与处理器之间的缓冲：将运算需要使用到的数据复制到缓存中，让运算能快速进行，当运算结束后再从缓存中同步回内存之中。
+
+在多处理器系统中，每个处理器都有自己的高速缓存，而它们又共享同一个主内存。当多个处理器运算任务都涉及同一块主内...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on April 20, 2017
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/YaPiBlog/2017/04/19/JVM05/">
+        <h2 class="post-title">
+            JVM高级特性-虚拟机执行引擎
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            执行引擎
+
+运行时栈帧结构
+栈帧是用于支持虚拟机运行方法调用和方法执行的数据结构，它是虚拟机运行时数据区中的虚拟机栈的栈元素。栈帧存储了方法的局部变量表、操作数栈、动态连接和方法返回地址等信息。每一个方法的调用开始到执行完成都对应一个栈帧在虚拟机栈中入栈到出栈的过程。
+
+
+
+
+  局部变量表
+
+
+局部变量表是一组变量值的存储空间，用于存放方法参数和方法内定义的局部变量。局部变量表的容量已变量...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on April 19, 2017
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/YaPiBlog/2017/04/18/JVM04/">
+        <h2 class="post-title">
+            JVM高级特性-虚拟机执行子系统
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            虚拟机执行子系统
+
+class文件
+class文件是一组以8位字节为基础单位的二进制流，各个数据项目严格按照顺序紧凑地排列在class文件之中。当遇到需要占用8字节以上空间的数据项时，会按照高位在前的方式分割成若干个8位字节进行存储。
+
+class文件采用类似于c语言的伪结构来存储。这种伪机构只有两种数据类型。无符号数和表。
+
+无符号数属于基本的数据类型，以u1,u2,u4,u8分别代表1个...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on April 18, 2017
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/YaPiBlog/2017/04/17/JVM03/">
+        <h2 class="post-title">
+            JVM高级特性-垃圾收集与内存分配策略
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            对象存活判断
+
+
+  引用记数算法
+  可达性分析算法
+
+
+引用计数算法
+给对象中添加一个引用计数器，每当一个地方引用它时，计数器值就加1；当引用失效时，计数器值就减1；任何时刻计数器为0的对象就是不可能再被使用的。
+
+很难解决对象之间循环引用的问题
+
+可达性分析算法
+通过一系列的称为GC ROOTS 的对象作为起点，从这些节点开始向下搜索，搜索所走过的路径称为引用链，当一个对象到GC RO...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on April 17, 2017
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/YaPiBlog/2017/04/16/JVM02/">
+        <h2 class="post-title">
+            JVM高级特性-自动内存管理机制
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            自动内存管理
+
+运行时数据区域
+
+
+  方法区(共享)
+  堆(共享)
+  虚拟机栈
+  本地方法栈
+  程序计数器
+
+
+程序计数器
+
+一块比较小的内存空间，它可以看作是当前线程所执行的字节码的行号指示器。在虚拟机的概念模型里，字节码解释器工作时，就是通过改变这个计数器的值来选取下一条需要执行的字节码指令。分支、循环、跳转、异常处理、线程恢复等基础功能都需要依赖这个计数器来完成。
+
+线程私有...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on April 16, 2017
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/YaPiBlog/2017/04/15/JVM01/">
+        <h2 class="post-title">
+            JVM高级特性-关于JAVA
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            技术体系
+
+
+  1991.4 -&gt; James Gosling -&gt; Oak
+  1995.5.23 -&gt; 更名为Java
+  1996.1.23 -&gt; java 1.0 -&gt; 第一个虚拟机(Sun Class VM)
+
+
+并不是只有java运行在java虚拟机上，广义上来讲，Clojure,JRuby,Groovy等运行于java虚拟机上的语言及其他相关程序...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on April 15, 2017
+    </p>
+</div>
+<hr>
+
+
+<!-- Pager -->
+
+<ul class="pager">
+    
+    <li class="previous">
+        <a href="/YaPiBlog/page7">&larr; Newer Posts</a>
+    </li>
+    
+    
+</ul>
+
+
+    		</div>
+    <!-- Sidebar Container -->
+            <div class="
+                col-lg-3 col-lg-offset-0
+                col-md-3 col-md-offset-0
+                col-sm-12
+                col-xs-12
+                sidebar-container
+            ">
+                <!-- Featured Tags -->
+                
+                <section>
+                    <hr class="hidden-sm hidden-xs">
+                    <h5><a href="/YaPiBlog/tags/">Hot Tags</a></h5>
+                    <div class="tags">
+                        
+                            
+                                <a href="/YaPiBlog/tags/#JVM" title="JVM" rel="7">
+                                    JVM
+                                </a>
+                            
+                        
+                            
+                                <a href="/YaPiBlog/tags/#docker" title="docker" rel="4">
+                                    docker
+                                </a>
+                            
+                        
+                            
+                        
+                            
+                                <a href="/YaPiBlog/tags/#mongodb" title="mongodb" rel="4">
+                                    mongodb
+                                </a>
+                            
+                        
+                            
+                                <a href="/YaPiBlog/tags/#redis" title="redis" rel="5">
+                                    redis
+                                </a>
+                            
+                        
+                            
+                        
+                            
+                                <a href="/YaPiBlog/tags/#golang" title="golang" rel="12">
+                                    golang
+                                </a>
+                            
+                        
+                            
+                                <a href="/YaPiBlog/tags/#设计模式" title="设计模式" rel="24">
+                                    设计模式
+                                </a>
+                            
+                        
+                            
+                                <a href="/YaPiBlog/tags/#大数据" title="大数据" rel="5">
+                                    大数据
+                                </a>
+                            
+                        
+                            
+                                <a href="/YaPiBlog/tags/#数据结构" title="数据结构" rel="11">
+                                    数据结构
+                                </a>
+                            
+                        
+                    </div>
+                </section>
+                
+
+                <!-- Short About -->
+                <section class="visible-md visible-lg">
+                    <hr><h5><a href="/YaPiBlog/about/">About Me</a></h5>
+                    <div class="short-about">
+                        
+                            <img src="/YaPiBlog/img/labi.jpg" />
+                        
+                        
+                            <p>待到秋来九月八  我花开后百花杀</p>
+                        
+                        <!-- SNS Link -->
+                        <ul class="list-inline">
+                            
+                            
+                            
+                            
+                            
+                            
+                        </ul>
+                    </div>
+                </section>
+                <!-- Friends Blog -->
+                
+                <hr>
+                <h5>Links</h5>
+                <ul class="list-inline">
+                    
+                        <li><a href="http://server.scncys.cn">YaPi Blog</a></li>
+                    
+                </ul>
+                
+    		</div>
+        
+	</div>
+</div>
+
+
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                    
+                    
+
+                    <!-- add Weibo, Zhihu by Hux, add target = "_blank" to <a> by Hux -->
+                    
+                    
+
+
+                    
+                    
+                </ul>
+
+                <p class="copyright text-muted">
+                    蜀ICP备18030170号-2    Copyright &copy; YaPiBlog 2019
+                    <br>
+
+                    <!---->
+                    <!--Theme by <a href="http://huangxuan.me">Hux</a> |-->
+                    <!--<iframe-->
+                        <!--style="margin-left: 2px; margin-bottom:-5px;"-->
+                        <!--frameborder="0" scrolling="0" width="91px" height="20px"-->
+                        <!--src="https://ghbtns.com/github-btn.html?user=huxpro&repo=huxpro.github.io&type=star&count=true" >-->
+                    <!--</iframe>-->
+
+
+                </p>
+
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/YaPiBlog/js/jquery.min.js "></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="/YaPiBlog/js/bootstrap.min.js "></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/YaPiBlog/js/yapi-blog.min.js "></script>
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- 
+     Because of the native support for backtick-style fenced code blocks 
+     right within the Markdown is landed in Github Pages, 
+     From V1.6, There is no need for Highlight.js, 
+     so Huxblog drops it officially.
+
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0  
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/    
+-->
+<!--
+    <script>
+        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
+            hljs.initHighlightingOnLoad();
+        })
+    </script>
+    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+-->
+
+
+<!-- jquery.tagcloud.js -->
+<script>
+    // only load tagcloud.js in tag.html
+    if($('#tag_cloud').length !== 0){
+        async("/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                //size: {start: 1, end: 1, unit: 'em'},
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+<!--fastClick.js -->
+<script>
+    async("http://cdn.bootcss.com/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+
+
+<!-- Baidu Tongji -->
+
+
+
+
+<!-- Image to hack wechat -->
+<!--<img src="../img/icon_wechat.png" width="0" height="0" />-->
+<!-- Migrate from head to bottom, no longer block render and still work -->
+
+</body>
+
+</html>

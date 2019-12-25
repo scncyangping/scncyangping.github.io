@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="keyword"  content="">
+    <link rel="shortcut icon" href="/YaPiBlog/img/favicon.ico">
+
+    <title>Go并发编程 - (二)Go线程模型实现 - YaPiBlog</title>
+
+    <link rel="canonical" href="http://localhost:4000/YaPiBlog/2019/08/28/Golang-base-binfa-Go%E7%BA%BF%E7%A8%8B%E6%A8%A1%E5%9E%8B%E5%AE%9E%E7%8E%B0/">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/YaPiBlog/css/bootstrap.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/YaPiBlog/css/yapi-blog.min.css">
+
+    <!-- Pygments Github CSS -->
+    <link rel="stylesheet" href="/YaPiBlog/css/syntax.css">
+
+    <!-- Custom Fonts -->
+    <!-- <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <link href="http://cdn.staticfile.org/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+
+    <!-- Hux Delete, sad but pending in China
+    <link href='http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/
+    css'>
+    -->
+
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- ga & ba script hoook -->
+    <script></script>
+</head>
+
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <!--<a class="navbar-brand" href="/YaPiBlog/">YaPiBlog</a>-->
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <!-- Known Issue, found by Hux:
+            <nav>'2019-06-20-HDFS-base.markdown height woule be hold on by its content.
+            so, when navbar scale out, the <nav> will cover tags.
+            also mask any touch event of tags, unfortunately.
+        -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <!--
+                     <li>
+                         <a href="/YaPiBlog/"><span style="font-size: 20px">主页</span></a>
+                     </li>
+
+                     <li>
+                         <a href="/YaPiBlog/tags"><span style="font-size: 20px">分类</span></a>
+                     </li>
+
+                     <li>
+                         <a href="/YaPiBlog/about/"><span style="font-size: 20px">关于</span></a>
+                     </li>
+                    -->
+
+                    <li>
+                        <a href="/YaPiBlog/">Home</a>
+                    </li>
+                     
+                     <li>
+                         <a href="/YaPiBlog/about/">ABOUT</a>
+                     </li>
+                     
+                     <li>
+                         <a href="/YaPiBlog/tags/">Tags</a>
+                     </li>
+                     
+
+
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        // CLOSE
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        // OPEN
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+    <!-- Image to hack wechat -->
+<!-- <img src="/img/icon_wechat.png" width="0" height="0"> -->
+<!-- <img src="/YaPiBlog/" width="0" height="0"> -->
+
+<!-- Post Header -->
+<style type="text/css">
+    header.intro-header{
+        background-image: url('/YaPiBlog/')
+    }
+</style>
+<header class="intro-header" >
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                        <a class="tag" href="/YaPiBlog/tags/#golang" title="golang">golang</a>
+                        
+                    </div>
+                    <h1>Go并发编程 - (二)Go线程模型实现</h1>
+                    
+                    
+                    <h2 class="subheading"></h2>
+                    
+                    <span class="meta">Posted by YaPi on August 28, 2019</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+
+    <!-- Post Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+				<h4 id="线程模型实现">线程模型实现</h4>
+
+<p>goroutine是GO特有的应用程序线程。
+有3个必知的核心元素，它们支撑起了这个模型的主要框架</p>
+
+<ul>
+  <li>M：machine的缩写。一个M代表一个内核线程，或称“工作线程”</li>
+  <li>P：processor的缩写。一个P代表一个GO代码片段所必须的资源(或称上下文环境)</li>
+  <li>G：goroutine的缩写。一个G代表一个Go代码片段。</li>
+</ul>
+
+<p>简单来说，一个G的执行需要P和M的支持。一个M在与一个P关联之后，就形成了一个有效的G运行环境(内核线程+上下文环境)。每个P都会包含一个可运行的G队列(runq)。该队列中的G会被一次传递给与本地P关联的M，并获得运行时机。</p>
+
+<p>M与KSE(内核调度实体)之间总是一对一的关系。一个M能且仅能代表一个内核线程。Go的运行时系统用M代表一个内核调度实体。一个M在其生命周期内，会且仅会与一个KSE产生关联。相比之下，M与P，P与G之间的关联都是易变的，它们之间的关系会在实际调度的过程中改变。其中，M与P之间也总是一对一的，P与G之间则是一对多的关系。此外，M与G之间也会建立关联，因为一个G终归会由一个M来负责运行。它们之间的关联会由P来关联。</p>
+
+<h5 id="m">M</h5>
+
+<p>一个M代表一个内核线程。在大多数情况下，创建一个M都是由于没有足够的M来关联P并运行其中可运行的G。不过，在运行时系统执行系统监控或垃圾回收等任务的时候，也会导致新M的创建</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>type m struct{
+
+    g0          *g
+    mstartfn    func()
+    curg        *g
+    p           puintptr
+    nextp       puintprr
+    spinning    bool
+    lockedg     *g
+
+    .....
+}
+</code></pre></div></div>
+<p>部分字段释义</p>
+
+<p>g0表示一个特殊的goroutine。这个goroutine是Go运行时系统在启动之初创建的。用于执行一些运行时任务。字段mstartfn表示M的启始函数，这个函数其实就是我们在编写go的语句时携带的那个函数。字段curg会存放当前M正在运行的那个G的指针。而字段p的值则会指向与当前M相关连的那个P。字段nextp用于暂存与当前M有潜关联的P。把调度器将某个P赋给某个M的nextp字段的操作，称为对M和P的预联。运行时系统有时候会把刚刚重新启用的M和已与它预联的那个P关联在一起，这也是nextp字段的主要作用。字段spinning是bool类型的。它用于表示这个M是否正在寻找可运行的G，在寻找过程中，M会处于自旋状态。这也是该字段名的由来。Go运行时系统可以把一个M和一个G锁定在一起。一旦锁定，这个M就只能运行这个G,这个G也只能由该M运行。lockedg表示的就是与当前M锁定的那个G(如果有的话)。</p>
+
+<p>M在创建之初，会被加入到全局的M列表。这时，他的其实函数和预联的P也会被设置。最后，运行时系统会为这个M专门创建一个新的内核线程并与之相关联。其中，起始函数仅当运行时系统要用此M执行系统监控或垃圾回收等任务的时候才会被设置。M的数量是可以设置的。</p>
+
+<h5 id="p">P</h5>
+
+<p>P是G能够在M中运行的关键。Go的运行时系统会适时地让P与不同的M建立或断开连接，以使P中那些可运行的G能够及时获得运行时机，这与操作系统内核在CPU之上实时的切换不同的进程或线程的情形类似。</p>
+
+<p>P的数量是可以设置的。不过，设置P的最大数量只能限制住p的数量。而对G和M的数量没有任何约束。当M因系统调用而阻塞(更确切的说，是它运行的G进入了系统调用)的时候，运行时系统会把该M与P分离开来。以便其他的M重新关联P中未运行的G</p>
+
+<p>与空闲M列表类似，运行时系统中也存在一个调度器的空闲P列表(runtime.sched.pidle)。当一个P不再与任何M关联的时候，运行时系统就会把它放入该列表；而当运行时系统需要一个空闲的P关联某个M的话，会从此列表中取出一个。注意，P进入空闲P列表的一个前提条件是它的可运行G列表必须为空，例如，在重整全局P列表的时候，P在被晴空可运行G队列之后，才会被放入空闲的P列表</p>
+
+<p>P本身是有状态的</p>
+
+<ul>
+  <li>Pidle。 当前P未与任务M存在关联</li>
+  <li>running。 当前P正在与某个M关联</li>
+  <li>Psyscall。 当前P中运行的那个G正在进行系统调用</li>
+  <li>Pgcstop。 表明运行时系统需要停止调度。比如在开始垃圾回收的某些步骤前。</li>
+  <li>Pdead。 表明P已经不会再被使用。如果在GO程序运行中，通过调用runtime.COMAXPROCES函数减少了P的最大数量，多余的P就会被置于此状态</li>
+</ul>
+
+<p>每个P中除了都要一个可运行的G队列外，还都包含了一个自由G列表。这个列表包含了一些已经运行完成的G。当其增长到一定程度，运行时系统就会把其中的部分G转移到调度器的自由G列表中。另一方面，当使用go 语句欲启动一个G的时候，运行时系统会先试图从相应的P的自由G列表中获取一个现成的G，来封装这个go语句携带的函数(也称为go函数)，仅当获取不到这样一个G的时候才需要创建一个G。考虑到由于相应P的自由G列表为空而获取不到自由的G的情况，运行时系统会在发现其中的自由G太少时，预先尝试从调度器的自由G列表中转移过来一些G。</p>
+
+<h5 id="g">G</h5>
+
+<p>一个G就代表一个goroutine，也与go函数相对应。Go的编译器会把go语句变成对内部函数newproc的调用，并把go函数及其参数都作为参数传递给这个函数。</p>
+
+<p>运行时系统接到一个调用之后，会先检查go函数及其参数的合法性，然后试图从本地P的自由G列表和调度其的自由G列表获取可以的G，如果没有获取到，就新建一个G。与M和P相同，运行时系统也持有一个G的全局列表。新建的G会在第一时间被加入到该列表。该列表的作用是，集中存放当前运行时系统的所有的G的指针。无论用于封装当前这个go函数的G是否是新的，运行时系统都会对它进行一次初始化。包括关联go函数以及设置该G的状态和ID.</p>
+
+
+                <hr>
+
+                
+
+
+                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="/YaPiBlog/2019/08/28/Golang-base-binfa-%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B%E5%9F%BA%E7%A1%80/" data-toggle="tooltip" data-placement="top" title="Go并发编程 - (一)并发编程基础">&larr; Previous Post</a>
+                    </li>
+                    
+                    
+                    <li class="next">
+                        <a href="/YaPiBlog/2019/08/28/Golang-base-binfa-Goroutine/" data-toggle="tooltip" data-placement="top" title="Go并发编程 - (三)Goroutine">Next Post &rarr;</a>
+                    </li>
+                    
+                </ul>
+
+
+                
+
+                
+
+            </div>
+
+    <!-- Sidebar Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+                <section>
+                    <hr class="hidden-sm hidden-xs">
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+        				
+                            
+                				<a href="/YaPiBlog/tags/#JVM" title="JVM" rel="7">
+                                    JVM
+                                </a>
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#docker" title="docker" rel="4">
+                                    docker
+                                </a>
+                            
+        				
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#mongodb" title="mongodb" rel="4">
+                                    mongodb
+                                </a>
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#redis" title="redis" rel="5">
+                                    redis
+                                </a>
+                            
+        				
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#golang" title="golang" rel="12">
+                                    golang
+                                </a>
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#设计模式" title="设计模式" rel="24">
+                                    设计模式
+                                </a>
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#大数据" title="大数据" rel="5">
+                                    大数据
+                                </a>
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#数据结构" title="数据结构" rel="11">
+                                    数据结构
+                                </a>
+                            
+        				
+        			</div>
+                </section>
+                
+
+                <!-- Friends Blog -->
+                
+                <hr>
+                <h5>FRIENDS</h5>
+                <ul class="list-inline">
+                    
+                        <li><a href="http://server.scncys.cn">YaPi Blog</a></li>
+                    
+                </ul>
+                
+            </div>
+        </div>
+    </div>
+</article>
+
+
+
+
+
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("http://cdn.bootcss.com/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'always',
+          placement: 'right',
+          icon: '#'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading').remove('.sidebar-container h5');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
+
+
+
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                    
+                    
+
+                    <!-- add Weibo, Zhihu by Hux, add target = "_blank" to <a> by Hux -->
+                    
+                    
+
+
+                    
+                    
+                </ul>
+
+                <p class="copyright text-muted">
+                    蜀ICP备18030170号-2    Copyright &copy; YaPiBlog 2019
+                    <br>
+
+                    <!---->
+                    <!--Theme by <a href="http://huangxuan.me">Hux</a> |-->
+                    <!--<iframe-->
+                        <!--style="margin-left: 2px; margin-bottom:-5px;"-->
+                        <!--frameborder="0" scrolling="0" width="91px" height="20px"-->
+                        <!--src="https://ghbtns.com/github-btn.html?user=huxpro&repo=huxpro.github.io&type=star&count=true" >-->
+                    <!--</iframe>-->
+
+
+                </p>
+
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/YaPiBlog/js/jquery.min.js "></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="/YaPiBlog/js/bootstrap.min.js "></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/YaPiBlog/js/yapi-blog.min.js "></script>
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- 
+     Because of the native support for backtick-style fenced code blocks 
+     right within the Markdown is landed in Github Pages, 
+     From V1.6, There is no need for Highlight.js, 
+     so Huxblog drops it officially.
+
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0  
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/    
+-->
+<!--
+    <script>
+        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
+            hljs.initHighlightingOnLoad();
+        })
+    </script>
+    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+-->
+
+
+<!-- jquery.tagcloud.js -->
+<script>
+    // only load tagcloud.js in tag.html
+    if($('#tag_cloud').length !== 0){
+        async("/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                //size: {start: 1, end: 1, unit: 'em'},
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+<!--fastClick.js -->
+<script>
+    async("http://cdn.bootcss.com/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+
+
+<!-- Baidu Tongji -->
+
+
+
+
+<!-- Image to hack wechat -->
+<!--<img src="../img/icon_wechat.png" width="0" height="0" />-->
+<!-- Migrate from head to bottom, no longer block render and still work -->
+
+</body>
+
+</html>

@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="keyword"  content="">
+    <link rel="shortcut icon" href="/YaPiBlog/img/favicon.ico">
+
+    <title>MongoDB基础知识点 - YaPiBlog</title>
+
+    <link rel="canonical" href="http://localhost:4000/YaPiBlog/2018/04/12/mongo-base/">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/YaPiBlog/css/bootstrap.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/YaPiBlog/css/yapi-blog.min.css">
+
+    <!-- Pygments Github CSS -->
+    <link rel="stylesheet" href="/YaPiBlog/css/syntax.css">
+
+    <!-- Custom Fonts -->
+    <!-- <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <link href="http://cdn.staticfile.org/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+
+    <!-- Hux Delete, sad but pending in China
+    <link href='http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/
+    css'>
+    -->
+
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- ga & ba script hoook -->
+    <script></script>
+</head>
+
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <!--<a class="navbar-brand" href="/YaPiBlog/">YaPiBlog</a>-->
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <!-- Known Issue, found by Hux:
+            <nav>'2019-06-20-HDFS-base.markdown height woule be hold on by its content.
+            so, when navbar scale out, the <nav> will cover tags.
+            also mask any touch event of tags, unfortunately.
+        -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <!--
+                     <li>
+                         <a href="/YaPiBlog/"><span style="font-size: 20px">主页</span></a>
+                     </li>
+
+                     <li>
+                         <a href="/YaPiBlog/tags"><span style="font-size: 20px">分类</span></a>
+                     </li>
+
+                     <li>
+                         <a href="/YaPiBlog/about/"><span style="font-size: 20px">关于</span></a>
+                     </li>
+                    -->
+
+                    <li>
+                        <a href="/YaPiBlog/">Home</a>
+                    </li>
+                     
+                     <li>
+                         <a href="/YaPiBlog/about/">ABOUT</a>
+                     </li>
+                     
+                     <li>
+                         <a href="/YaPiBlog/tags/">Tags</a>
+                     </li>
+                     
+
+
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        // CLOSE
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        // OPEN
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+    <!-- Image to hack wechat -->
+<!-- <img src="/img/icon_wechat.png" width="0" height="0"> -->
+<!-- <img src="/YaPiBlog/" width="0" height="0"> -->
+
+<!-- Post Header -->
+<style type="text/css">
+    header.intro-header{
+        background-image: url('/YaPiBlog/')
+    }
+</style>
+<header class="intro-header" >
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                        <a class="tag" href="/YaPiBlog/tags/#mongodb" title="mongodb">mongodb</a>
+                        
+                    </div>
+                    <h1>MongoDB基础知识点</h1>
+                    
+                    
+                    <h2 class="subheading"></h2>
+                    
+                    <span class="meta">Posted by YaPi on April 12, 2018</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+
+    <!-- Post Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+				<h4 id="基础知识点">基础知识点</h4>
+
+<h5 id="规范">规范</h5>
+
+<h6 id="数据库规范">数据库规范</h6>
+
+<p>数据库名称要求满足如下特征：</p>
+
+<ul>
+  <li>不能是空字符串(“”)</li>
+  <li>不得含有‘’、空格、. 、$、/、\、\0(空字符)</li>
+  <li>应该全部小写</li>
+  <li>最多64字节</li>
+  <li>不得是保留数据库名(admin、config、local)</li>
+</ul>
+
+<p>MongoDB中默认的数据库为test,如果没有创建新的数据库，集合将存放在test数据中</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>查看数据库版本: db.version()
+</code></pre></div></div>
+
+<h6 id="集合文档规范">集合、文档规范</h6>
+
+<p>集合命名遵循如下规则：</p>
+<ul>
+  <li>集合名不能是空字符串</li>
+  <li>集合名不能有\0字符，这个字符表示集合名的结尾</li>
+  <li>集合名不能以system.开头，这是为系统保留的前缀</li>
+  <li>用户创建的集合名字不能含有保留字符。有些驱动程序支持，这是因为某些系统生成的集合中包含该字符。</li>
+  <li>文档的键是字符串。除了少数例外情况，可以使用任意UTF-8字符</li>
+  <li>文档不能有重复的键</li>
+  <li>区分大小写</li>
+  <li>文档的值不仅可以是字符串，还可以是其他数据类型，甚至是文档，且键值对是有序的</li>
+</ul>
+
+<h5 id="数据库相关命令">数据库相关命令</h5>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>选择某一个数据库
+use 数据库名
+
+若想新建某个数据库，需要首先use数据库，再创建相关集合，否则不生效
+
+显示所有数据库
+show dbs
+
+删除数据库
+首先切换到相应数据库，然后执行 db.dropDatabase()，注意此数据库中若有集合则不生效
+</code></pre></div></div>
+
+<h5 id="集合文档相关命令">集合、文档相关命令</h5>
+
+<h6 id="插入文档">插入文档</h6>
+
+<p>1.8版本定义boson最大为16M</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>db.col.save(document) 命令。如果不指定 _id 字段 save() 方法类似于 insert() 方法。如果指定 _id 字段，则会更新该 _id 的数据
+
+
+3.2 版本后还有以下几种语法可用于插入文档:
+db.collection.insertOne():向指定集合中插入一条文档数据
+db.collection.insertMany():向指定集合中插入多条文档数据
+
+</code></pre></div></div>
+<h6 id="更新文档">更新文档</h6>
+
+<ol>
+  <li>更新修改器： $inc
+    <ol>
+      <li>使用修改器_id不能改变，其他的都可以改变
+db.yp.update({url:”ww.baidu.com”},{“$inc”:{“pageviews”:1}})</li>
+    </ol>
+  </li>
+  <li>$set 用来指定一个键的值。如果不存在则创建它。
+    <ol>
+      <li>$inc 和$set 在指定字段时若不存在则会增加，$inc只能用于整数、长整数、双精度数。$set 可以改变原来键的类型</li>
+    </ol>
+  </li>
+  <li>$push会向已有的数组末尾加一个元素，没有则新建数组</li>
+  <li>$addToSet 判断是否存在，不存在才新增 $ne 有同样功能，但有时有限制</li>
+  <li>{$pop :{key:1}}从数组末尾删除，key:-1从头部删除s</li>
+  <li>依据特定条件删除元素 $pull
+    <ol>
+      <li>db.yp.update({x:1},{$pull:{“todo”:”laundry”}) 删除todo里面为laundry元素</li>
+    </ol>
+  </li>
+  <li>可以运用数组下标进行定位数组
+    <ol>
+      <li>db.yp.update({“comments.author”:”jogn”},{$set:{“comments.$.author”:”jim”}}),更新第一条找到的数据</li>
+    </ol>
+  </li>
+  <li>$or 查询多个限定条件</li>
+  <li>$mod 会将查询的值除以第一个给定的值日，若余数等于第二个给定值则返回结果，db.yp.find({“id_num”:{“$not”:{“$mod”:[5,1]}}})</li>
+  <li>一个键可以有多个条件，但是不能有多个更新修改器，$inc $set</li>
+  <li>查询特定条件，键值为null
+    <ol>
+      <li>db.yp.find({“z”:{“$in”:[null],”$exists”:true}})</li>
+    </ol>
+  </li>
+  <li>db.yp.find({“comment”:{“$elemMatch”:{“autor”:”joe”,”score”:{“$get”:5”}}}”})
+13.</li>
+</ol>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>db.col.update({'title':'MongoDB 教程'},{$set:{'title':'MongoDB'}})
+以上语句只会修改第一条发现的文档，如果你要修改多条相同的文档，则需要设置 multi 参数为 true。
+
+db.col.update({'title':'MongoDB 教程'},{$set:{'title':'MongoDB'}},{multi:true})
+
+或
+
+db.col.update( { "count" : { $gt : 5 } } , { $set : { "test5" : "OK"} },true,true )
+
+第三个参数，若不存在执行查询条件数据就新增
+第四个参数，操作全部数据，全部执行更新操作
+
+在3.2版本开始，MongoDB提供以下更新集合文档的方法：
+db.collection.updateOne() 向指定集合更新单个文档
+db.collection.updateMany() 向指定集合更新多个文档
+</code></pre></div></div>
+
+<h6 id="删除文档">删除文档</h6>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>db.col.remove({'title':'MongoDB 教程'})
+
+如果你只想删除第一条找到的记录可以设置 justOne 为 1，如下所示：
+db.testCollection.remove({"name:"123},1)
+
+remove() 方法已经过时了，现在官方推荐使用 deleteOne() 和 deleteMany() 方法。
+
+如删除集合下全部文档：
+db.inventory.deleteMany({})
+删除 status 等于 A 的全部文档：
+db.inventory.deleteMany({ status : "A" })
+</code></pre></div></div>
+
+<h5 id="索引">索引</h5>
+
+<h6 id="创建索引">创建索引</h6>
+<p>需要对进行排序的键创建索引，若不创建，则进行排序的数据不能做T级别的排序，否则会报错</p>
+
+<p>创建索引可以对索引进行命名
+db.yp.ensureIndex({a:1,b:1….;},{“name”:”yaerluo”})</p>
+
+<p>唯一索引确保文档指定键都有唯一的值
+db.yp.ensureIndex({“username”:1},{“unique”:true})</p>
+
+<p>消除重复
+db.yp.ensureIndex({“username”:1},{“unique”:true,”dropDups”:true}) 删除除了第一个文档外的文档</p>
+
+<p>索引管理 存在system.indexes集合中，只能通过ensureIndex和dropIndexes进行
+添加索引时，可以在后台进行，否则会阻断建立索引期间所有请求
+db.yp.ensureIndex({“username”:1},{“background”:true})</p>
+
+<p>删除索引，将x换为*
+db.runCommand({“dropIndexes”:”集合名（yp）”,”index”:”x”:})
+删除所有索引，将x换为*</p>
+
+<p>创建地理空间索引
+db.yp.ensureIndex({“gps”:”2d”})
+它的值必须是一个包含两个元素的数组或者包含两个键的内嵌文档  大小默认为-180 到180</p>
+<h6 id="简单查询">简单查询</h6>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>美化返回数据，使返回的数据进行格式化
+db.col.find().pretty()
+pretty()方法会以格式化的方式来显示所有文档
+
+db.col.find({"likes": {$gt:50}, $or: [{"by": "菜鸟教程"},{"title": "MongoDB 教程"}]}).pretty()
+
+
+排序
+在MongoDB中使用使用sort()方法对数据进行排序，sort()方法可以通过参数指定排序的字段，并使用 1 和 -1 来指定排序的方式，其中 1 为升序排列，而-1是用于降序排列
+</code></pre></div></div>
+
+<p>MongoDB支持的条件操作符</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>意义</th>
+      <th>MongoDB</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>大于</td>
+      <td>$gt</td>
+    </tr>
+    <tr>
+      <td>小于</td>
+      <td>$lt</td>
+    </tr>
+    <tr>
+      <td>大于等于</td>
+      <td>$gte</td>
+    </tr>
+    <tr>
+      <td>小于等于</td>
+      <td>$lte</td>
+    </tr>
+    <tr>
+      <td>不等于</td>
+      <td>$ne</td>
+    </tr>
+    <tr>
+      <td>等于</td>
+      <td>$eq</td>
+    </tr>
+  </tbody>
+</table>
+
+<h6 id="复合查询-aggregate">复合查询 aggregate</h6>
+
+<p>例：</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>db.articles.aggregate( [
+                        { $match : { score : { $gt : 70, $lte : 90 } } },
+                        { $group: { _id: null, count: { $sum: 1 } } }
+                       ] );
+</code></pre></div></div>
+
+<ul>
+  <li>$project：修改输入文档的结构。可以用来重命名、增加或删除域，也可以用于创建计算结果以及嵌套文档。</li>
+  <li>$match：用于过滤数据，只输出符合条件的文档。$match使用MongoDB的标准查询操作。</li>
+  <li>$limit：用来限制MongoDB聚合管道返回的文档数。</li>
+  <li>$skip：在聚合管道中跳过指定数量的文档，并返回余下的文档。</li>
+  <li>$unwind：将文档中的某一个数组类型字段拆分成多条，每条包含数组中的一个值。</li>
+  <li>$group：将集合中的文档分组，可用于统计结果。</li>
+  <li>$sort：将输入文档排序后输出。</li>
+  <li>$geoNear：输出接近某一地理位置的有序文档。</li>
+</ul>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>按日、按月、按年、按周、按小时、按分钟聚合操作如下：
+db.getCollection('m_msg_tb').aggregate(
+[
+    {$match:{m_id:10001,mark_time:{$gt:new Date(2017,8,0)}}},
+    {$group: {
+       _id: {$dayOfMonth:'$mark_time'},
+        pv: {$sum: 1}
+        }
+    },
+    {$sort: {"_id": 1}}
+])
+
+时间关键字如下：
+ $dayOfYear: 返回该日期是这一年的第几天（全年 366 天）。
+ $dayOfMonth: 返回该日期是这一个月的第几天（1到31）。
+ $dayOfWeek: 返回的是这个周的星期几（1：星期日，7：星期六）。
+ $year: 返回该日期的年份部分。
+ $month： 返回该日期的月份部分（ 1 到 12）。
+ $week： 返回该日期是所在年的第几个星期（ 0 到 53）。
+ $hour： 返回该日期的小时部分。
+ $minute: 返回该日期的分钟部分。
+ $second: 返回该日期的秒部分（以0到59之间的数字形式返回日期的第二部分，但可以是60来计算闰秒）。
+ $millisecond：返回该日期的毫秒部分（ 0 到 999）。
+ $dateToString： { $dateToString: { format: , date: } }。
+</code></pre></div></div>
+
+
+
+                <hr>
+
+                
+
+
+                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="/YaPiBlog/2018/01/12/k8s%E5%9F%BA%E7%A1%80-%E8%B5%84%E6%BA%90%E5%AF%B9%E8%B1%A1/" data-toggle="tooltip" data-placement="top" title="K8S基础-资源对象">&larr; Previous Post</a>
+                    </li>
+                    
+                    
+                    <li class="next">
+                        <a href="/YaPiBlog/2018/04/12/mongo-%E8%AF%BB%E5%86%99%E5%88%86%E7%A6%BB/" data-toggle="tooltip" data-placement="top" title="MongoDB读写分离">Next Post &rarr;</a>
+                    </li>
+                    
+                </ul>
+
+
+                
+
+                
+
+            </div>
+
+    <!-- Sidebar Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+                <section>
+                    <hr class="hidden-sm hidden-xs">
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+        				
+                            
+                				<a href="/YaPiBlog/tags/#JVM" title="JVM" rel="7">
+                                    JVM
+                                </a>
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#docker" title="docker" rel="4">
+                                    docker
+                                </a>
+                            
+        				
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#mongodb" title="mongodb" rel="4">
+                                    mongodb
+                                </a>
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#redis" title="redis" rel="5">
+                                    redis
+                                </a>
+                            
+        				
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#golang" title="golang" rel="12">
+                                    golang
+                                </a>
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#设计模式" title="设计模式" rel="24">
+                                    设计模式
+                                </a>
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#大数据" title="大数据" rel="5">
+                                    大数据
+                                </a>
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#数据结构" title="数据结构" rel="11">
+                                    数据结构
+                                </a>
+                            
+        				
+        			</div>
+                </section>
+                
+
+                <!-- Friends Blog -->
+                
+                <hr>
+                <h5>FRIENDS</h5>
+                <ul class="list-inline">
+                    
+                        <li><a href="http://server.scncys.cn">YaPi Blog</a></li>
+                    
+                </ul>
+                
+            </div>
+        </div>
+    </div>
+</article>
+
+
+
+
+
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("http://cdn.bootcss.com/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'always',
+          placement: 'right',
+          icon: '#'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading').remove('.sidebar-container h5');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
+
+
+
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                    
+                    
+
+                    <!-- add Weibo, Zhihu by Hux, add target = "_blank" to <a> by Hux -->
+                    
+                    
+
+
+                    
+                    
+                </ul>
+
+                <p class="copyright text-muted">
+                    蜀ICP备18030170号-2    Copyright &copy; YaPiBlog 2019
+                    <br>
+
+                    <!---->
+                    <!--Theme by <a href="http://huangxuan.me">Hux</a> |-->
+                    <!--<iframe-->
+                        <!--style="margin-left: 2px; margin-bottom:-5px;"-->
+                        <!--frameborder="0" scrolling="0" width="91px" height="20px"-->
+                        <!--src="https://ghbtns.com/github-btn.html?user=huxpro&repo=huxpro.github.io&type=star&count=true" >-->
+                    <!--</iframe>-->
+
+
+                </p>
+
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/YaPiBlog/js/jquery.min.js "></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="/YaPiBlog/js/bootstrap.min.js "></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/YaPiBlog/js/yapi-blog.min.js "></script>
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- 
+     Because of the native support for backtick-style fenced code blocks 
+     right within the Markdown is landed in Github Pages, 
+     From V1.6, There is no need for Highlight.js, 
+     so Huxblog drops it officially.
+
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0  
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/    
+-->
+<!--
+    <script>
+        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
+            hljs.initHighlightingOnLoad();
+        })
+    </script>
+    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+-->
+
+
+<!-- jquery.tagcloud.js -->
+<script>
+    // only load tagcloud.js in tag.html
+    if($('#tag_cloud').length !== 0){
+        async("/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                //size: {start: 1, end: 1, unit: 'em'},
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+<!--fastClick.js -->
+<script>
+    async("http://cdn.bootcss.com/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+
+
+<!-- Baidu Tongji -->
+
+
+
+
+<!-- Image to hack wechat -->
+<!--<img src="../img/icon_wechat.png" width="0" height="0" />-->
+<!-- Migrate from head to bottom, no longer block render and still work -->
+
+</body>
+
+</html>

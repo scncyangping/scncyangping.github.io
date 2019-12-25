@@ -1,0 +1,77 @@
+---
+layout:     post
+title:      "设计模式-结构型-适配器模式"
+subtitle:   ""
+date:       2018-05-10 12:09:00
+author:     "YaPi"
+header-img: ""
+tags:
+    - 设计模式
+---
+#### 基础定义
+
+- 将一个类的接口转换成客户期望的另一个接口
+- 使原本接口不兼容的类可以一起工作
+- 类型：结构型
+
+使用场景：
+
+1. 已经存在的类，它的方法和需求不匹配时(方法结果相同或相似)
+2. 不是软件设计阶段考虑的设计模式，是随着软件维护，由于不同产品、不同厂家造成功能类似而接口不相同情况下的解决方案
+
+优点：
+
+1. 现有类复用
+2. 目标类和适配器类结偶
+3. 符合开闭原则
+
+缺点：
+1. 可能会增加系统复杂行
+2. 增加代码可读性难度
+
+扩展：
+1. 对象适配器
+2. 类适配器
+
+适配器模式是将两个已有的接口进行连接，建立通道，外观模式是对一群已存在的接口整合出一个独立的接口
+
+##### 源码实例
+1. xmlAdapter
+2. spring 中的 AdvisorAdapter
+3. spring jpa ，JpavendorAdapter
+
+##### 代码实例
+220v电压转为5v
+
+```
+// 220v电压
+public class DC220{
+    public int dianya() {
+        return 220;
+    }
+}
+
+// 转5v的接口
+public interface DC5 {
+    // 返回电压
+    int v220To5();
+}
+
+// 适配器
+public class adapter implements DC5 {
+    private DC220 dc220 = new DC220();
+
+    @Override
+    public int v220To5() {
+        return dc220.dianya()/44;
+    }
+}
+
+// 使用
+public class Test {
+    public static void main(String[] args){
+        DC5 add = new adapter();
+        System.out.println(add.v220To5());
+    }
+}
+```

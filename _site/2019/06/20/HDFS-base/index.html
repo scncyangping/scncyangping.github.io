@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="keyword"  content="">
+    <link rel="shortcut icon" href="/YaPiBlog/img/favicon.ico">
+
+    <title>HDFS基础 - YaPiBlog</title>
+
+    <link rel="canonical" href="http://localhost:4000/YaPiBlog/2019/06/20/HDFS-base/">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/YaPiBlog/css/bootstrap.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/YaPiBlog/css/yapi-blog.min.css">
+
+    <!-- Pygments Github CSS -->
+    <link rel="stylesheet" href="/YaPiBlog/css/syntax.css">
+
+    <!-- Custom Fonts -->
+    <!-- <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <link href="http://cdn.staticfile.org/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+
+    <!-- Hux Delete, sad but pending in China
+    <link href='http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/
+    css'>
+    -->
+
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- ga & ba script hoook -->
+    <script></script>
+</head>
+
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <!--<a class="navbar-brand" href="/YaPiBlog/">YaPiBlog</a>-->
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <!-- Known Issue, found by Hux:
+            <nav>'2019-06-20-HDFS-base.markdown height woule be hold on by its content.
+            so, when navbar scale out, the <nav> will cover tags.
+            also mask any touch event of tags, unfortunately.
+        -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <!--
+                     <li>
+                         <a href="/YaPiBlog/"><span style="font-size: 20px">主页</span></a>
+                     </li>
+
+                     <li>
+                         <a href="/YaPiBlog/tags"><span style="font-size: 20px">分类</span></a>
+                     </li>
+
+                     <li>
+                         <a href="/YaPiBlog/about/"><span style="font-size: 20px">关于</span></a>
+                     </li>
+                    -->
+
+                    <li>
+                        <a href="/YaPiBlog/">Home</a>
+                    </li>
+                     
+                     <li>
+                         <a href="/YaPiBlog/about/">ABOUT</a>
+                     </li>
+                     
+                     <li>
+                         <a href="/YaPiBlog/tags/">Tags</a>
+                     </li>
+                     
+
+
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        // CLOSE
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        // OPEN
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+    <!-- Image to hack wechat -->
+<!-- <img src="/img/icon_wechat.png" width="0" height="0"> -->
+<!-- <img src="/YaPiBlog/img/bigData/hadoop-logo.jpg" width="0" height="0"> -->
+
+<!-- Post Header -->
+<style type="text/css">
+    header.intro-header{
+        background-image: url('/YaPiBlog/img/bigData/hadoop-logo.jpg')
+    }
+</style>
+<header class="intro-header" >
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                        <a class="tag" href="/YaPiBlog/tags/#大数据" title="大数据">大数据</a>
+                        
+                    </div>
+                    <h1>HDFS基础</h1>
+                    
+                    
+                    <h2 class="subheading"> "HDFS is the primary distributed storage used by Hadoop applications. "</h2>
+                    
+                    <span class="meta">Posted by YaPi on June 20, 2019</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+
+    <!-- Post Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+				<h3 id="hdfs基础">HDFS基础</h3>
+<h5 id="hadoop-distributed-file-system">Hadoop Distributed File System</h5>
+<ul>
+  <li>分布式文件系统</li>
+  <li>运行在 commodity hardware</li>
+  <li>fault-tolerant 高容错</li>
+  <li>部署在廉价的(low-cost hardware)的机器上</li>
+  <li>高吞吐量 high throughput</li>
+  <li>适用于大数据量</li>
+</ul>
+
+<h5 id="普通文件系统">普通文件系统</h5>
+
+<ul>
+  <li>目录结构</li>
+  <li>存在的是文件或文件夹</li>
+  <li>对外提供服务: 创建、修改、删除、查看、移动</li>
+</ul>
+
+<h5 id="普通文件系统-vs-分布式文件系统">普通文件系统 VS 分布式文件系统</h5>
+
+<ul>
+  <li>单机  集群</li>
+  <li>分布式文件系统能够横跨N个机器</li>
+</ul>
+
+<h4 id="hdfs前提和设计目标">HDFS前提和设计目标</h4>
+
+<ul>
+  <li>Hardware Failure(硬件错误) 是很常见的
+    <ol>
+      <li>每个机器只存储文件的部分数据,blocksize=128M,block存放在不同的机器上来容错</li>
+    </ol>
+  </li>
+  <li>Streaming Data Access 流式数据访问</li>
+  <li>Large Data Sets 大规模数据集</li>
+  <li>Moving Computation is Cheaper than Moving Data 移动计算比移动数据更划算</li>
+</ul>
+
+<h4 id="hdfs-架构">HDFS 架构</h4>
+
+<h5 id="namenode-and-datanodes">NameNode and DataNodes</h5>
+
+<ul>
+  <li>主从架构
+    <ol>
+      <li>主节点管理NameSpace(这里可以理解为整个文件系统)</li>
+      <li>主节点提供对客户端的访问 (对文件的CRUD及管理文件与DataNode之间的映射)</li>
+      <li>数据节点提供数据存储功能</li>
+      <li>一个文件被拆分为多个block,存在一系列的DataNode上,用于容错</li>
+    </ol>
+  </li>
+  <li>副本机制
+    <ol>
+      <li>讲一个大文件氛分为多个block,除了最后一个，每个块大小相同</li>
+      <li>文件的副本数量可以在创建的时候指定</li>
+    </ol>
+  </li>
+</ul>
+
+<h6 id="副本摆放策略">副本摆放策略</h6>
+
+<p>默认 相同rack内文件传输就会快一些</p>
+
+<ol>
+  <li>本rack的一个节点上</li>
+  <li>另外一个rack的节点上</li>
+  <li>与2相同的rack的另外一个节点上</li>
+</ol>
+
+<p>还有其他的方式版本不同可能不同</p>
+<ol>
+  <li>本rack的一个节点上</li>
+  <li>本rack的另一个节点上</li>
+  <li>另外一个rack的节点上</li>
+</ol>
+
+<h4 id="客户端写数据到hdfs的流程">客户端写数据到HDFS的流程</h4>
+
+<ol>
+  <li>客户端发起上传文件命令</li>
+  <li>namenode判断文件是否存在,并返回是否能写的回复,同时,判断文件的大小返回客户端写入到哪几个datanode</li>
+  <li>根据文件的大小拆分不同的block</li>
+  <li>根据返回的datanode的数据传输链接,建立连接(连接其中一个datanode,由datanode再去和其他datanode建立连接?)</li>
+  <li>按顺序传输block到datanode</li>
+  <li>通知namenode传输完成,记录元数据信息,名称、block存放的地方等信息</li>
+</ol>
+
+<h4 id="读数据流程">读数据流程</h4>
+
+<ol>
+  <li>客户端发起读请求到namenode</li>
+  <li>namenode判断是否存在等,若存在,返回文件的元数据信息(文件名称、block的信息)</li>
+  <li>按顺序发送到datanode读取数据</li>
+  <li>组装,返回</li>
+</ol>
+
+<h4 id="hdfs的元数据管理">HDFS的元数据管理</h4>
+
+<ul>
+  <li>元数据 : 其实就是HDFS的目录结构以及每个BLOCK信息(id,副本系数,block存在什么地方)</li>
+  <li>存在什么地方: 对应配置 hadoop.tmp.dir 目录下的name文件下面 fsimage文件中</li>
+  <li>文件新增、修改、删除等操作不能直接每次都操作fsimage,文件io很浪费性能</li>
+  <li>checkPoint</li>
+</ul>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>1. 内存中有一个树形结构
+2. 新增或修改直接操作内存
+3. 定期将内存中的数据写入到fsimage文件中
+4. 在未同步到磁盘的时间过程中,将所有对磁盘的操作命令放在edits日志当中
+5. 新进程 - Secondary namenode 将fsimage加载磁盘数据到内存中,
+然后将edits的操作都作用到内存中去,然后新生成的fsimage替换调原来的fsimage数据。
+</code></pre></div></div>
+
+<h4 id="安全模式">安全模式</h4>
+
+<p>namenode在启动过程中,会先进入一个safemode 的状态,暂时是不能进行读写操作的,会接受所有datanode接收到block的信息(大概30s时间),
+当检查到所有的block的块的副本数量是配置的最少数量时,就退出安全模式</p>
+
+<h4 id="hdfs-命令行操作">HDFS 命令行操作</h4>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> hadoop fs [generic options]
+        [-appendToFile &lt;localsrc&gt; ... &lt;dst&gt;]
+        [-cat [-ignoreCrc] &lt;src&gt; ...]
+        [-checksum &lt;src&gt; ...]
+        [-chgrp [-R] GROUP PATH...]
+        [-chmod [-R] &lt;MODE[,MODE]... | OCTALMODE&gt; PATH...]
+        [-chown [-R] [OWNER][:[GROUP]] PATH...]
+        [-copyFromLocal [-f] [-p] [-l] &lt;localsrc&gt; ... &lt;dst&gt;]
+        [-copyToLocal [-p] [-ignoreCrc] [-crc] &lt;src&gt; ... &lt;localdst&gt;]
+        [-count [-q] [-h] [-v] [-x] &lt;path&gt; ...]
+        [-cp [-f] [-p | -p[topax]] &lt;src&gt; ... &lt;dst&gt;]
+        [-createSnapshot &lt;snapshotDir&gt; [&lt;snapshotName&gt;]]
+        [-deleteSnapshot &lt;snapshotDir&gt; &lt;snapshotName&gt;]
+        [-df [-h] [&lt;path&gt; ...]]
+        [-du [-s] [-h] [-x] &lt;path&gt; ...]
+        [-expunge]
+        [-find &lt;path&gt; ... &lt;expression&gt; ...]
+        [-get [-p] [-ignoreCrc] [-crc] &lt;src&gt; ... &lt;localdst&gt;]
+        [-getfacl [-R] &lt;path&gt;]
+        [-getfattr [-R] {-n name | -d} [-e en] &lt;path&gt;]
+        [-getmerge [-nl] &lt;src&gt; &lt;localdst&gt;]
+        [-help [cmd ...]]
+        [-ls [-C] [-d] [-h] [-q] [-R] [-t] [-S] [-r] [-u] [&lt;path&gt; ...]]
+        [-mkdir [-p] &lt;path&gt; ...]
+        [-moveFromLocal &lt;localsrc&gt; ... &lt;dst&gt;]
+        [-moveToLocal &lt;src&gt; &lt;localdst&gt;]
+        [-mv &lt;src&gt; ... &lt;dst&gt;]
+        [-put [-f] [-p] [-l] &lt;localsrc&gt; ... &lt;dst&gt;]
+        [-renameSnapshot &lt;snapshotDir&gt; &lt;oldName&gt; &lt;newName&gt;]
+        [-rm [-f] [-r|-R] [-skipTrash] &lt;src&gt; ...]
+        [-rmdir [--ignore-fail-on-non-empty] &lt;dir&gt; ...]
+        [-setfacl [-R] [{-b|-k} {-m|-x &lt;acl_spec&gt;} &lt;path&gt;]|[--set &lt;acl_spec&gt; &lt;path&gt;]]
+        [-setfattr {-n name [-v value] | -x name} &lt;path&gt;]
+        [-setrep [-R] [-w] &lt;rep&gt; &lt;path&gt; ...]
+        [-stat [format] &lt;path&gt; ...]
+        [-tail [-f] &lt;file&gt;]
+        [-test -[defsz] &lt;path&gt;]
+        [-text [-ignoreCrc] &lt;src&gt; ...]
+        [-touchz &lt;path&gt; ...]
+        [-usage [cmd ...]]
+</code></pre></div></div>
+
+<ul>
+  <li>hadoop fs -ls/ 查看文件列表</li>
+  <li>上传文件到HDFS
+    <ol>
+      <li>hadoop fs -copyFromLocal LICENSE.txt / 上传文件</li>
+      <li>hadoop fs -moveFromLocal LICENSE.txt / 上传文件,本地的就没了</li>
+      <li>hadoop fs -put ReadMe.md / 将ReadMe.md文件上传到HDFS的根目录</li>
+    </ol>
+  </li>
+  <li>下载文件
+    <ol>
+      <li>hadoop fs -get /ReadMe.md</li>
+      <li>hadoop fs -getmerge /hdfs-test ./t.txt 把几个文件和成一个文件下载</li>
+    </ol>
+  </li>
+  <li>hadoop fs -cat /ReadMe.md 读取根目录下的ReadMe.md文件(/ 不能少)</li>
+  <li>hadoop fs -text /ReadMe.md 读取</li>
+  <li>hadoop fs -mkdir /hdfs-test 创建目录</li>
+  <li>hadoop fs -mv /ReadMe.md /hdfs-test</li>
+  <li>hadoop fs -cp /hdfs-test/README.txt /hdfs-test/ReadMe.txt_back 拷贝文件</li>
+  <li>hadoop fs -rm / 删除单个文件</li>
+  <li>hadoop fs -rmdir /hdfs-test 删除不为空的目录</li>
+  <li>hadoop fs -rmr /hdfs-test = hadoop fs -rm -rf /hdfs-test 删除目录</li>
+  <li>hadoop fs -ls -R /hdfsapi/test 递归展示下面所有文件及文件夹</li>
+  <li>hadoop fs -ls  == hadoop fs -ls /usr/hadoop/</li>
+  <li>HDFS存储扩展
+    <ol>
+      <li>1file ==&gt; 1…n block ==&gt; 存放在不同的节点上</li>
+      <li>文件存放目录(/home/hadoop/app/tmp/dfs/data/current/BP-1458152468-127.0.0.1-1559113660087/current/finalized/subdir0/subdir0)</li>
+      <li>将所有的块按照顺序打包下来 cat block001 testfile, cat blockoo1 testfile…   后续testfile是一个完整的文件</li>
+    </ol>
+  </li>
+</ul>
+
+
+                <hr>
+
+                
+
+
+                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="/YaPiBlog/2018/05/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E7%8A%B6%E6%80%81%E6%A8%A1%E5%BC%8F/" data-toggle="tooltip" data-placement="top" title="设计模式-行为型-状态模式">&larr; Previous Post</a>
+                    </li>
+                    
+                    
+                    <li class="next">
+                        <a href="/YaPiBlog/2019/06/20/Hadoop-base/" data-toggle="tooltip" data-placement="top" title="Hadoop基础">Next Post &rarr;</a>
+                    </li>
+                    
+                </ul>
+
+
+                
+
+                
+
+            </div>
+
+    <!-- Sidebar Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+                <section>
+                    <hr class="hidden-sm hidden-xs">
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+        				
+                            
+                				<a href="/YaPiBlog/tags/#JVM" title="JVM" rel="7">
+                                    JVM
+                                </a>
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#docker" title="docker" rel="4">
+                                    docker
+                                </a>
+                            
+        				
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#mongodb" title="mongodb" rel="4">
+                                    mongodb
+                                </a>
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#redis" title="redis" rel="5">
+                                    redis
+                                </a>
+                            
+        				
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#golang" title="golang" rel="12">
+                                    golang
+                                </a>
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#设计模式" title="设计模式" rel="24">
+                                    设计模式
+                                </a>
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#大数据" title="大数据" rel="5">
+                                    大数据
+                                </a>
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#数据结构" title="数据结构" rel="11">
+                                    数据结构
+                                </a>
+                            
+        				
+        			</div>
+                </section>
+                
+
+                <!-- Friends Blog -->
+                
+                <hr>
+                <h5>FRIENDS</h5>
+                <ul class="list-inline">
+                    
+                        <li><a href="http://server.scncys.cn">YaPi Blog</a></li>
+                    
+                </ul>
+                
+            </div>
+        </div>
+    </div>
+</article>
+
+
+
+
+
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("http://cdn.bootcss.com/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'always',
+          placement: 'right',
+          icon: '#'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading').remove('.sidebar-container h5');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
+
+
+
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                    
+                    
+
+                    <!-- add Weibo, Zhihu by Hux, add target = "_blank" to <a> by Hux -->
+                    
+                    
+
+
+                    
+                    
+                </ul>
+
+                <p class="copyright text-muted">
+                    蜀ICP备18030170号-2    Copyright &copy; YaPiBlog 2019
+                    <br>
+
+                    <!---->
+                    <!--Theme by <a href="http://huangxuan.me">Hux</a> |-->
+                    <!--<iframe-->
+                        <!--style="margin-left: 2px; margin-bottom:-5px;"-->
+                        <!--frameborder="0" scrolling="0" width="91px" height="20px"-->
+                        <!--src="https://ghbtns.com/github-btn.html?user=huxpro&repo=huxpro.github.io&type=star&count=true" >-->
+                    <!--</iframe>-->
+
+
+                </p>
+
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/YaPiBlog/js/jquery.min.js "></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="/YaPiBlog/js/bootstrap.min.js "></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/YaPiBlog/js/yapi-blog.min.js "></script>
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- 
+     Because of the native support for backtick-style fenced code blocks 
+     right within the Markdown is landed in Github Pages, 
+     From V1.6, There is no need for Highlight.js, 
+     so Huxblog drops it officially.
+
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0  
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/    
+-->
+<!--
+    <script>
+        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
+            hljs.initHighlightingOnLoad();
+        })
+    </script>
+    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+-->
+
+
+<!-- jquery.tagcloud.js -->
+<script>
+    // only load tagcloud.js in tag.html
+    if($('#tag_cloud').length !== 0){
+        async("/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                //size: {start: 1, end: 1, unit: 'em'},
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+<!--fastClick.js -->
+<script>
+    async("http://cdn.bootcss.com/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+
+
+<!-- Baidu Tongji -->
+
+
+
+
+<!-- Image to hack wechat -->
+<!--<img src="../img/icon_wechat.png" width="0" height="0" />-->
+<!-- Migrate from head to bottom, no longer block render and still work -->
+
+</body>
+
+</html>

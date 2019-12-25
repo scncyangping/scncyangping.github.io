@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="keyword"  content="">
+    <link rel="shortcut icon" href="/YaPiBlog/img/favicon.ico">
+
+    <title>JVM高级特性-线程同步及锁优化 - YaPiBlog</title>
+
+    <link rel="canonical" href="http://localhost:4000/YaPiBlog/2017/04/21/JVM07/">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/YaPiBlog/css/bootstrap.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/YaPiBlog/css/yapi-blog.min.css">
+
+    <!-- Pygments Github CSS -->
+    <link rel="stylesheet" href="/YaPiBlog/css/syntax.css">
+
+    <!-- Custom Fonts -->
+    <!-- <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <link href="http://cdn.staticfile.org/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+
+    <!-- Hux Delete, sad but pending in China
+    <link href='http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/
+    css'>
+    -->
+
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- ga & ba script hoook -->
+    <script></script>
+</head>
+
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <!--<a class="navbar-brand" href="/YaPiBlog/">YaPiBlog</a>-->
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <!-- Known Issue, found by Hux:
+            <nav>'2019-06-20-HDFS-base.markdown height woule be hold on by its content.
+            so, when navbar scale out, the <nav> will cover tags.
+            also mask any touch event of tags, unfortunately.
+        -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <!--
+                     <li>
+                         <a href="/YaPiBlog/"><span style="font-size: 20px">主页</span></a>
+                     </li>
+
+                     <li>
+                         <a href="/YaPiBlog/tags"><span style="font-size: 20px">分类</span></a>
+                     </li>
+
+                     <li>
+                         <a href="/YaPiBlog/about/"><span style="font-size: 20px">关于</span></a>
+                     </li>
+                    -->
+
+                    <li>
+                        <a href="/YaPiBlog/">Home</a>
+                    </li>
+                     
+                     <li>
+                         <a href="/YaPiBlog/about/">ABOUT</a>
+                     </li>
+                     
+                     <li>
+                         <a href="/YaPiBlog/tags/">Tags</a>
+                     </li>
+                     
+
+
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        // CLOSE
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        // OPEN
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+    <!-- Image to hack wechat -->
+<!-- <img src="/img/icon_wechat.png" width="0" height="0"> -->
+<!-- <img src="/YaPiBlog/" width="0" height="0"> -->
+
+<!-- Post Header -->
+<style type="text/css">
+    header.intro-header{
+        background-image: url('/YaPiBlog/')
+    }
+</style>
+<header class="intro-header" >
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                        <a class="tag" href="/YaPiBlog/tags/#JVM" title="JVM">JVM</a>
+                        
+                    </div>
+                    <h1>JVM高级特性-线程同步及锁优化</h1>
+                    
+                    
+                    <h2 class="subheading"></h2>
+                    
+                    <span class="meta">Posted by YaPi on April 21, 2017</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+
+    <!-- Post Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+				<h4 id="线程安全实现">线程安全实现</h4>
+
+<h5 id="互斥同步">互斥同步</h5>
+<p>主要实现方式：临界区、互斥量和信号量都是主要的互斥实现方式</p>
+
+<p>在java中，最基本的同步手段就是synchronized关键字，synchronized关键字在经过编译过后，会在同步块前后分别形成monitorenter和monitorexit两个字节码指令。这两个指令都需要一个reference类型的参数来指明要锁定和解锁的对象。指定了对象参数就取对应对象参数，没有指定就根据修饰的是实例方法还是类方法，去取对应的对象实例或Class对象来作为锁对象。</p>
+
+<p>java的线程是映射到操作系统的原生线程之上的，如果要阻塞或者唤醒一个线程，都需要操作系统帮忙完成，这就需要从用户态转换到核心态中，状态转换花费的时间通常比较长，所以，虚拟机本身会进行一些优化，比如，再通知操作系统阻塞线程之前加入一段自旋等待过程，避免频繁的切入到核心态之中</p>
+
+<p>还可以使用ReentrantLock来实现同步，ReentrantLock表现为API层面上得互斥锁(lock()和unlock()方法配合try/finally语句块来完成)，另一个表现为原生语法层面得互斥。同时具有三项高级功能：等待可中断、可实现公平锁、以及锁可以绑定多个条件</p>
+
+<p>等待可中断是指持有锁在长期获取不到锁得时候，可以选择放弃等待，改为处理其他事情。</p>
+
+<p>公平锁是指获取锁得顺序和申请锁得时间顺序绑定，ReentrantLock默认是公平锁</p>
+
+<p>绑定多个条件是指ReentrantLock可以同时绑定多个condition对象。</p>
+
+<h5 id="非阻塞同步">非阻塞同步</h5>
+<p>互斥同步是一种悲观的并发策略，无论共享数据是否真的会出现竞争，它都要进行加锁。这样会对性能产生严重得影响。所以就有了乐观得并发策略，非阻塞同步。它是一种基于冲突检测的策略(依靠硬件得发展–原子操作的实现)</p>
+
+<p>最主要得硬件指令支持 CAS (compare and swap)，1.5之后支持。</p>
+
+<p>CAS需要3个操作数，分别是内存位置，旧得预期值和新值。在执行指令时，当且仅当内存位置得值是旧得预期值时，才更新为新值</p>
+
+<p>CAS得ABA问题：原位置得值被修改为其他值了，在比较判断得时候又改回了原来的值，但是CAS操作还是会成功。</p>
+
+<h4 id="锁优化">锁优化</h4>
+<p>jdk1.5到jdk1.6得一个重要改进就是高效并发。HotSpot虚拟机开发团队优化了各种锁，如：自适应自旋、锁消除、锁粗话、轻量级锁和偏向锁等</p>
+<h5 id="自旋和自适应自旋">自旋和自适应自旋</h5>
+<p>互斥同步对性能最大得影响是阻塞得实现，挂起和恢复线程的操作都需要转入到内核态完成，这些操作非常耗时。同时，在多数情况下，共享数据得锁定状态只会持续很短的一段时间，为了这段时间取挂起和恢复线程并不值得。在这种情况下，若有两个线程在请求一个锁，其中一个获得了，就可以让另外一个稍等一下，但不放弃处理器执行时间，看看持有锁得线程是否很快就释放锁。这种技术就是自旋锁。</p>
+
+<p>自旋锁并不能完全代替阻塞，有些情况，因为自旋还是会消耗cpu资源的，若锁持有者长时间不释放锁，那么就会造成无谓的消耗。所以默认自旋次数10次，可设置。</p>
+
+<p>自适应自旋，意味着自旋的时间不再固定了，而是由前一次在同一个锁上的自旋时间及锁的拥有者的状态来决定。若果某个自旋锁前面获取到了锁，那么他会认为接下来的自旋锁也有机会获得锁，会允许其自旋更长的时间。若很少成功过，那么后续就会忽略调自旋过程。</p>
+
+<h5 id="轻量级锁与偏向锁">轻量级锁与偏向锁</h5>
+
+<p>在没有多线程竞争的前提下，减少系统互斥量操作产生的性能消耗</p>
+
+<p>实现主要依赖于对象头里的数据。我们知道，对象头(Mark  Word)内部主要有两部分数据，一部分存储GC分代年龄，哈希吗等，另一部分存储指向方法区该对象类型数据的指针，如果是数组对象的话还会有一个额外的部分用于存储数组长度。</p>
+
+<p>当代码进入同步块时，若该对象的对象头对应标志对象锁定状态为未锁定状态时，虚拟机将在当前线程中创建一个Mark Word的拷贝。然后，采用CAS操作尝试讲对象的Mark Word 更新为指向该拷贝的指针，若成功，则该对象拥有了对象的锁。并且对象的Mark Word的锁标志位会变为00，及表示当前对象处于轻量级锁定状态。若更新失败，判断该对象的Mark Word是否指向当前线程的栈帧，若是，则证明已经获取了锁，则可继续执行，否则，说明这个对象已被别人占领，同时有两条以上的线程竞争锁时，轻量级锁不再有效，膨胀为重量级锁，锁标志为变为10，Mark Word中存储的就是指向重量级锁(互斥量)的指针，后面等待锁的线程也要进入阻塞状态。</p>
+
+<p>解锁的过程是一样的，使用CAS操作去替换对象的Mark Word为线程栈帧的记录，若失败了，说明有其他线程尝试过获取该锁，那就要在释放锁的同时，唤醒被挂起的线程。</p>
+
+<h5 id="偏向锁">偏向锁</h5>
+
+<p>经过研究发现，大多数情况下，锁不仅不存在多线程竞争，而且总是由同一线程多次获得，为了让线程获得锁的代价更低而引人了偏向锁</p>
+
+<p>锁会偏向第一个获得它的线程，如果在接下来的执行过程中，该锁没有被其他的线程获取，则持有偏向锁的线程将永远不需要再进行同步。</p>
+
+<ol>
+  <li>当锁对象第一次被线程获取的时候，虚拟机会将对象头中的锁标志位置为 “01”(偏向模式)</li>
+  <li>同时，使用CAS操作，把获取到这个锁的线程的ID记录在对象的Mark Word中</li>
+  <li>如果 CAS成功，持有偏向锁的线程每次进入这个锁相关的同步块时，虚拟机可以不进行任何同步操作</li>
+</ol>
+
+<p>若此时有其他线程争夺锁</p>
+
+<ol>
+  <li>首先暂停拥有偏向锁的线程</li>
+  <li>然后检查持有偏向锁的线程是否活着
+    <ol>
+      <li>不活跃，将对象头设置成无锁状态 (标志位”01”，但不可偏向)</li>
+      <li>活跃
+        <ol>
+          <li>CAS成功，重新偏向，更改线程ID</li>
+          <li>失败，恢复成无锁状态，或者变成轻量级锁定状态。</li>
+        </ol>
+      </li>
+    </ol>
+  </li>
+</ol>
+
+<h4 id="逃逸分析">逃逸分析</h4>
+
+<p>当一个对象再方法中被定义后，它可能北外部方法所引用，例如作为调用参数传递到其他方法中，成为方法逃逸。甚至还有可能被外部线程访问到，譬如赋值给类变量或可以再其他线程中访问的实例变量，称为线程逃逸。如果能证明一个对象不会逃逸到方法或线程之外，也就是别的方法或线程无法通过任何途径访问到这个对象，则可能为这个变量进行一些优化。比如：</p>
+
+<ol>
+  <li>栈上分配，在栈上分配这个对象，那么大量对象会随着入栈和出栈被销毁，不用等到垃圾回收</li>
+  <li>同步消除：如果能确认一个变量不会逃逸出线程，那么这个变量就不会有竞争，对这个变量的同步措施就可以清除掉</li>
+  <li>标量替换：java中的原始数据类型都不能再进一步分解，这种可以称为标量。其他的被称为聚合量。比如对象，就是一个标准的聚合量。把一个对象拆散，根据程序访问的情况，将其使用到的成员变量恢复原始类型来访问就叫做标量替换。若逃逸分析一个对象不会北外部访问，并且这个对象可以被拆散，那程序真正执行的时候可能不创建这个对象，而改为直接创建它的若干个被方法使用到的成员变量来代替。那这一部分变量，就可以使用栈上分配了</li>
+</ol>
+
+
+                <hr>
+
+                
+
+
+                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="/YaPiBlog/2017/04/20/JVM06/" data-toggle="tooltip" data-placement="top" title="JVM高级特性-内存模型与线程">&larr; Previous Post</a>
+                    </li>
+                    
+                    
+                    <li class="next">
+                        <a href="/YaPiBlog/2018/01/12/docker-base/" data-toggle="tooltip" data-placement="top" title="docker基础">Next Post &rarr;</a>
+                    </li>
+                    
+                </ul>
+
+
+                
+
+                
+
+            </div>
+
+    <!-- Sidebar Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+                <section>
+                    <hr class="hidden-sm hidden-xs">
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+        				
+                            
+                				<a href="/YaPiBlog/tags/#JVM" title="JVM" rel="7">
+                                    JVM
+                                </a>
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#docker" title="docker" rel="4">
+                                    docker
+                                </a>
+                            
+        				
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#mongodb" title="mongodb" rel="4">
+                                    mongodb
+                                </a>
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#redis" title="redis" rel="5">
+                                    redis
+                                </a>
+                            
+        				
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#golang" title="golang" rel="12">
+                                    golang
+                                </a>
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#设计模式" title="设计模式" rel="24">
+                                    设计模式
+                                </a>
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#大数据" title="大数据" rel="5">
+                                    大数据
+                                </a>
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#数据结构" title="数据结构" rel="11">
+                                    数据结构
+                                </a>
+                            
+        				
+        			</div>
+                </section>
+                
+
+                <!-- Friends Blog -->
+                
+                <hr>
+                <h5>FRIENDS</h5>
+                <ul class="list-inline">
+                    
+                        <li><a href="http://server.scncys.cn">YaPi Blog</a></li>
+                    
+                </ul>
+                
+            </div>
+        </div>
+    </div>
+</article>
+
+
+
+
+
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("http://cdn.bootcss.com/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'always',
+          placement: 'right',
+          icon: '#'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading').remove('.sidebar-container h5');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
+
+
+
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                    
+                    
+
+                    <!-- add Weibo, Zhihu by Hux, add target = "_blank" to <a> by Hux -->
+                    
+                    
+
+
+                    
+                    
+                </ul>
+
+                <p class="copyright text-muted">
+                    蜀ICP备18030170号-2    Copyright &copy; YaPiBlog 2019
+                    <br>
+
+                    <!---->
+                    <!--Theme by <a href="http://huangxuan.me">Hux</a> |-->
+                    <!--<iframe-->
+                        <!--style="margin-left: 2px; margin-bottom:-5px;"-->
+                        <!--frameborder="0" scrolling="0" width="91px" height="20px"-->
+                        <!--src="https://ghbtns.com/github-btn.html?user=huxpro&repo=huxpro.github.io&type=star&count=true" >-->
+                    <!--</iframe>-->
+
+
+                </p>
+
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/YaPiBlog/js/jquery.min.js "></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="/YaPiBlog/js/bootstrap.min.js "></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/YaPiBlog/js/yapi-blog.min.js "></script>
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- 
+     Because of the native support for backtick-style fenced code blocks 
+     right within the Markdown is landed in Github Pages, 
+     From V1.6, There is no need for Highlight.js, 
+     so Huxblog drops it officially.
+
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0  
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/    
+-->
+<!--
+    <script>
+        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
+            hljs.initHighlightingOnLoad();
+        })
+    </script>
+    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+-->
+
+
+<!-- jquery.tagcloud.js -->
+<script>
+    // only load tagcloud.js in tag.html
+    if($('#tag_cloud').length !== 0){
+        async("/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                //size: {start: 1, end: 1, unit: 'em'},
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+<!--fastClick.js -->
+<script>
+    async("http://cdn.bootcss.com/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+
+
+<!-- Baidu Tongji -->
+
+
+
+
+<!-- Image to hack wechat -->
+<!--<img src="../img/icon_wechat.png" width="0" height="0" />-->
+<!-- Migrate from head to bottom, no longer block render and still work -->
+
+</body>
+
+</html>

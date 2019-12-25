@@ -1,0 +1,79 @@
+---
+layout:     post
+title:      "设计模式-行为型-命令模式"
+subtitle:   ""
+date:       2018-05-10 12:20:00
+author:     "YaPi"
+header-img: ""
+tags:
+    - 设计模式
+---
+#### 基础与定义
+
+- 将“请求”封装成对象，以便使用不同的请求
+- 解决了应用程序中对象的职责以及它们之间的通信
+
+下命令的对象只需要知道要下的命令，不需要知道命令如何执行
+
+
+#### 代码实例
+我们现在假设有一个遥控器，作为请求发送者，一个电灯泡，作为请求接受者，还有请求类和电灯泡请求类
+
+
+```
+// 电灯
+public class Bubble {
+
+	public void on(){
+		System.out.println("bubble on");
+	}
+}
+
+// 命令抽象类
+public abstract class Command {
+
+	public abstract void execute();
+}
+
+// 电灯请求类
+public class BubbleCommand extends Command {
+
+	Bubble bubble=null;
+	public BubbleCommand(Bubble bubble) {
+		this.bubble=bubble;
+	}
+
+
+	public void setBubble(Bubble bubble) {
+		this.bubble = bubble;
+	}
+
+	@Override
+	public void execute() {
+		bubble.on();
+
+	}
+ }
+
+
+ public class RemoteControl {
+
+	Command command=null;
+
+	public RemoteControl(Command command) {
+		this.command=command;
+	}
+
+	public void action() {
+		command.execute();
+	}
+ }
+
+ // 使用
+
+ public static void main(String[] args) {
+	BubbleCommand command=new BubbleCommand(new Bubble());
+	RemoteControl remoteControl=new RemoteControl(command);
+	remoteControl.action();
+}
+```

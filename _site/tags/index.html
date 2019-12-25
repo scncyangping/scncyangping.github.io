@@ -1,0 +1,1862 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="keyword"  content="">
+    <link rel="shortcut icon" href="/YaPiBlog/img/favicon.ico">
+
+    <title>Tags - YaPiBlog</title>
+
+    <link rel="canonical" href="http://localhost:4000/YaPiBlog/tags/">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/YaPiBlog/css/bootstrap.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/YaPiBlog/css/yapi-blog.min.css">
+
+    <!-- Pygments Github CSS -->
+    <link rel="stylesheet" href="/YaPiBlog/css/syntax.css">
+
+    <!-- Custom Fonts -->
+    <!-- <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <link href="http://cdn.staticfile.org/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+
+    <!-- Hux Delete, sad but pending in China
+    <link href='http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/
+    css'>
+    -->
+
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- ga & ba script hoook -->
+    <script></script>
+</head>
+
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <!--<a class="navbar-brand" href="/YaPiBlog/">YaPiBlog</a>-->
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <!-- Known Issue, found by Hux:
+            <nav>'2019-06-20-HDFS-base.markdown height woule be hold on by its content.
+            so, when navbar scale out, the <nav> will cover tags.
+            also mask any touch event of tags, unfortunately.
+        -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <!--
+                     <li>
+                         <a href="/YaPiBlog/"><span style="font-size: 20px">主页</span></a>
+                     </li>
+
+                     <li>
+                         <a href="/YaPiBlog/tags"><span style="font-size: 20px">分类</span></a>
+                     </li>
+
+                     <li>
+                         <a href="/YaPiBlog/about/"><span style="font-size: 20px">关于</span></a>
+                     </li>
+                    -->
+
+                    <li>
+                        <a href="/YaPiBlog/">Home</a>
+                    </li>
+                     
+                     <li>
+                         <a href="/YaPiBlog/about/">ABOUT</a>
+                     </li>
+                     
+                     <li>
+                         <a href="/YaPiBlog/tags/">Tags</a>
+                     </li>
+                     
+
+
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        // CLOSE
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        // OPEN
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+    <!-- Page Header -->
+<header class="intro-header" style="background-image: url('/YaPiBlog/img/jianke.jpeg')">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="site-heading" id="tag-heading">
+                    <h1>Tags</h1>
+                    <span class="subheading"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Main Content -->
+<div class="container">
+	<div class="row">
+		<div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+            <!-- 标签云 -->
+			<div id='tag_cloud' class="tags">
+				
+				<a href="#JVM" title="JVM" rel="7">JVM</a>
+				
+				<a href="#docker" title="docker" rel="4">docker</a>
+				
+				<a href="#Kubernetes" title="Kubernetes" rel="3">Kubernetes</a>
+				
+				<a href="#mongodb" title="mongodb" rel="4">mongodb</a>
+				
+				<a href="#redis" title="redis" rel="5">redis</a>
+				
+				<a href="#mysql" title="mysql" rel="3">mysql</a>
+				
+				<a href="#golang" title="golang" rel="12">golang</a>
+				
+				<a href="#设计模式" title="设计模式" rel="24">设计模式</a>
+				
+				<a href="#大数据" title="大数据" rel="5">大数据</a>
+				
+				<a href="#数据结构" title="数据结构" rel="11">数据结构</a>
+				
+			</div>
+
+            <!-- 标签列表 -->
+			
+			<div class="one-tag-list">
+			  	<span class="fa fa-tag listing-seperator" id="JVM">
+                    <span class="tag-text">JVM</span>
+                </span>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2017-04-21">2017-04-21</time>
+				  <a href="/2017/04/21/JVM07/" title="JVM高级特性-线程同步及锁优化">JVM高级特性-线程同步及锁优化</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/YaPiBlog/2017/04/21/JVM07/">
+				        <h2 class="post-title">
+                            JVM高级特性-线程同步及锁优化
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2017-04-21</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2017-04-20">2017-04-20</time>
+				  <a href="/2017/04/20/JVM06/" title="JVM高级特性-内存模型与线程">JVM高级特性-内存模型与线程</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/YaPiBlog/2017/04/20/JVM06/">
+				        <h2 class="post-title">
+                            JVM高级特性-内存模型与线程
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2017-04-20</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2017-04-19">2017-04-19</time>
+				  <a href="/2017/04/19/JVM05/" title="JVM高级特性-虚拟机执行引擎">JVM高级特性-虚拟机执行引擎</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/YaPiBlog/2017/04/19/JVM05/">
+				        <h2 class="post-title">
+                            JVM高级特性-虚拟机执行引擎
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2017-04-19</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2017-04-18">2017-04-18</time>
+				  <a href="/2017/04/18/JVM04/" title="JVM高级特性-虚拟机执行子系统">JVM高级特性-虚拟机执行子系统</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/YaPiBlog/2017/04/18/JVM04/">
+				        <h2 class="post-title">
+                            JVM高级特性-虚拟机执行子系统
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2017-04-18</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2017-04-17">2017-04-17</time>
+				  <a href="/2017/04/17/JVM03/" title="JVM高级特性-垃圾收集与内存分配策略">JVM高级特性-垃圾收集与内存分配策略</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/YaPiBlog/2017/04/17/JVM03/">
+				        <h2 class="post-title">
+                            JVM高级特性-垃圾收集与内存分配策略
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2017-04-17</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2017-04-16">2017-04-16</time>
+				  <a href="/2017/04/16/JVM02/" title="JVM高级特性-自动内存管理机制">JVM高级特性-自动内存管理机制</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/YaPiBlog/2017/04/16/JVM02/">
+				        <h2 class="post-title">
+                            JVM高级特性-自动内存管理机制
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2017-04-16</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2017-04-15">2017-04-15</time>
+				  <a href="/2017/04/15/JVM01/" title="JVM高级特性-关于JAVA">JVM高级特性-关于JAVA</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/YaPiBlog/2017/04/15/JVM01/">
+				        <h2 class="post-title">
+                            JVM高级特性-关于JAVA
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2017-04-15</p> -->
+				</div>
+				<hr>
+				
+			</div>
+			
+			<div class="one-tag-list">
+			  	<span class="fa fa-tag listing-seperator" id="docker">
+                    <span class="tag-text">docker</span>
+                </span>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2018-01-12">2018-01-12</time>
+				  <a href="/2018/01/12/docker-CICD/" title="CI/CD">CI/CD</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/YaPiBlog/2018/01/12/docker-CICD/">
+				        <h2 class="post-title">
+                            CI/CD
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2018-01-12</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2018-01-12">2018-01-12</time>
+				  <a href="/2018/01/12/docker-%E7%A7%81%E6%9C%89%E9%95%9C%E5%83%8F%E4%BB%93%E5%BA%93%E6%90%AD%E5%BB%BA/" title="docker私有镜像仓库搭建">docker私有镜像仓库搭建</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/YaPiBlog/2018/01/12/docker-%E7%A7%81%E6%9C%89%E9%95%9C%E5%83%8F%E4%BB%93%E5%BA%93%E6%90%AD%E5%BB%BA/">
+				        <h2 class="post-title">
+                            docker私有镜像仓库搭建
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2018-01-12</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2018-01-12">2018-01-12</time>
+				  <a href="/2018/01/12/docker-swarm-%E7%BD%91%E7%BB%9C/" title="docker网络 + docker-swarm">docker网络 + docker-swarm</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/YaPiBlog/2018/01/12/docker-swarm-%E7%BD%91%E7%BB%9C/">
+				        <h2 class="post-title">
+                            docker网络 + docker-swarm
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2018-01-12</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2018-01-12">2018-01-12</time>
+				  <a href="/2018/01/12/docker-base/" title="docker基础">docker基础</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/YaPiBlog/2018/01/12/docker-base/">
+				        <h2 class="post-title">
+                            docker基础
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2018-01-12</p> -->
+				</div>
+				<hr>
+				
+			</div>
+			
+			<div class="one-tag-list">
+			  	<span class="fa fa-tag listing-seperator" id="Kubernetes">
+                    <span class="tag-text">Kubernetes</span>
+                </span>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2018-01-12">2018-01-12</time>
+				  <a href="/2018/01/12/k8s%E5%9F%BA%E7%A1%80-%E8%B5%84%E6%BA%90%E5%AF%B9%E8%B1%A1/" title="K8S基础-资源对象">K8S基础-资源对象</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/YaPiBlog/2018/01/12/k8s%E5%9F%BA%E7%A1%80-%E8%B5%84%E6%BA%90%E5%AF%B9%E8%B1%A1/">
+				        <h2 class="post-title">
+                            K8S基础-资源对象
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2018-01-12</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2018-01-12">2018-01-12</time>
+				  <a href="/2018/01/12/k8s-%E5%9F%BA%E6%9C%AC%E5%91%BD%E4%BB%A4/" title="K8S基本命令">K8S基本命令</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/YaPiBlog/2018/01/12/k8s-%E5%9F%BA%E6%9C%AC%E5%91%BD%E4%BB%A4/">
+				        <h2 class="post-title">
+                            K8S基本命令
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2018-01-12</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2018-01-12">2018-01-12</time>
+				  <a href="/2018/01/12/k8s-1.16.1-kubeadm/" title="k8s-v1.16.1安装(kubeadm)">k8s-v1.16.1安装(kubeadm)</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/YaPiBlog/2018/01/12/k8s-1.16.1-kubeadm/">
+				        <h2 class="post-title">
+                            k8s-v1.16.1安装(kubeadm)
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2018-01-12</p> -->
+				</div>
+				<hr>
+				
+			</div>
+			
+			<div class="one-tag-list">
+			  	<span class="fa fa-tag listing-seperator" id="mongodb">
+                    <span class="tag-text">mongodb</span>
+                </span>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2018-04-12">2018-04-12</time>
+				  <a href="/2018/04/12/mongo-ha/" title="MongoDB复制、副本集、分片集群">MongoDB复制、副本集、分片集群</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/YaPiBlog/2018/04/12/mongo-ha/">
+				        <h2 class="post-title">
+                            MongoDB复制、副本集、分片集群
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2018-04-12</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2018-04-12">2018-04-12</time>
+				  <a href="/2018/04/12/mongo-%E5%A4%87%E4%BB%BD/" title="MongoDB备份">MongoDB备份</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/YaPiBlog/2018/04/12/mongo-%E5%A4%87%E4%BB%BD/">
+				        <h2 class="post-title">
+                            MongoDB备份
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2018-04-12</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2018-04-12">2018-04-12</time>
+				  <a href="/2018/04/12/mongo-%E8%AF%BB%E5%86%99%E5%88%86%E7%A6%BB/" title="MongoDB读写分离">MongoDB读写分离</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/YaPiBlog/2018/04/12/mongo-%E8%AF%BB%E5%86%99%E5%88%86%E7%A6%BB/">
+				        <h2 class="post-title">
+                            MongoDB读写分离
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2018-04-12</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2018-04-12">2018-04-12</time>
+				  <a href="/2018/04/12/mongo-base/" title="MongoDB基础知识点">MongoDB基础知识点</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/YaPiBlog/2018/04/12/mongo-base/">
+				        <h2 class="post-title">
+                            MongoDB基础知识点
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2018-04-12</p> -->
+				</div>
+				<hr>
+				
+			</div>
+			
+			<div class="one-tag-list">
+			  	<span class="fa fa-tag listing-seperator" id="redis">
+                    <span class="tag-text">redis</span>
+                </span>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2018-04-13">2018-04-13</time>
+				  <a href="/2018/04/13/redis-%E6%80%A7%E8%83%BD%E8%B0%83%E4%BC%98/" title="Redis性能调优">Redis性能调优</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/YaPiBlog/2018/04/13/redis-%E6%80%A7%E8%83%BD%E8%B0%83%E4%BC%98/">
+				        <h2 class="post-title">
+                            Redis性能调优
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2018-04-13</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2018-04-13">2018-04-13</time>
+				  <a href="/2018/04/13/redis-%E5%93%A8%E5%85%B5/" title="Redis哨兵">Redis哨兵</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/YaPiBlog/2018/04/13/redis-%E5%93%A8%E5%85%B5/">
+				        <h2 class="post-title">
+                            Redis哨兵
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2018-04-13</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2018-04-13">2018-04-13</time>
+				  <a href="/2018/04/13/redis-%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6/" title="Redis主从复制、分片">Redis主从复制、分片</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/YaPiBlog/2018/04/13/redis-%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6/">
+				        <h2 class="post-title">
+                            Redis主从复制、分片
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2018-04-13</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2018-04-13">2018-04-13</time>
+				  <a href="/2018/04/13/redis-%E6%8C%81%E4%B9%85%E5%8C%96/" title="Redis持久化">Redis持久化</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/YaPiBlog/2018/04/13/redis-%E6%8C%81%E4%B9%85%E5%8C%96/">
+				        <h2 class="post-title">
+                            Redis持久化
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2018-04-13</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2018-04-13">2018-04-13</time>
+				  <a href="/2018/04/13/redis-base/" title="Redis基础命令及内存划分">Redis基础命令及内存划分</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/YaPiBlog/2018/04/13/redis-base/">
+				        <h2 class="post-title">
+                            Redis基础命令及内存划分
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2018-04-13</p> -->
+				</div>
+				<hr>
+				
+			</div>
+			
+			<div class="one-tag-list">
+			  	<span class="fa fa-tag listing-seperator" id="mysql">
+                    <span class="tag-text">mysql</span>
+                </span>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2018-04-14">2018-04-14</time>
+				  <a href="/2018/04/14/mysql-%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6/" title="Mysql主从复制">Mysql主从复制</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/YaPiBlog/2018/04/14/mysql-%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6/">
+				        <h2 class="post-title">
+                            Mysql主从复制
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2018-04-14</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2018-04-14">2018-04-14</time>
+				  <a href="/2018/04/14/mysql-%E7%B4%A2%E5%BC%95/" title="Mysql 索引">Mysql 索引</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/YaPiBlog/2018/04/14/mysql-%E7%B4%A2%E5%BC%95/">
+				        <h2 class="post-title">
+                            Mysql 索引
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2018-04-14</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2018-04-14">2018-04-14</time>
+				  <a href="/2018/04/14/mysql-%E9%87%8D%E7%82%B9/" title="Mysql基础">Mysql基础</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/YaPiBlog/2018/04/14/mysql-%E9%87%8D%E7%82%B9/">
+				        <h2 class="post-title">
+                            Mysql基础
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2018-04-14</p> -->
+				</div>
+				<hr>
+				
+			</div>
+			
+			<div class="one-tag-list">
+			  	<span class="fa fa-tag listing-seperator" id="golang">
+                    <span class="tag-text">golang</span>
+                </span>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2019-08-28">2019-08-28</time>
+				  <a href="/2019/08/28/Golang-base-binfa-%E5%90%8C%E6%AD%A5-%E9%94%81/" title="Go并发编程 - (四)同步、锁">Go并发编程 - (四)同步、锁</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/YaPiBlog/2019/08/28/Golang-base-binfa-%E5%90%8C%E6%AD%A5-%E9%94%81/">
+				        <h2 class="post-title">
+                            Go并发编程 - (四)同步、锁
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2019-08-28</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2019-08-28">2019-08-28</time>
+				  <a href="/2019/08/28/Golang-base-binfa-Goroutine/" title="Go并发编程 - (三)Goroutine">Go并发编程 - (三)Goroutine</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/YaPiBlog/2019/08/28/Golang-base-binfa-Goroutine/">
+				        <h2 class="post-title">
+                            Go并发编程 - (三)Goroutine
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2019-08-28</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2019-08-28">2019-08-28</time>
+				  <a href="/2019/08/28/Golang-base-binfa-Go%E7%BA%BF%E7%A8%8B%E6%A8%A1%E5%9E%8B%E5%AE%9E%E7%8E%B0/" title="Go并发编程 - (二)Go线程模型实现">Go并发编程 - (二)Go线程模型实现</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/YaPiBlog/2019/08/28/Golang-base-binfa-Go%E7%BA%BF%E7%A8%8B%E6%A8%A1%E5%9E%8B%E5%AE%9E%E7%8E%B0/">
+				        <h2 class="post-title">
+                            Go并发编程 - (二)Go线程模型实现
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2019-08-28</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2019-08-28">2019-08-28</time>
+				  <a href="/2019/08/28/Golang-base-binfa-%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B%E5%9F%BA%E7%A1%80/" title="Go并发编程 - (一)并发编程基础">Go并发编程 - (一)并发编程基础</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/YaPiBlog/2019/08/28/Golang-base-binfa-%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B%E5%9F%BA%E7%A1%80/">
+				        <h2 class="post-title">
+                            Go并发编程 - (一)并发编程基础
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2019-08-28</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2019-08-18">2019-08-18</time>
+				  <a href="/2019/08/18/Golang-base-pkg-time/" title="Go标准库-time">Go标准库-time</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/YaPiBlog/2019/08/18/Golang-base-pkg-time/">
+				        <h2 class="post-title">
+                            Go标准库-time
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2019-08-18</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2019-08-18">2019-08-18</time>
+				  <a href="/2019/08/18/Golang-base-pkg-testing/" title="Go标准库-testing">Go标准库-testing</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/YaPiBlog/2019/08/18/Golang-base-pkg-testing/">
+				        <h2 class="post-title">
+                            Go标准库-testing
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2019-08-18</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2019-08-18">2019-08-18</time>
+				  <a href="/2019/08/18/Golang-base-pkg-os-sync-atomic/" title="Go标准库-进程、os、sync、atomic">Go标准库-进程、os、sync、atomic</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/YaPiBlog/2019/08/18/Golang-base-pkg-os-sync-atomic/">
+				        <h2 class="post-title">
+                            Go标准库-进程、os、sync、atomic
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2019-08-18</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2019-08-13">2019-08-13</time>
+				  <a href="/2019/08/13/Golang-base-pkg-strconv-regexp/" title="Golang标准库-strconv、regexp">Golang标准库-strconv、regexp</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/YaPiBlog/2019/08/13/Golang-base-pkg-strconv-regexp/">
+				        <h2 class="post-title">
+                            Golang标准库-strconv、regexp
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2019-08-13</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2019-08-13">2019-08-13</time>
+				  <a href="/2019/08/13/Golang-base-pkg-sort-container/" title="Golang标准库-sort、container">Golang标准库-sort、container</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/YaPiBlog/2019/08/13/Golang-base-pkg-sort-container/">
+				        <h2 class="post-title">
+                            Golang标准库-sort、container
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2019-08-13</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2019-08-13">2019-08-13</time>
+				  <a href="/2019/08/13/Golang-base-pkg-strings/" title="Golang标准库-strings">Golang标准库-strings</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/YaPiBlog/2019/08/13/Golang-base-pkg-strings/">
+				        <h2 class="post-title">
+                            Golang标准库-strings
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2019-08-13</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2018-04-15">2018-04-15</time>
+				  <a href="/2018/04/15/Go%E5%9C%A3%E7%BB%8F-%E6%95%B0%E6%8D%AE/" title="Go语言圣经(二)数据类型">Go语言圣经(二)数据类型</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/YaPiBlog/2018/04/15/Go%E5%9C%A3%E7%BB%8F-%E6%95%B0%E6%8D%AE/">
+				        <h2 class="post-title">
+                            Go语言圣经(二)数据类型
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2018-04-15</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2018-04-15">2018-04-15</time>
+				  <a href="/2018/04/15/Go%E5%9C%A3%E7%BB%8F-%E5%9F%BA%E7%A1%80/" title="Go语言圣经(一)基础知识">Go语言圣经(一)基础知识</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/YaPiBlog/2018/04/15/Go%E5%9C%A3%E7%BB%8F-%E5%9F%BA%E7%A1%80/">
+				        <h2 class="post-title">
+                            Go语言圣经(一)基础知识
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2018-04-15</p> -->
+				</div>
+				<hr>
+				
+			</div>
+			
+			<div class="one-tag-list">
+			  	<span class="fa fa-tag listing-seperator" id="设计模式">
+                    <span class="tag-text">设计模式</span>
+                </span>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2018-05-10">2018-05-10</time>
+				  <a href="/2018/05/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E7%8A%B6%E6%80%81%E6%A8%A1%E5%BC%8F/" title="设计模式-行为型-状态模式">设计模式-行为型-状态模式</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/YaPiBlog/2018/05/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E7%8A%B6%E6%80%81%E6%A8%A1%E5%BC%8F/">
+				        <h2 class="post-title">
+                            设计模式-行为型-状态模式
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2018-05-10</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2018-05-10">2018-05-10</time>
+				  <a href="/2018/05/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E8%AE%BF%E9%97%AE%E8%80%85%E6%A8%A1%E5%BC%8F/" title="设计模式-行为型-访问者模式">设计模式-行为型-访问者模式</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/YaPiBlog/2018/05/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E8%AE%BF%E9%97%AE%E8%80%85%E6%A8%A1%E5%BC%8F/">
+				        <h2 class="post-title">
+                            设计模式-行为型-访问者模式
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2018-05-10</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2018-05-10">2018-05-10</time>
+				  <a href="/2018/05/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E8%B4%A3%E4%BB%BB%E9%93%BE%E6%A8%A1%E5%BC%8F/" title="设计模式-行为型-责任链模式">设计模式-行为型-责任链模式</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/YaPiBlog/2018/05/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E8%B4%A3%E4%BB%BB%E9%93%BE%E6%A8%A1%E5%BC%8F/">
+				        <h2 class="post-title">
+                            设计模式-行为型-责任链模式
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2018-05-10</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2018-05-10">2018-05-10</time>
+				  <a href="/2018/05/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E4%B8%AD%E4%BB%8B%E8%80%85%E6%A8%A1%E5%BC%8F/" title="设计模式-行为型-中介者模式">设计模式-行为型-中介者模式</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/YaPiBlog/2018/05/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E4%B8%AD%E4%BB%8B%E8%80%85%E6%A8%A1%E5%BC%8F/">
+				        <h2 class="post-title">
+                            设计模式-行为型-中介者模式
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2018-05-10</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2018-05-10">2018-05-10</time>
+				  <a href="/2018/05/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E5%91%BD%E4%BB%A4%E6%A8%A1%E5%BC%8F/" title="设计模式-行为型-命令模式">设计模式-行为型-命令模式</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/YaPiBlog/2018/05/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E5%91%BD%E4%BB%A4%E6%A8%A1%E5%BC%8F/">
+				        <h2 class="post-title">
+                            设计模式-行为型-命令模式
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2018-05-10</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2018-05-10">2018-05-10</time>
+				  <a href="/2018/05/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E5%A4%87%E5%BF%98%E5%BD%95%E6%A8%A1%E5%BC%8F/" title="设计模式-行为型-备忘录模式">设计模式-行为型-备忘录模式</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/YaPiBlog/2018/05/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E5%A4%87%E5%BF%98%E5%BD%95%E6%A8%A1%E5%BC%8F/">
+				        <h2 class="post-title">
+                            设计模式-行为型-备忘录模式
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2018-05-10</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2018-05-10">2018-05-10</time>
+				  <a href="/2018/05/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E8%A7%82%E5%AF%9F%E8%80%85%E6%A8%A1%E5%BC%8F/" title="设计模式-行为型-观察者模式">设计模式-行为型-观察者模式</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/YaPiBlog/2018/05/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E8%A7%82%E5%AF%9F%E8%80%85%E6%A8%A1%E5%BC%8F/">
+				        <h2 class="post-title">
+                            设计模式-行为型-观察者模式
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2018-05-10</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2018-05-10">2018-05-10</time>
+				  <a href="/2018/05/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E8%A7%A3%E9%87%8A%E5%99%A8%E6%A8%A1%E5%BC%8F/" title="设计模式-行为型-解释器模式">设计模式-行为型-解释器模式</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/YaPiBlog/2018/05/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E8%A7%A3%E9%87%8A%E5%99%A8%E6%A8%A1%E5%BC%8F/">
+				        <h2 class="post-title">
+                            设计模式-行为型-解释器模式
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2018-05-10</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2018-05-10">2018-05-10</time>
+				  <a href="/2018/05/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E7%AD%96%E7%95%A5%E6%A8%A1%E5%BC%8F/" title="设计模式-行为型-策略模式">设计模式-行为型-策略模式</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/YaPiBlog/2018/05/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E7%AD%96%E7%95%A5%E6%A8%A1%E5%BC%8F/">
+				        <h2 class="post-title">
+                            设计模式-行为型-策略模式
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2018-05-10</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2018-05-10">2018-05-10</time>
+				  <a href="/2018/05/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E8%BF%AD%E4%BB%A3%E5%99%A8%E6%A8%A1%E5%BC%8F/" title="设计模式-行为型-迭代器模式">设计模式-行为型-迭代器模式</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/YaPiBlog/2018/05/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E8%BF%AD%E4%BB%A3%E5%99%A8%E6%A8%A1%E5%BC%8F/">
+				        <h2 class="post-title">
+                            设计模式-行为型-迭代器模式
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2018-05-10</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2018-05-10">2018-05-10</time>
+				  <a href="/2018/05/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E6%A8%A1%E7%89%88%E6%96%B9%E6%B3%95/" title="设计模式-行为型-模版方法">设计模式-行为型-模版方法</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/YaPiBlog/2018/05/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E6%A8%A1%E7%89%88%E6%96%B9%E6%B3%95/">
+				        <h2 class="post-title">
+                            设计模式-行为型-模版方法
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2018-05-10</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2018-05-10">2018-05-10</time>
+				  <a href="/2018/05/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E4%BB%A3%E7%90%86%E6%A8%A1%E5%BC%8F/" title="设计模式-结构型-代理模式">设计模式-结构型-代理模式</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/YaPiBlog/2018/05/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E4%BB%A3%E7%90%86%E6%A8%A1%E5%BC%8F/">
+				        <h2 class="post-title">
+                            设计模式-结构型-代理模式
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2018-05-10</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2018-05-10">2018-05-10</time>
+				  <a href="/2018/05/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E6%A1%A5%E6%8E%A5/" title="设计模式-结构型-桥接模式">设计模式-结构型-桥接模式</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/YaPiBlog/2018/05/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E6%A1%A5%E6%8E%A5/">
+				        <h2 class="post-title">
+                            设计模式-结构型-桥接模式
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2018-05-10</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2018-05-10">2018-05-10</time>
+				  <a href="/2018/05/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E7%BB%84%E5%90%88%E6%A8%A1%E5%BC%8F/" title="设计模式-结构型-组合模式">设计模式-结构型-组合模式</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/YaPiBlog/2018/05/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E7%BB%84%E5%90%88%E6%A8%A1%E5%BC%8F/">
+				        <h2 class="post-title">
+                            设计模式-结构型-组合模式
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2018-05-10</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2018-05-10">2018-05-10</time>
+				  <a href="/2018/05/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E4%BA%AB%E5%85%83/" title="设计模式-结构型-享元模式">设计模式-结构型-享元模式</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/YaPiBlog/2018/05/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E4%BA%AB%E5%85%83/">
+				        <h2 class="post-title">
+                            设计模式-结构型-享元模式
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2018-05-10</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2018-05-10">2018-05-10</time>
+				  <a href="/2018/05/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E9%80%82%E9%85%8D%E5%99%A8/" title="设计模式-结构型-适配器模式">设计模式-结构型-适配器模式</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/YaPiBlog/2018/05/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E9%80%82%E9%85%8D%E5%99%A8/">
+				        <h2 class="post-title">
+                            设计模式-结构型-适配器模式
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2018-05-10</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2018-05-10">2018-05-10</time>
+				  <a href="/2018/05/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E8%A3%85%E9%A5%B0%E8%80%85/" title="设计模式-结构型-装饰者模式">设计模式-结构型-装饰者模式</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/YaPiBlog/2018/05/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E8%A3%85%E9%A5%B0%E8%80%85/">
+				        <h2 class="post-title">
+                            设计模式-结构型-装饰者模式
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2018-05-10</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2018-05-10">2018-05-10</time>
+				  <a href="/2018/05/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E5%A4%96%E8%A7%82%E6%A8%A1%E5%BC%8F/" title="设计模式-结构型-外观模式">设计模式-结构型-外观模式</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/YaPiBlog/2018/05/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E5%A4%96%E8%A7%82%E6%A8%A1%E5%BC%8F/">
+				        <h2 class="post-title">
+                            设计模式-结构型-外观模式
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2018-05-10</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2018-05-10">2018-05-10</time>
+				  <a href="/2018/05/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E5%8E%9F%E5%9E%8B%E6%A8%A1%E5%BC%8F/" title="设计模式-原型模式">设计模式-原型模式</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/YaPiBlog/2018/05/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E5%8E%9F%E5%9E%8B%E6%A8%A1%E5%BC%8F/">
+				        <h2 class="post-title">
+                            设计模式-原型模式
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2018-05-10</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2018-05-10">2018-05-10</time>
+				  <a href="/2018/05/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E5%BB%BA%E9%80%A0%E8%80%85/" title="设计模式-建造者模式">设计模式-建造者模式</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/YaPiBlog/2018/05/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E5%BB%BA%E9%80%A0%E8%80%85/">
+				        <h2 class="post-title">
+                            设计模式-建造者模式
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2018-05-10</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2018-05-10">2018-05-10</time>
+				  <a href="/2018/05/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E6%8A%BD%E8%B1%A1%E5%B7%A5%E5%8E%82/" title="设计模式-抽象工厂">设计模式-抽象工厂</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/YaPiBlog/2018/05/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E6%8A%BD%E8%B1%A1%E5%B7%A5%E5%8E%82/">
+				        <h2 class="post-title">
+                            设计模式-抽象工厂
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2018-05-10</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2018-05-10">2018-05-10</time>
+				  <a href="/2018/05/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E5%B7%A5%E5%8E%82%E6%96%B9%E6%B3%95/" title="设计模式-工厂方法">设计模式-工厂方法</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/YaPiBlog/2018/05/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E5%B7%A5%E5%8E%82%E6%96%B9%E6%B3%95/">
+				        <h2 class="post-title">
+                            设计模式-工厂方法
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2018-05-10</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2018-05-10">2018-05-10</time>
+				  <a href="/2018/05/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E7%AE%80%E5%8D%95%E5%B7%A5%E5%8E%82/" title="设计模式-简单工厂">设计模式-简单工厂</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/YaPiBlog/2018/05/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E7%AE%80%E5%8D%95%E5%B7%A5%E5%8E%82/">
+				        <h2 class="post-title">
+                            设计模式-简单工厂
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2018-05-10</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2018-05-10">2018-05-10</time>
+				  <a href="/2018/05/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" title="设计原则">设计原则</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/YaPiBlog/2018/05/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/">
+				        <h2 class="post-title">
+                            设计原则
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2018-05-10</p> -->
+				</div>
+				<hr>
+				
+			</div>
+			
+			<div class="one-tag-list">
+			  	<span class="fa fa-tag listing-seperator" id="大数据">
+                    <span class="tag-text">大数据</span>
+                </span>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2019-07-20">2019-07-20</time>
+				  <a href="/2019/07/20/HBase-optimize/" title="HBase优化、协处理器、容灾">HBase优化、协处理器、容灾</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/YaPiBlog/2019/07/20/HBase-optimize/">
+				        <h2 class="post-title">
+                            HBase优化、协处理器、容灾
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				             "Apache HBase is the Hadoop database, a distributed, scalable, big data store "
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2019-07-20</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2019-07-18">2019-07-18</time>
+				  <a href="/2019/07/18/HBase-introduction/" title="HBase入门及简单应用">HBase入门及简单应用</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/YaPiBlog/2019/07/18/HBase-introduction/">
+				        <h2 class="post-title">
+                            HBase入门及简单应用
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				             "Apache HBase is the Hadoop database, a distributed, scalable, big data store "
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2019-07-18</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2019-06-20">2019-06-20</time>
+				  <a href="/2019/06/20/MapReduce-base/" title="MapReduce基础">MapReduce基础</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/YaPiBlog/2019/06/20/MapReduce-base/">
+				        <h2 class="post-title">
+                            MapReduce基础
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				             "Hadoop MapReduce is a software framework for easily writing applications which process vast amounts of data (multi-terabyte data-sets) in-parallel on large clusters (thousands of nodes) of commodity hardware in a reliable, fault-tolerant manner. "
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2019-06-20</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2019-06-20">2019-06-20</time>
+				  <a href="/2019/06/20/Hadoop-base/" title="Hadoop基础">Hadoop基础</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/YaPiBlog/2019/06/20/Hadoop-base/">
+				        <h2 class="post-title">
+                            Hadoop基础
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				             "The Apache™ Hadoop® project develops open-source software for reliable, scalable, distributed computing "
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2019-06-20</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2019-06-20">2019-06-20</time>
+				  <a href="/2019/06/20/HDFS-base/" title="HDFS基础">HDFS基础</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/YaPiBlog/2019/06/20/HDFS-base/">
+				        <h2 class="post-title">
+                            HDFS基础
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				             "HDFS is the primary distributed storage used by Hadoop applications. "
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2019-06-20</p> -->
+				</div>
+				<hr>
+				
+			</div>
+			
+			<div class="one-tag-list">
+			  	<span class="fa fa-tag listing-seperator" id="数据结构">
+                    <span class="tag-text">数据结构</span>
+                </span>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2019-08-25">2019-08-25</time>
+				  <a href="/2019/08/25/data-structure-readBlackTree/" title="数据结构(十一)红黑树">数据结构(十一)红黑树</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/YaPiBlog/2019/08/25/data-structure-readBlackTree/">
+				        <h2 class="post-title">
+                            数据结构(十一)红黑树
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2019-08-25</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2019-08-25">2019-08-25</time>
+				  <a href="/2019/08/25/data-structure-avl/" title="数据结构(十)AVL">数据结构(十)AVL</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/YaPiBlog/2019/08/25/data-structure-avl/">
+				        <h2 class="post-title">
+                            数据结构(十)AVL
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2019-08-25</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2019-08-25">2019-08-25</time>
+				  <a href="/2019/08/25/data-structure-bingchaji/" title="数据结构(九)并查集">数据结构(九)并查集</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/YaPiBlog/2019/08/25/data-structure-bingchaji/">
+				        <h2 class="post-title">
+                            数据结构(九)并查集
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2019-08-25</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2019-08-25">2019-08-25</time>
+				  <a href="/2019/08/25/data-structure-trie/" title="数据结构(八)Trie 字典树">数据结构(八)Trie 字典树</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/YaPiBlog/2019/08/25/data-structure-trie/">
+				        <h2 class="post-title">
+                            数据结构(八)Trie 字典树
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2019-08-25</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2019-08-25">2019-08-25</time>
+				  <a href="/2019/08/25/data-structure-%E7%BA%BF%E6%AE%B5%E6%A0%91/" title="数据结构(七)线段树">数据结构(七)线段树</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/YaPiBlog/2019/08/25/data-structure-%E7%BA%BF%E6%AE%B5%E6%A0%91/">
+				        <h2 class="post-title">
+                            数据结构(七)线段树
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2019-08-25</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2019-08-25">2019-08-25</time>
+				  <a href="/2019/08/25/data-structure-%E5%A0%86%E5%92%8C%E4%BC%98%E5%85%88%E9%98%9F%E5%88%97/" title="数据结构(六)堆和优先队列">数据结构(六)堆和优先队列</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/YaPiBlog/2019/08/25/data-structure-%E5%A0%86%E5%92%8C%E4%BC%98%E5%85%88%E9%98%9F%E5%88%97/">
+				        <h2 class="post-title">
+                            数据结构(六)堆和优先队列
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2019-08-25</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2019-08-24">2019-08-24</time>
+				  <a href="/2019/08/24/data-structure-%E4%BA%8C%E5%88%86%E6%90%9C%E7%B4%A2%E6%A0%91/" title="数据结构(五)树-二分搜索树">数据结构(五)树-二分搜索树</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/YaPiBlog/2019/08/24/data-structure-%E4%BA%8C%E5%88%86%E6%90%9C%E7%B4%A2%E6%A0%91/">
+				        <h2 class="post-title">
+                            数据结构(五)树-二分搜索树
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2019-08-24</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2019-08-23">2019-08-23</time>
+				  <a href="/2019/08/23/data-structure-%E5%8A%A8%E6%80%81%E6%95%B0%E7%BB%84/" title="数据结构(四)动态数据结构-链表">数据结构(四)动态数据结构-链表</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/YaPiBlog/2019/08/23/data-structure-%E5%8A%A8%E6%80%81%E6%95%B0%E7%BB%84/">
+				        <h2 class="post-title">
+                            数据结构(四)动态数据结构-链表
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2019-08-23</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2019-08-22">2019-08-22</time>
+				  <a href="/2019/08/22/data-structure-%E6%A0%88-%E9%98%9F%E5%88%97/" title="数据结构(三)栈、队列">数据结构(三)栈、队列</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/YaPiBlog/2019/08/22/data-structure-%E6%A0%88-%E9%98%9F%E5%88%97/">
+				        <h2 class="post-title">
+                            数据结构(三)栈、队列
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2019-08-22</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2019-08-21">2019-08-21</time>
+				  <a href="/2019/08/21/data-structure-%E8%87%AA%E5%AE%9A%E4%B9%89%E6%95%B0%E7%BB%84/" title="数据结构(二)时间复杂度分析+自定义数组">数据结构(二)时间复杂度分析+自定义数组</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/YaPiBlog/2019/08/21/data-structure-%E8%87%AA%E5%AE%9A%E4%B9%89%E6%95%B0%E7%BB%84/">
+				        <h2 class="post-title">
+                            数据结构(二)时间复杂度分析+自定义数组
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2019-08-21</p> -->
+				</div>
+				<hr>
+				
+				  <!-- <li class="listing-item">
+				  <time datetime="2019-08-20">2019-08-20</time>
+				  <a href="/2019/08/20/data-structure-rumen/" title="数据结构(一) 入门">数据结构(一) 入门</a>
+				  </li> -->
+				 <div class="post-preview">
+				    <a href="/YaPiBlog/2019/08/20/data-structure-rumen/">
+				        <h2 class="post-title">
+                            数据结构(一) 入门
+				        </h2>
+				        
+				        <h3 class="post-subtitle">
+				            
+				        </h3>
+				        
+				    </a>
+				    <!-- <p class="post-meta">2019-08-20</p> -->
+				</div>
+				<hr>
+				
+			</div>
+			
+
+		</div>
+	</div>
+</div>
+
+
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                    
+                    
+
+                    <!-- add Weibo, Zhihu by Hux, add target = "_blank" to <a> by Hux -->
+                    
+                    
+
+
+                    
+                    
+                </ul>
+
+                <p class="copyright text-muted">
+                    蜀ICP备18030170号-2    Copyright &copy; YaPiBlog 2019
+                    <br>
+
+                    <!---->
+                    <!--Theme by <a href="http://huangxuan.me">Hux</a> |-->
+                    <!--<iframe-->
+                        <!--style="margin-left: 2px; margin-bottom:-5px;"-->
+                        <!--frameborder="0" scrolling="0" width="91px" height="20px"-->
+                        <!--src="https://ghbtns.com/github-btn.html?user=huxpro&repo=huxpro.github.io&type=star&count=true" >-->
+                    <!--</iframe>-->
+
+
+                </p>
+
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/YaPiBlog/js/jquery.min.js "></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="/YaPiBlog/js/bootstrap.min.js "></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/YaPiBlog/js/yapi-blog.min.js "></script>
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- 
+     Because of the native support for backtick-style fenced code blocks 
+     right within the Markdown is landed in Github Pages, 
+     From V1.6, There is no need for Highlight.js, 
+     so Huxblog drops it officially.
+
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0  
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/    
+-->
+<!--
+    <script>
+        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
+            hljs.initHighlightingOnLoad();
+        })
+    </script>
+    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+-->
+
+
+<!-- jquery.tagcloud.js -->
+<script>
+    // only load tagcloud.js in tag.html
+    if($('#tag_cloud').length !== 0){
+        async("/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                //size: {start: 1, end: 1, unit: 'em'},
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+<!--fastClick.js -->
+<script>
+    async("http://cdn.bootcss.com/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+
+
+<!-- Baidu Tongji -->
+
+
+
+
+<!-- Image to hack wechat -->
+<!--<img src="../img/icon_wechat.png" width="0" height="0" />-->
+<!-- Migrate from head to bottom, no longer block render and still work -->
+
+</body>
+
+</html>

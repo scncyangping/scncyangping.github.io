@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="keyword"  content="">
+    <link rel="shortcut icon" href="/YaPiBlog/img/favicon.ico">
+
+    <title>Golang标准库-strconv、regexp - YaPiBlog</title>
+
+    <link rel="canonical" href="http://localhost:4000/YaPiBlog/2019/08/13/Golang-base-pkg-strconv-regexp/">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/YaPiBlog/css/bootstrap.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/YaPiBlog/css/yapi-blog.min.css">
+
+    <!-- Pygments Github CSS -->
+    <link rel="stylesheet" href="/YaPiBlog/css/syntax.css">
+
+    <!-- Custom Fonts -->
+    <!-- <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <link href="http://cdn.staticfile.org/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+
+    <!-- Hux Delete, sad but pending in China
+    <link href='http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/
+    css'>
+    -->
+
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- ga & ba script hoook -->
+    <script></script>
+</head>
+
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <!--<a class="navbar-brand" href="/YaPiBlog/">YaPiBlog</a>-->
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <!-- Known Issue, found by Hux:
+            <nav>'2019-06-20-HDFS-base.markdown height woule be hold on by its content.
+            so, when navbar scale out, the <nav> will cover tags.
+            also mask any touch event of tags, unfortunately.
+        -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <!--
+                     <li>
+                         <a href="/YaPiBlog/"><span style="font-size: 20px">主页</span></a>
+                     </li>
+
+                     <li>
+                         <a href="/YaPiBlog/tags"><span style="font-size: 20px">分类</span></a>
+                     </li>
+
+                     <li>
+                         <a href="/YaPiBlog/about/"><span style="font-size: 20px">关于</span></a>
+                     </li>
+                    -->
+
+                    <li>
+                        <a href="/YaPiBlog/">Home</a>
+                    </li>
+                     
+                     <li>
+                         <a href="/YaPiBlog/about/">ABOUT</a>
+                     </li>
+                     
+                     <li>
+                         <a href="/YaPiBlog/tags/">Tags</a>
+                     </li>
+                     
+
+
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        // CLOSE
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        // OPEN
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+    <!-- Image to hack wechat -->
+<!-- <img src="/img/icon_wechat.png" width="0" height="0"> -->
+<!-- <img src="/YaPiBlog/" width="0" height="0"> -->
+
+<!-- Post Header -->
+<style type="text/css">
+    header.intro-header{
+        background-image: url('/YaPiBlog/')
+    }
+</style>
+<header class="intro-header" >
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                        <a class="tag" href="/YaPiBlog/tags/#golang" title="golang">golang</a>
+                        
+                    </div>
+                    <h1>Golang标准库-strconv、regexp</h1>
+                    
+                    
+                    <h2 class="subheading"></h2>
+                    
+                    <span class="meta">Posted by YaPi on August 13, 2019</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+
+    <!-- Post Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+				<h4 id="strconv包">strconv包</h4>
+
+<p>定义了字符串和基本数据类型之间转换的方法,这⾥的基本数据类型包括:布尔、整型（包括有/⽆符号、⼆进制、⼋进制、⼗进制和⼗六进制）和浮点型等</p>
+
+<h5 id="strconv-包转换错误处理">strconv 包转换错误处理</h5>
+
+<p>由于将字符串转为其他数据类型可能会出错，strconv 包定义了两个 error 类型的变
+量：ErrRange 和 ErrSyntax。其中，ErrRange 表示值超过了类型能表示的最⼤范
+围，⽐如将 “128” 转为 int8 就会返回这个错误；ErrSyntax 表示语法错误，⽐如将 “”
+转为 int 类型会返回这个错误。
+然⽽，在返回错误的时候，不是直接将上⾯的变量值返回，⽽是通过构造⼀个
+NumError 类型的 error 对象返回</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>// A NumError records a failed conversion.
+type NumError struct {
+    Func string // the failing function (ParseBool, ParseInt, ParseUint, ParseFloat)
+    Num string // the input
+    Err error // the reason the conversion failed (ErrRange, ErrSyntax)
+}
+
+// 该结构不仅包含了⼀个error类型的成员,记录具体的错误信息
+// ⽽且它⾃⼰也实现了error 接⼝
+func (e *NumError) Error() string {
+	return "strconv." + e.Func + ": " + "parsing " + Quote(e.Num) + ": " + e.Err.Error()
+}
+
+// 包的实现中,定义了4个便捷函数,⽤于构造 NumError 对象
+
+func syntaxError(fn, str string) *NumError {
+	return &amp;NumError{fn, str, ErrSyntax}
+}
+
+func rangeError(fn, str string) *NumError {
+	return &amp;NumError{fn, str, ErrRange}
+}
+
+func baseError(fn, str string, base int) *NumError {
+	return &amp;NumError{fn, str, errors.New("invalid base " + Itoa(base))}
+}
+
+func bitSizeError(fn, str string, bitSize int) *NumError {
+	return &amp;NumError{fn, str, errors.New("invalid bit size " + Itoa(bitSize))}
+}
+</code></pre></div></div>
+
+<h5 id="字符串和整型之间的转换">字符串和整型之间的转换</h5>
+
+<h6 id="字符串转为整型">字符串转为整型</h6>
+
+<p>包括三个函数：ParseInt、ParseUint 和 Atoi</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>func ParseInt(s string, base int, bitSize int) (i int64, err error)
+
+func ParseUint(s string, base int, bitSize int) (n uint64, err error)
+
+func Atoi(s string) (i int, err error)
+</code></pre></div></div>
+
+<p>其中，Atoi 是 ParseInt 的便捷版，内部通过调⽤ ParseInt(s, 10, 0) 来实现的;ParseInt 转为有符号整型；ParseUint 转为⽆符号整型</p>
+
+<p>参数 base 代表字符串按照给定的进制进⾏解释。⼀般的，base 的取值为2~36,如
+果 base 的值为 0，则会根据字符串的前缀来确定。base 的值：”0x” 表示 16 进制;”0”表示 8 进制; 否则就是 10 进制。</p>
+
+<p>参数 bitSize 表示的是整数取值范围，或者说整数的具体类型。取值。0、8、16、32 和64 分别代表 int、int8、int16、int32 和 int64</p>
+
+<p>Go中，int/uint 类型，不同系统能表示的范围是不⼀样的，⽬前的实现是，32 位系统
+占 4 个字节；64 位系统占 8 个字节。没有利⽤runtime.GOARCH之类的⽅式，⽽是巧妙的通过如下表达式确定
+intSize</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>const intSize = 32 &lt;&lt; uint(^uint(0)&gt;&gt;63)
+const IntSize = intSize // number of bits in int, uint (32 or 64)
+</code></pre></div></div>
+
+<p>转换的基本原理（以 “128” 转 为 10 进制 int 为例）</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>// 在循环处理的过程中,会检查数据的有效性和是否越界等
+s := "128"
+n := 0
+for i := 0; i &lt; len(s); i++ {
+    n *= 10 + s[i] // base
+}
+</code></pre></div></div>
+
+<h6 id="整型转字符串">整型转字符串</h6>
+
+<ul>
+  <li>func FormatUint(i uint64, base int) string // ⽆符号整型转字符串</li>
+  <li>func FormatInt(i int64, base int) string // 有符号整型转字符串</li>
+  <li>func Itoa(i int) string</li>
+</ul>
+
+<p>其中,Itoa 内部直接调⽤ FormatInt(i, 10) 实现的。base参数可以取 2~36（0-9,a-z）</p>
+
+<p>Go语言对base是10且i为100以内的数字的转化进行了优化,直接定义了两个基本常量字符串
+进行获取,避免了100以为高频转化进行的开销</p>
+
+<p>转化基本原理 (以 10 进制的 127 转 string 为例)</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>// 代表进制
+const digits = "0123456789abcdefghijklmnopqrstuvwxyz"
+u := uint64(127)
+var a [65]byte
+i := len(a)
+b := uint64(base)
+for u &gt;= b {
+    i--
+    a[i] = digits[uintptr(u%b)]
+    u /= b
+}
+i--
+a[i] = digits[uintptr(u)]
+return string(a[1:])
+</code></pre></div></div>
+
+<p>通常将数字转化为字符串fmt包中的函数也行</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>fmt.Sprintf("%d", 127)
+</code></pre></div></div>
+<p>但是fmt包中的方法传入的是interface结构,需要进行反射等操作,所以性能没有strconv包性能高</p>
+
+<p>快速判断一个数字是否是2的整数幂</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>func isPowerOfTwo(x int) bool {
+	return x&amp;(x-1) == 0
+}
+</code></pre></div></div>
+
+<h6 id="字符串和布尔值之间的转换">字符串和布尔值之间的转换</h6>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>// 接受 1, t, T, TRUE, true, True, 0, f, F, FALSE, false, False 等字符串；
+// 其他形式的字符串会返回错误
+func ParseBool(str string) (value bool, err error)
+
+// 直接返回 "true" 或 "false"
+func FormatBool(b bool) string
+
+// 将 "true" 或 "false" append 到 dst 中
+// 这⾥⽤了⼀个 append 函数对于字符串的特殊形式：append(dst, "true"...)
+func AppendBool(dst []byte, b bool)
+
+输出 123true
+fmt.Println(string(strconv.AppendBool([]byte("123"), true)))
+
+</code></pre></div></div>
+
+<h6 id="字符串和浮点数之间的转换">字符串和浮点数之间的转换</h6>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>func ParseFloat(s string, bitSize int) (f float64, err error)
+
+func FormatFloat(f float64, fmt byte, prec, bitSize int) string
+
+func AppendFloat(dst []byte, f float64, fmt byte, prec int, bitSize int)
+</code></pre></div></div>
+
+<p>prec 表示有效数字（对 fmt=’b’ ⽆效），对于 ‘e’, ‘E’ 和 ‘f’，有效数字⽤于⼩数点之后的位数；
+对于 ‘g’ 和 ‘G’，则是所有的有效数字</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>strconv.FormatFloat(1223.13252, 'e', 3, 32) // 结果：1.223e+03
+strconv.FormatFloat(1223.13252, 'g', 3, 32) // 结果：1.22e+03
+</code></pre></div></div>
+
+<p>由于浮点数有精度的问题，精度不⼀样，ParseFloat 和 FormatFloat 可能达不到互逆
+的效果</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>s := strconv.FormatFloat(1234.5678, 'g', 6, 64)
+strconv.ParseFloat(s, 64)
+</code></pre></div></div>
+
+<p>另外，fmt=’b’ 时，得到的字符串是⽆法通过ParseFloat还原的。特别地（不区分⼤⼩写），+inf/inf，+infinity/infinity，-inf/-infinity 和 nan 通过ParseFloat 转换分别返回对应的值（在 math 包中定义）。同样的，基于性能的考虑，应该使⽤ FormatFloat ⽽不是 fmt.Sprintf。</p>
+
+<h4 id="regexp---正则表达式">regexp - 正则表达式</h4>
+
+<p>Unicode只是定义了⼀个字符和⼀个编码的映射，但是呢，对应的存储却没有制定。
+⽐如⼀个编码0x0041代表⼤写字⺟A，那么可能有⼀种存储⾄少有4个字节，那可能
+0x00000041来存储代表A。 这个就是unicode的具体实现。unicode的具体实现有很多
+种，UTF-8和UTF-16就是其中两种。</p>
+
+<p>UTF-8表示最少⽤⼀个字节就能表示⼀个字符的编码实现。它采取的⽅式是对不同的
+语⾔使⽤不同的⽅法，将unicode编码按照这个⽅法进⾏转换。 我们只要记住最后的
+结果是英⽂占⼀个字节，中⽂占三个字节。这种编码实现⽅式也是现在应⽤最为⼴泛
+的⽅式了。</p>
+
+<p>UTF-16表示最少⽤两个字节能表示⼀个字符的编码实现。同样是对unicode编码进⾏
+转换，它的结果是英⽂占⽤两个字节，中⽂占⽤两个或者四个字节。 实际上，UTF-
+16就是最严格实现了unicode4.0。但由于英⽂是最通⽤的语⾔，所以推⼴程度没有
+UTF-8那么普及。</p>
+
+<ul>
+  <li>unicode</li>
+  <li>unicode/utf8</li>
+  <li>unicode/utf16</li>
+</ul>
+
+<p>unicode包包含基本的字符判断函数。utf8包主要负责rune和byte之间的转换。utf16包
+负责rune和uint16数组之间的转换。</p>
+
+<p>由于字符的概念有的时候⽐较模糊，⽐如字符（⼩写a）普通显示为a，在重⾳字符中
+（grave-accented）中显示为à。 这时候字符（character）的概念就有点不准确了，
+因为a和à显然是两个不同的unicode编码，但是却代表同⼀个字符，所以引⼊了
+rune。 ⼀个rune就代表⼀个unicode编码，所以上⾯的a和à是两个不同的rune。
+这⾥有个要注意的事情，go语⾔的所有代码都是UTF8的，所以如果我们在程序中的
+字符串都是utf8编码的，但是我们的单个字符（单引号扩起来的）却是unicode的。</p>
+
+<h5 id="unicode包">unicode包</h5>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>func IsControl(r rune) bool // 是否控制字符
+func IsDigit(r rune) bool // 是否阿拉伯数字字符，即1-9
+func IsGraphic(r rune) bool // 是否图形字符
+func IsLetter(r rune) bool // 是否字⺟
+func IsLower(r rune) bool // 是否⼩写字符
+func IsMark(r rune) bool // 是否符号字符
+func IsNumber(r rune) bool // 是否数字字符，⽐如罗⻢数字Ⅷ也是数字字符
+func IsOneOf(ranges []*RangeTable, r rune) bool // 是否是RangeTable中的⼀个
+func IsPrint(r rune) bool // 是否可打印字符
+func IsPunct(r rune) bool // 是否标点符号
+func IsSpace(r rune) bool // 是否空格
+func IsSymbol(r rune) bool // 是否符号字符
+func IsTitle(r rune) bool // 是否title case
+func IsUpper(r rune) bool // 是否⼤写字符
+</code></pre></div></div>
+
+<h5 id="utf8包">utf8包</h5>
+
+<p>utf8⾥⾯的函数就有⼀些字节和字符的转换。</p>
+
+<p>判断是否符合utf8编码的函数:</p>
+
+<ul>
+  <li>func Valid(p []byte) bool</li>
+  <li>func ValidRune(r rune) bool</li>
+  <li>func ValidString(s string) bool</li>
+</ul>
+
+<p>判断rune的⻓度的函数:</p>
+
+<ul>
+  <li>func RuneLen(r rune) int</li>
+</ul>
+
+<p>判断字节串或者字符串的rune数:</p>
+
+<ul>
+  <li>func RuneCount(p []byte) int</li>
+  <li>func RuneCountInString(s string) (n int)</li>
+</ul>
+
+<p>编码和解码rune到byte:</p>
+
+<ul>
+  <li>func DecodeRune(p []byte) (r rune, size int)</li>
+  <li>func EncodeRune(p []byte, r rune) int</li>
+</ul>
+
+<h5 id="utf16包">utf16包</h5>
+
+<p>将int16和rune进⾏转换:</p>
+
+<ul>
+  <li>func Decode(s []uint16) []rune</li>
+  <li>func Encode(s []rune) []uint16</li>
+</ul>
+
+<p>unicode有个基本字符平⾯和增补平⾯的概念，基本字符平⾯只有65535个字符，增补
+平⾯（有16个）加上去就能表示1114112个字符。 utf16就是严格实现了unicode的这
+种编码规范。</p>
+
+<p>⽽基本字符和增补平⾯字符就是⼀个代理对（Surrogate Pair）。⼀个代理对可以和⼀
+个rune进⾏转换</p>
+
+<ul>
+  <li>func DecodeRune(r1, r2 rune) rune</li>
+  <li>func EncodeRune(r rune) (r1, r2 rune)</li>
+</ul>
+
+
+                <hr>
+
+                
+
+
+                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="/YaPiBlog/2019/08/13/Golang-base-pkg-sort-container/" data-toggle="tooltip" data-placement="top" title="Golang标准库-sort、container">&larr; Previous Post</a>
+                    </li>
+                    
+                    
+                    <li class="next">
+                        <a href="/YaPiBlog/2019/08/18/Golang-base-pkg-os-sync-atomic/" data-toggle="tooltip" data-placement="top" title="Go标准库-进程、os、sync、atomic">Next Post &rarr;</a>
+                    </li>
+                    
+                </ul>
+
+
+                
+
+                
+
+            </div>
+
+    <!-- Sidebar Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+                <section>
+                    <hr class="hidden-sm hidden-xs">
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+        				
+                            
+                				<a href="/YaPiBlog/tags/#JVM" title="JVM" rel="7">
+                                    JVM
+                                </a>
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#docker" title="docker" rel="4">
+                                    docker
+                                </a>
+                            
+        				
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#mongodb" title="mongodb" rel="4">
+                                    mongodb
+                                </a>
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#redis" title="redis" rel="5">
+                                    redis
+                                </a>
+                            
+        				
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#golang" title="golang" rel="12">
+                                    golang
+                                </a>
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#设计模式" title="设计模式" rel="24">
+                                    设计模式
+                                </a>
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#大数据" title="大数据" rel="5">
+                                    大数据
+                                </a>
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#数据结构" title="数据结构" rel="11">
+                                    数据结构
+                                </a>
+                            
+        				
+        			</div>
+                </section>
+                
+
+                <!-- Friends Blog -->
+                
+                <hr>
+                <h5>FRIENDS</h5>
+                <ul class="list-inline">
+                    
+                        <li><a href="http://server.scncys.cn">YaPi Blog</a></li>
+                    
+                </ul>
+                
+            </div>
+        </div>
+    </div>
+</article>
+
+
+
+
+
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("http://cdn.bootcss.com/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'always',
+          placement: 'right',
+          icon: '#'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading').remove('.sidebar-container h5');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
+
+
+
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                    
+                    
+
+                    <!-- add Weibo, Zhihu by Hux, add target = "_blank" to <a> by Hux -->
+                    
+                    
+
+
+                    
+                    
+                </ul>
+
+                <p class="copyright text-muted">
+                    蜀ICP备18030170号-2    Copyright &copy; YaPiBlog 2019
+                    <br>
+
+                    <!---->
+                    <!--Theme by <a href="http://huangxuan.me">Hux</a> |-->
+                    <!--<iframe-->
+                        <!--style="margin-left: 2px; margin-bottom:-5px;"-->
+                        <!--frameborder="0" scrolling="0" width="91px" height="20px"-->
+                        <!--src="https://ghbtns.com/github-btn.html?user=huxpro&repo=huxpro.github.io&type=star&count=true" >-->
+                    <!--</iframe>-->
+
+
+                </p>
+
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/YaPiBlog/js/jquery.min.js "></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="/YaPiBlog/js/bootstrap.min.js "></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/YaPiBlog/js/yapi-blog.min.js "></script>
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- 
+     Because of the native support for backtick-style fenced code blocks 
+     right within the Markdown is landed in Github Pages, 
+     From V1.6, There is no need for Highlight.js, 
+     so Huxblog drops it officially.
+
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0  
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/    
+-->
+<!--
+    <script>
+        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
+            hljs.initHighlightingOnLoad();
+        })
+    </script>
+    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+-->
+
+
+<!-- jquery.tagcloud.js -->
+<script>
+    // only load tagcloud.js in tag.html
+    if($('#tag_cloud').length !== 0){
+        async("/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                //size: {start: 1, end: 1, unit: 'em'},
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+<!--fastClick.js -->
+<script>
+    async("http://cdn.bootcss.com/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+
+
+<!-- Baidu Tongji -->
+
+
+
+
+<!-- Image to hack wechat -->
+<!--<img src="../img/icon_wechat.png" width="0" height="0" />-->
+<!-- Migrate from head to bottom, no longer block render and still work -->
+
+</body>
+
+</html>

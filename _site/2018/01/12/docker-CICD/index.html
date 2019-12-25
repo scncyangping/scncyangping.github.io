@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="keyword"  content="">
+    <link rel="shortcut icon" href="/YaPiBlog/img/favicon.ico">
+
+    <title>CI/CD - YaPiBlog</title>
+
+    <link rel="canonical" href="http://localhost:4000/YaPiBlog/2018/01/12/docker-CICD/">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/YaPiBlog/css/bootstrap.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/YaPiBlog/css/yapi-blog.min.css">
+
+    <!-- Pygments Github CSS -->
+    <link rel="stylesheet" href="/YaPiBlog/css/syntax.css">
+
+    <!-- Custom Fonts -->
+    <!-- <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <link href="http://cdn.staticfile.org/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+
+    <!-- Hux Delete, sad but pending in China
+    <link href='http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/
+    css'>
+    -->
+
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- ga & ba script hoook -->
+    <script></script>
+</head>
+
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <!--<a class="navbar-brand" href="/YaPiBlog/">YaPiBlog</a>-->
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <!-- Known Issue, found by Hux:
+            <nav>'2019-06-20-HDFS-base.markdown height woule be hold on by its content.
+            so, when navbar scale out, the <nav> will cover tags.
+            also mask any touch event of tags, unfortunately.
+        -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <!--
+                     <li>
+                         <a href="/YaPiBlog/"><span style="font-size: 20px">主页</span></a>
+                     </li>
+
+                     <li>
+                         <a href="/YaPiBlog/tags"><span style="font-size: 20px">分类</span></a>
+                     </li>
+
+                     <li>
+                         <a href="/YaPiBlog/about/"><span style="font-size: 20px">关于</span></a>
+                     </li>
+                    -->
+
+                    <li>
+                        <a href="/YaPiBlog/">Home</a>
+                    </li>
+                     
+                     <li>
+                         <a href="/YaPiBlog/about/">ABOUT</a>
+                     </li>
+                     
+                     <li>
+                         <a href="/YaPiBlog/tags/">Tags</a>
+                     </li>
+                     
+
+
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        // CLOSE
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        // OPEN
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+    <!-- Image to hack wechat -->
+<!-- <img src="/img/icon_wechat.png" width="0" height="0"> -->
+<!-- <img src="/YaPiBlog/" width="0" height="0"> -->
+
+<!-- Post Header -->
+<style type="text/css">
+    header.intro-header{
+        background-image: url('/YaPiBlog/')
+    }
+</style>
+<header class="intro-header" >
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                        <a class="tag" href="/YaPiBlog/tags/#docker" title="docker">docker</a>
+                        
+                    </div>
+                    <h1>CI/CD</h1>
+                    
+                    
+                    <h2 class="subheading"></h2>
+                    
+                    <span class="meta">Posted by YaPi on January 12, 2018</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+
+    <!-- Post Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+				<h4 id="gitlabgitlab-ci-服务器搭建">gitlab、gitlab-ci 服务器搭建</h4>
+
+<p>略</p>
+
+<h4 id="cicd">CI/CD</h4>
+
+<ol>
+  <li>注册runner
+    <blockquote>
+      <p>suudo gitlab-ci-multi-runner register</p>
+    </blockquote>
+  </li>
+</ol>
+
+<blockquote>
+  <p>按要求输入gitlab服务器的地址、tags等信息</p>
+</blockquote>
+
+<ol>
+  <li>增加.gitlab-ci.yml文件</li>
+</ol>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+stages:
+    - style
+    - test
+    - deploy
+pep8:
+    stage: style
+    script:
+        - pip install tox
+        - tox -e pep8
+    tags:
+        - python2.7 # gitlab-ci服务器上创建runner指定的tags
+
+unittest-python27:
+    stage: test
+    script:
+        - pip install tox
+        - tox -e py27
+    tags:
+        - python2.7
+
+# 自动部署 (部署到ci服务器)
+docker-deploy:
+    stage: deploy
+    script:
+        - docker build -t flask-demo . # 从当前目录找到Dockerfile文件build一个image
+        - docker run -d -p 5000:5000 flask-demo
+
+    tages:
+        - demo # 选择一个shell类型的runner
+
+    only: # 只有master分支修改了才会部署
+        - master
+
+docker-image-release:
+    state: release
+    script:
+        - docker build -t registry.com/flask-demo:$CI_COMMIT_TAG .
+        - docker push registry.com/flask-demo:$CI_COMMIT_TAG
+        tags:
+          - demo
+        only:
+          - tags
+
+</code></pre></div></div>
+
+<p>若想实现自动部署</p>
+
+<ul>
+  <li>
+    <p>需要有gitlab服务器</p>
+  </li>
+  <li>需要有gitlab-ci服务器
+    <ol>
+      <li>此服务器能够ping通docker-registry服务器</li>
+      <li>需要配置
+        <blockquote>
+          <p>/etc/docker/daemon.json
+     &gt;添加{“insecure-registries”:{“ip:端口”}}
+         &gt; service docker restart</p>
+        </blockquote>
+      </li>
+    </ol>
+  </li>
+  <li>需要有docker-registry服务器
+    <blockquote>
+      <p>gitlab-ci 选择shell环境时,可以将打包的镜像提交到自己的docker仓库内，后续其他节点可以手动更新</p>
+    </blockquote>
+  </li>
+  <li>并且能够互通</li>
+</ul>
+
+<p>gitlab-ci 的缺点是过于臃肿,只有部署了gitlab-ci runner的节点才能去部署更新项目，安装不是很方便</p>
+
+<p>由此可使用drone + gitlab 。优点是drone的server和clien都是采用容器的方式部署的，比较方便</p>
+
+<h4 id="搭建drone-的服务端和客户端">搭建drone 的服务端和客户端</h4>
+
+<p>搭建drone</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>version: '2'
+services:
+    drone-server:
+        image: drone/drone:0.8
+
+        ports:
+            - 8000:8000
+            - 9000
+        volumes:
+            - /home/data1/drone/drone-data:/var/lib/drone/
+        restart: always
+        environment:
+            - DRONE_OPEN=true
+            - DRONE_GITLAB=true
+            - DRONE_GITLAB_CLIENT=3b026a57ef85bd05181a670ad32ded6b0d58e711e81c79864fd4801569e1c580 # 这个在Gitlab UserSettings/Application 中生成
+            - DRONE_GITLAB_SECRET=2bb590a29eb0de0ad345811da5253527d33c2c166ecf8bff17480396c8e7dff5  # 这个在Gitlab UserSettings/Application 中生成
+            - DRONE_GITLAB_URL=http://gitlab.dev # gitlab地址
+            - DRONE_HOST=http://drone.dev # drone地址
+            - DRONE_SECRET=123456
+
+    drone-agent: # 可与server分开部署
+        image: drone/agent:0.8
+
+        restart: always
+        depends_on:
+            - drone-server
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock
+        environment:
+            - DRONE_SERVER=drone-server:9000
+            - DRONE_SECRET=123456
+</code></pre></div></div>
+
+<p>然后在gitlab项目目录中添加 drone.yml文件,则会自动进行其他操作</p>
+
+<p>test</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>clone: # 设置克隆地址，不设置默认为本地
+  git:
+    image: plugins/git
+    recursive: true # 是否递归查找
+    skip_verify: true # 跳过https检测
+    submodule_override: # 指定项目url 本地环境可用
+      helloworld: http://192.168.0.87/demo/helloworld.git
+
+pipeline:
+  build:
+    image: golang
+    commands:
+      # - go get
+      - go build
+      - go test
+
+</code></pre></div></div>
+
+<p>7moor</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>workspace: # 指定pipeline的工作目录,相对于镜像来说
+  base: /nodejs
+  path: src/wcj-server
+pipeline:
+
+
+#  build:
+#    image: registry.7moor.com/base/node:8.11
+#    commands:
+#      - tsc
+  publish:
+    image: plugins/docker
+    dockerfile: Dockerfile
+    username: 7m_docker
+    password: wjU6k4iuuT
+    repo: registry.7moor.com/wyx/wcj-server # 仓库下项目的名称
+    registry: registry.7moor.com # 自建docker仓库地址
+    tags: "${DRONE_BRANCH}"
+    when:
+      branch: master
+      event: [push, pull_request]
+  deploy:
+      image: appleboy/drone-ssh
+      host: 123.206.78.95
+      username: dockerPull
+      password: YjVjNjEzNTQzMzg0ZDc3MGI3Zjc3
+      port: 65022
+      command_timeout: 600
+      script:
+        - sudo docker login -u 7m_docker -p wjU6k4iuuT open-registry.7moor.com
+        - sudo docker pull open-registry.7moor.com/wyx/wcj-server:${DRONE_BRANCH}
+        - sudo docker stop wcj-server
+        - sudo docker rm wcj-server
+        - sudo docker run -d  -p 3000:3000 -v /opt/wyx/wcj-server/logs:/workspace/logs -v /tmp/app:/tmp/app  -v /opt/wyx/wcj-server/conf:/workspace/conf --name wcj-server open-registry.7moor.com/wyx/wcj-server:${DRONE_BRANCH}
+
+</code></pre></div></div>
+
+<p>基本流程</p>
+
+<p>项目流程为：</p>
+
+<ul>
+  <li>git push 提交代码到版本控制系统（GitHub、GitLab、Gogs 等）</li>
+  <li>版本控制系统通过 webhook 触发 Drone 的 pipeline</li>
+  <li>Drone 执行 pipeline，build 构建项目</li>
+  <li>构建 Docker 镜像（需要 Dockerfile 文件）</li>
+  <li>将镜像 push 到 registry（Harbor 等）</li>
+</ul>
+
+<h4 id="droneyml-文件基本愈发">drone.yml 文件基本愈发</h4>
+<p>https://blog.csdn.net/kikajack/article/details/80503786#%E5%8C%85%E5%90%AB%E8%B7%B3%E8%BF%87%E5%88%86%E6%94%AF-branches</p>
+
+<ul>
+  <li>branches
+    <ol>
+      <li>使用branches可以跳过或者指定某些分支进行pipline
+        <blockquote>
+
+          <p>```
+  跳过
+  branches:
+ exclude: [ develop, feature/* ]</p>
+        </blockquote>
+      </li>
+    </ol>
+
+    <p>包含</p>
+
+    <p>branches:
+       include: [ master, feature/* ]</p>
+
+    <p>匹配
+  branches: [ master, develop ]
+  ```</p>
+  </li>
+  <li>pipelines
+    <blockquote>
+      <p>pipelines 定义了工作流（或叫流水线），包含代码构建，代码测试和代码部署等一系列步骤。工作流根据各个步骤的定义位置按顺序执行。如果一个步骤返回了非 0 的退出代码，工作流将立即停止并返回一个错误状态。</p>
+    </blockquote>
+  </li>
+</ul>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>定义两个工作流
+
+pipeline:
+  backend:
+    image: golang
+    commands: # 这些命令会在docker创建时执行类似entrypoint
+      - go build
+      - go test
+  frontend:
+    image: node
+    commands:
+      - npm install
+      - npm run test
+      - npm run build
+</code></pre></div></div>
+
+<ul>
+  <li>条件执行 when
+  ```
+  pipeline:
+slack:
+  image: plugins/slack
+  channel: dev</li>
+  <li>when:</li>
+  <li>branch: master
+    ```</li>
+</ul>
+
+<h4 id="drone-报错">drone 报错</h4>
+
+<ul>
+  <li>如果是本地搭建服务器需要用管理员登陆gitlab服务器</li>
+</ul>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> gitlab 10.6 版本以后为了安全，不允许向本地网络发送webhook请求，如果想向本地网络发送webhook请求，则需要使用管理员帐号登录，默认管理员帐号是admin@example.com，密码就是你gitlab搭建好之后第一次输入的密码，登录之后， 点击Configure Gitlab
+
+即可进入Admin area，在Admin area中，在settings标签下面，找到OutBound Request，勾选上Allow requests to the local network from hooks and services ，保存更改即可解决问题
+
+</code></pre></div></div>
+
+<h4 id="重要错误提示">重要错误提示！！！！</h4>
+
+<p>若修改了gitlab地址,则相应的配置drone服务器的配置文件中的volume地址也需要改变，否则，git拉取代码的地址还是以前的地址！切记切记！</p>
+
+<h4 id="drone-server-client分开安装">drone server client分开安装</h4>
+
+<p>https://mritd.me/2018/03/30/set-up-drone-ci/</p>
+
+
+                <hr>
+
+                
+
+
+                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="/YaPiBlog/2018/01/12/docker-%E7%A7%81%E6%9C%89%E9%95%9C%E5%83%8F%E4%BB%93%E5%BA%93%E6%90%AD%E5%BB%BA/" data-toggle="tooltip" data-placement="top" title="docker私有镜像仓库搭建">&larr; Previous Post</a>
+                    </li>
+                    
+                    
+                    <li class="next">
+                        <a href="/YaPiBlog/2018/01/12/k8s-1.16.1-kubeadm/" data-toggle="tooltip" data-placement="top" title="k8s-v1.16.1安装(kubeadm)">Next Post &rarr;</a>
+                    </li>
+                    
+                </ul>
+
+
+                
+
+                
+
+            </div>
+
+    <!-- Sidebar Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+                <section>
+                    <hr class="hidden-sm hidden-xs">
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+        				
+                            
+                				<a href="/YaPiBlog/tags/#JVM" title="JVM" rel="7">
+                                    JVM
+                                </a>
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#docker" title="docker" rel="4">
+                                    docker
+                                </a>
+                            
+        				
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#mongodb" title="mongodb" rel="4">
+                                    mongodb
+                                </a>
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#redis" title="redis" rel="5">
+                                    redis
+                                </a>
+                            
+        				
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#golang" title="golang" rel="12">
+                                    golang
+                                </a>
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#设计模式" title="设计模式" rel="24">
+                                    设计模式
+                                </a>
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#大数据" title="大数据" rel="5">
+                                    大数据
+                                </a>
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#数据结构" title="数据结构" rel="11">
+                                    数据结构
+                                </a>
+                            
+        				
+        			</div>
+                </section>
+                
+
+                <!-- Friends Blog -->
+                
+                <hr>
+                <h5>FRIENDS</h5>
+                <ul class="list-inline">
+                    
+                        <li><a href="http://server.scncys.cn">YaPi Blog</a></li>
+                    
+                </ul>
+                
+            </div>
+        </div>
+    </div>
+</article>
+
+
+
+
+
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("http://cdn.bootcss.com/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'always',
+          placement: 'right',
+          icon: '#'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading').remove('.sidebar-container h5');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
+
+
+
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                    
+                    
+
+                    <!-- add Weibo, Zhihu by Hux, add target = "_blank" to <a> by Hux -->
+                    
+                    
+
+
+                    
+                    
+                </ul>
+
+                <p class="copyright text-muted">
+                    蜀ICP备18030170号-2    Copyright &copy; YaPiBlog 2019
+                    <br>
+
+                    <!---->
+                    <!--Theme by <a href="http://huangxuan.me">Hux</a> |-->
+                    <!--<iframe-->
+                        <!--style="margin-left: 2px; margin-bottom:-5px;"-->
+                        <!--frameborder="0" scrolling="0" width="91px" height="20px"-->
+                        <!--src="https://ghbtns.com/github-btn.html?user=huxpro&repo=huxpro.github.io&type=star&count=true" >-->
+                    <!--</iframe>-->
+
+
+                </p>
+
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/YaPiBlog/js/jquery.min.js "></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="/YaPiBlog/js/bootstrap.min.js "></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/YaPiBlog/js/yapi-blog.min.js "></script>
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- 
+     Because of the native support for backtick-style fenced code blocks 
+     right within the Markdown is landed in Github Pages, 
+     From V1.6, There is no need for Highlight.js, 
+     so Huxblog drops it officially.
+
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0  
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/    
+-->
+<!--
+    <script>
+        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
+            hljs.initHighlightingOnLoad();
+        })
+    </script>
+    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+-->
+
+
+<!-- jquery.tagcloud.js -->
+<script>
+    // only load tagcloud.js in tag.html
+    if($('#tag_cloud').length !== 0){
+        async("/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                //size: {start: 1, end: 1, unit: 'em'},
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+<!--fastClick.js -->
+<script>
+    async("http://cdn.bootcss.com/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+
+
+<!-- Baidu Tongji -->
+
+
+
+
+<!-- Image to hack wechat -->
+<!--<img src="../img/icon_wechat.png" width="0" height="0" />-->
+<!-- Migrate from head to bottom, no longer block render and still work -->
+
+</body>
+
+</html>

@@ -1,0 +1,249 @@
+---
+layout:     post
+title:      "k8s-v1.16.1安装(kubeadm)"
+subtitle:   ""
+date:       2018-01-12 12:10:00
+author:     "YaPi"
+header-img: ""
+tags:
+    - Kubernetes
+---
+
+#### 安装
+##### 安装docker
+
+###### Master、Node节点都需要安装
+```
+# 卸载原来的docker
+sudo yum remove docker \
+                  docker-client \
+                  docker-client-latest \
+                  docker-common \
+                  docker-latest \
+                  docker-latest-logrotate \
+                  docker-logrotate \
+                  docker-engine
+
+# 安装依赖
+sudo yum update -y && sudo yum install -y yum-utils \
+  device-mapper-persistent-data \
+  lvm2
+
+# 添加官方yum库
+sudo yum-config-manager \
+    --add-repo \
+    https://download.docker.com/linux/centos/docker-ce.repo
+
+# 安装docker 安装指定版本的docker,需要kubernets支持的才行，这里安装18.9.7
+
+# sudo yum install docker-ce docker-ce-cli containerd.io
+yum install -y docker-ce-18.09.7 docker-ce-cli-18.09.7 containerd.io
+
+# 查看docker版本
+docker --version
+
+# 开机启动
+systemctl enable --now docker
+```
+
+###### 或者使用脚本一件安装
+
+```
+curl -fsSL "https://get.docker.com/" | sh
+systemctl enable --now docker
+```
+
+###### 修改docker cgroup驱动，与k8s一致，使用systemd
+
+```
+# 修改docker cgroup驱动：native.cgroupdriver=systemd
+cat > /etc/docker/daemon.json <<EOF
+{
+  "exec-opts": ["native.cgroupdriver=systemd"],
+  "log-driver": "json-file",
+  "log-opts": {
+    "max-size": "100m"
+  },
+  "storage-driver": "overlay2",
+  "storage-opts": [
+    "overlay2.override_kernel_check=true"
+  ]
+
+  # 这里可以加入下载加速的源
+  # "registry-mirrors": ["https://xxxxx.mirror.aliyuncs.com"]
+}
+EOF
+
+systemctl restart docker  # 重启使配置生效
+```
+
+##### 安装 kubelet kubeadm kubectl
+
+master、node节点都需要安装kubelet kubeadm kubectl。
+
+安装kubernetes的时候，需要安装kubelet, kubeadm等包，但k8s官网给的yum源是packages.cloud.google.com，国内访问不了，此时我们可以使用阿里云的yum仓库镜像
+
+```
+cat <<EOF > /etc/yum.repos.d/kubernetes.repo
+[kubernetes]
+name=Kubernetes
+baseurl=http://mirrors.aliyun.com/kubernetes/yum/repos/kubernetes-el7-x86_64
+enabled=1
+gpgcheck=0
+repo_gpgcheck=0
+gpgkey=http://mirrors.aliyun.com/kubernetes/yum/doc/yum-key.gpg
+       http://mirrors.aliyun.com/kubernetes/yum/doc/rpm-package-key.gpg
+EOF
+
+# 关闭SElinux
+setenforce 0
+sed -i 's/^SELINUX=enforcing$/SELINUX=permissive/' /etc/selinux/config
+
+# 安装kubelet kubeadm kubectl
+yum install -y kubelet kubeadm kubectl --disableexcludes=kubernetes
+
+systemctl enable --now kubelet  # 开机启动kubelet
+
+# centos7用户还需要设置路由：
+yum install -y bridge-utils.x86_64
+modprobe  br_netfilter  # 加载br_netfilter模块，使用lsmod查看开启的模块
+cat <<EOF >  /etc/sysctl.d/k8s.conf
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1
+EOF
+sysctl --system  # 重新加载所有配置文件
+
+systemctl disable --now firewalld  # 关闭防火墙
+
+# k8s要求关闭swap  (qxl)
+swapoff -a && sysctl -w vm.swappiness=0  # 关闭swap
+sed -ri '/^[^#]*swap/s@^@#@' /etc/fstab  # 取消开机挂载swap
+```
+
+##### 创建集群准备工作
+
+```
+# Master端：
+kubeadm config images pull # 拉取集群所需镜像，这个需要翻墙
+
+# --- 不能翻墙可以尝试以下办法 ---
+kubeadm config images list # 列出所需镜像 根据自己需要下载
+
+docker pull mirrorgooglecontainers/kube-apiserver-amd64:v1.16.1
+docker pull mirrorgooglecontainers/kube-controller-manager-amd64:v1.16.1
+docker pull mirrorgooglecontainers/kube-scheduler-amd64:v1.16.1
+docker pull mirrorgooglecontainers/kube-proxy-amd64:v1.16.1
+docker pull mirrorgooglecontainers/pause:3.1
+docker pull mirrorgooglecontainers/etcd:3.3.15-0
+docker pull coredns/coredns:1.6.2
+
+# 下载完毕后打tag
+docker tag mirrorgooglecontainers/kube-apiserver-amd64:v1.16.1 k8s.gcr.io/kube-apiserver:v1.16.1
+
+docker tag mirrorgooglecontainers/kube-controller-manager-amd64:v1.16.1 k8s.gcr.io/kube-controller-manager:v1.16.1
+
+docker tag mirrorgooglecontainers/kube-scheduler-amd64:v1.16.1 k8s.gcr.io/kube-scheduler:v1.16.1
+
+docker tag mirrorgooglecontainers/kube-proxy-amd64:v1.16.1 k8s.gcr.io/kube-proxy:v1.16.1
+
+docker tag mirrorgooglecontainers/pause:3.1 k8s.gcr.io/pause:3.1
+
+docker tag mirrorgooglecontainers/etcd:3.3.15-0 k8s.gcr.io/etcd:3.3.15-0
+
+docker tag coredns/coredns:1.6.2 k8s.gcr.io/coredns:1.6.2
+
+# 删除原来的镜像
+
+# Node端：
+# 根据所需镜像名字先拉取国内资源
+docker pull mirrorgooglecontainers/kube-proxy-amd64:v1.16.1
+docker pull mirrorgooglecontainers/pause:3.1
+
+
+# 修改镜像tag
+docker tag mirrorgooglecontainers/kube-proxy-amd64:v1.16.1 k8s.gcr.io/kube-proxy:v1.16.1
+
+docker tag mirrorgooglecontainers/pause:3.1 k8s.gcr.io/pause:3.1
+
+# 删除原来的镜像
+```
+
+##### 使用kubeadm创建集群
+
+```
+# 第一次初始化过程中/etc/kubernetes/admin.conf该文件存在，是空文件（我自己手动创建的），会报错：panic: runtime error: invalid memory address or nil pointer dereference
+ls /etc/kubernetes/admin.conf && mv /etc/kubernetes/admin.conf.bak # 移走备份
+
+# 初始化Master（Master需要至少2核）此处会各种报错,异常...成功与否就在此
+kubeadm init --apiserver-advertise-address 192.168.200.25 --pod-network-cidr 10.244.0.0/16 # --kubernetes-version 1.14.1
+# --apiserver-advertise-address 指定与其它节点通信的接口
+# --pod-network-cidr 指定pod网络子网，使用fannel网络必须使用这个CIDR
+```
+
+###### 普通用户设置权限
+
+```
+mkdir -p $HOME/.kube
+  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+  sudo chown $(id -u):$(id -g) $HOME/.kube/config
+```
+###### 应用flannel网络
+
+```
+# https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/#tabs-pod-install-4
+kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/2140ac876ef134e0ed5af15c65e414cf26827915/Documentation/kube-flannel.yml
+
+
+```
+
+###### 使用node加入集群
+
+```
+kubeadm join 172.16.54.145:6443 --token ppj0ts.1x5lh80gcgj84qr1 \
+    --discovery-token-ca-cert-hash sha256:14fbe55aa9cbae02fc558aa9e34da44f95840133309885b5b6f8a8895f924409
+```
+
+###### 查看
+
+```
+# master：
+kubectl get pods --all-namespaces
+# ---输出信息---
+NAMESPACE     NAME                             READY   STATUS    RESTARTS   AGE
+kube-system   coredns-fb8b8dccf-rn8kd          1/1     Running   0          170m
+kube-system   coredns-fb8b8dccf-slwr4          1/1     Running   0          170m
+kube-system   etcd-master                      1/1     Running   0          169m
+kube-system   kube-apiserver-master            1/1     Running   0          169m
+kube-system   kube-controller-manager-master   1/1     Running   0          169m
+kube-system   kube-flannel-ds-amd64-l8c7c      1/1     Running   0          130m
+kube-system   kube-flannel-ds-amd64-lcmxw      1/1     Running   1          117m
+kube-system   kube-flannel-ds-amd64-pqnln      1/1     Running   1          72m
+kube-system   kube-proxy-4kcqb                 1/1     Running   0          170m
+kube-system   kube-proxy-jcqjd                 1/1     Running   0          72m
+kube-system   kube-proxy-vm9sj                 1/1     Running   0          117m
+kube-system   kube-scheduler-master            1/1     Running   0          169m
+# ---输出信息---
+
+
+kubectl get nodes
+# ---输出信息---
+NAME     STATUS   ROLES    AGE    VERSION
+master   Ready    master   171m   v1.14.1
+node1    Ready    <none>   118m   v1.14.1
+node2    Ready    <none>   74m    v1.14.1
+# ---输出信息---
+```
+
+###### 查看日志
+
+```
+ournalctl -f  # 当前输出日志
+journalctl -f -u kubelet  # 只看当前的kubelet进程日志
+```
+
+###### DashBoard安装
+
+```
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0-beta4/aio/deploy/recommended.yaml
+
+```

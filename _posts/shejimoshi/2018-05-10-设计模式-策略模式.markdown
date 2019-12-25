@@ -1,0 +1,80 @@
+---
+layout:     post
+title:      "设计模式-行为型-策略模式"
+subtitle:   ""
+date:       2018-05-10 12:16:00
+author:     "YaPi"
+header-img: ""
+tags:
+    - 设计模式
+---
+#### 基础与定义
+
+- 定义了算法家族，分别封装起来，让它们之间可以互相替换，此模式让算法的变化不会影响到使用算法的用户
+- 类型：行为型
+
+使用场景：
+1. 一个系统需要动态的在几种算法中选择一种
+
+
+#### 代码实例
+
+比如我们去逛商场，商场现在正在搞活动，有打折的、有满减的、有返利的等等，其实不管商场如何进行促销，说到底都是一些算法，这些算法本身只是一种策略，并且这些算法是随时都可能互相替换的，比如针对同一件商品，今天打八折、明天满100减30，这些策略间是可以互换的。
+
+```
+public interface PromotionStrategy {
+    void doPromotion();
+}
+
+public class ManjianPromotion implements PromotionStrategy{
+    @Override
+    public void doPromotion() {
+        System.out.println("满减促销");
+    }
+}
+
+public class LijianPromotion implements PromotionStrategy {
+    @Override
+    public void doPromotion() {
+        System.out.println("立减促销");
+    }
+}
+
+
+public class FanxianPromotion implements PromotionStrategy {
+    @Override
+    public void doPromotion() {
+        System.out.println("返现促销");
+    }
+}
+
+// 实际促销类
+public class PromotionActivity {
+    private PromotionStrategy promotionStrategy;
+
+    public PromotionActivity(PromotionStrategy promotionStrategy) {
+        this.promotionStrategy = promotionStrategy;
+    }
+
+    void doPromition(){
+        promotionStrategy.doPromotion();
+    }
+}
+
+// 使用
+public class Test {
+    public static void main(String[] args){
+        PromotionActivity promotionActivity618 = new PromotionActivity(
+                new LijianPromotion()
+        );
+
+        PromotionActivity promotionActivity11 = new PromotionActivity(
+                new ManjianPromotion()
+        );
+        promotionActivity618.doPromition();
+        promotionActivity11.doPromition();
+
+
+    }
+}
+```

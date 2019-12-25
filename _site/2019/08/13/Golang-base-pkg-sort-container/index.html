@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="keyword"  content="">
+    <link rel="shortcut icon" href="/YaPiBlog/img/favicon.ico">
+
+    <title>Golang标准库-sort、container - YaPiBlog</title>
+
+    <link rel="canonical" href="http://localhost:4000/YaPiBlog/2019/08/13/Golang-base-pkg-sort-container/">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/YaPiBlog/css/bootstrap.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/YaPiBlog/css/yapi-blog.min.css">
+
+    <!-- Pygments Github CSS -->
+    <link rel="stylesheet" href="/YaPiBlog/css/syntax.css">
+
+    <!-- Custom Fonts -->
+    <!-- <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <link href="http://cdn.staticfile.org/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+
+    <!-- Hux Delete, sad but pending in China
+    <link href='http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/
+    css'>
+    -->
+
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- ga & ba script hoook -->
+    <script></script>
+</head>
+
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <!--<a class="navbar-brand" href="/YaPiBlog/">YaPiBlog</a>-->
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <!-- Known Issue, found by Hux:
+            <nav>'2019-06-20-HDFS-base.markdown height woule be hold on by its content.
+            so, when navbar scale out, the <nav> will cover tags.
+            also mask any touch event of tags, unfortunately.
+        -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <!--
+                     <li>
+                         <a href="/YaPiBlog/"><span style="font-size: 20px">主页</span></a>
+                     </li>
+
+                     <li>
+                         <a href="/YaPiBlog/tags"><span style="font-size: 20px">分类</span></a>
+                     </li>
+
+                     <li>
+                         <a href="/YaPiBlog/about/"><span style="font-size: 20px">关于</span></a>
+                     </li>
+                    -->
+
+                    <li>
+                        <a href="/YaPiBlog/">Home</a>
+                    </li>
+                     
+                     <li>
+                         <a href="/YaPiBlog/about/">ABOUT</a>
+                     </li>
+                     
+                     <li>
+                         <a href="/YaPiBlog/tags/">Tags</a>
+                     </li>
+                     
+
+
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        // CLOSE
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        // OPEN
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+    <!-- Image to hack wechat -->
+<!-- <img src="/img/icon_wechat.png" width="0" height="0"> -->
+<!-- <img src="/YaPiBlog/" width="0" height="0"> -->
+
+<!-- Post Header -->
+<style type="text/css">
+    header.intro-header{
+        background-image: url('/YaPiBlog/')
+    }
+</style>
+<header class="intro-header" >
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                        <a class="tag" href="/YaPiBlog/tags/#golang" title="golang">golang</a>
+                        
+                    </div>
+                    <h1>Golang标准库-sort、container</h1>
+                    
+                    
+                    <h2 class="subheading"></h2>
+                    
+                    <span class="meta">Posted by YaPi on August 13, 2019</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+
+    <!-- Post Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+				<h4 id="sort包">sort包</h4>
+
+<p>该包实现了四种基本排序算法：插⼊排序、归并排序、堆排序和快速排序.但是这四
+种排序⽅法是不公开的，它们只被⽤于sort包内部使⽤。所以在对数据集合排序时不必考虑应当选择哪⼀种排序⽅法，只要实现了sort.Interface定义的三个⽅法：</p>
+
+<ul>
+  <li>获取数据集合⻓度的Len()⽅法</li>
+  <li>⽐较两个元素⼤⼩的Less()⽅法</li>
+  <li>交换两个元素位置的Swap()⽅法</li>
+</ul>
+
+<p>就可以顺利对数据集合进⾏排序。sort包会根据实际数据⾃动选择⾼效的排序算法。 除此之外，为了⽅便对常⽤数据类型的操作，sort包提供了对[]int切⽚、
+[]float64切⽚和[]string切⽚完整⽀持，主要包括:</p>
+
+<ul>
+  <li>对基本数据类型切⽚的排序⽀持</li>
+  <li>基本数据元素查找</li>
+  <li>判断基本数据类型切⽚是否已经排好序</li>
+  <li>对排好序的数据集合逆序</li>
+</ul>
+
+<p>sort.Interface接⼝:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>type Interface interface {
+    // 获取数据集合元素个数
+    Len() int
+    // 如果i索引的数据⼩于j所以的数据，返回true，不会调⽤
+    // 下⾯的Swap()，即数据升序排序。
+    Less(i, j int) bool
+    // 交换i和j索引的两个元素的位置
+    Swap(i, j int)
+}
+</code></pre></div></div>
+
+<p>数据集合实现了这三个⽅法后，即可调⽤该包的Sort()⽅法进⾏排序,Sort()⽅法惟⼀的参数就是待排序的数据集合</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>func Sort(data Interface)
+</code></pre></div></div>
+
+<h6 id="示例">示例</h6>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">package</span> <span class="n">main</span>
+
+<span class="n">import</span> <span class="p">(</span>
+	<span class="s2">"fmt"</span>
+	<span class="s2">"sort"</span>
+<span class="p">)</span>
+
+<span class="n">type</span> <span class="n">Stu</span> <span class="n">struct</span> <span class="p">{</span>
+	<span class="n">Name</span> <span class="k">string</span>
+	<span class="n">Age</span>  <span class="n">int</span>
+<span class="p">}</span>
+
+<span class="n">type</span> <span class="n">Stus</span> <span class="p">[]</span><span class="n">Stu</span>
+
+<span class="n">func</span> <span class="p">(</span><span class="n">s</span> <span class="n">Stus</span><span class="p">)</span> <span class="n">Len</span><span class="p">()</span> <span class="n">int</span> <span class="p">{</span>
+	<span class="n">return</span> <span class="n">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="n">func</span> <span class="p">(</span><span class="n">s</span> <span class="n">Stus</span><span class="p">)</span> <span class="n">Less</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="n">int</span><span class="p">)</span> <span class="n">bool</span> <span class="p">{</span>
+	<span class="n">return</span> <span class="n">s</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">Age</span> <span class="p">&gt;</span> <span class="n">s</span><span class="p">[</span><span class="n">j</span><span class="p">].</span><span class="n">Age</span>
+<span class="p">}</span>
+
+<span class="n">func</span> <span class="p">(</span><span class="n">s</span> <span class="n">Stus</span><span class="p">)</span> <span class="n">Swap</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="n">int</span><span class="p">)</span> <span class="p">{</span>
+	<span class="n">s</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">s</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="p">=</span> <span class="n">s</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="n">s</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+<span class="p">}</span>
+
+<span class="n">func</span> <span class="n">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="n">stuss</span> <span class="p">:=</span> <span class="n">Stus</span><span class="p">{</span>
+		<span class="p">{</span><span class="s2">"张三"</span><span class="p">,</span> <span class="m">12</span><span class="p">},</span>
+		<span class="p">{</span><span class="s2">"里斯"</span><span class="p">,</span> <span class="m">23</span><span class="p">},</span>
+		<span class="p">{</span><span class="s2">"王五"</span><span class="p">,</span> <span class="m">5</span><span class="p">},</span>
+	<span class="p">}</span>
+
+	<span class="n">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">v</span> <span class="p">:=</span> <span class="k">range</span> <span class="n">stuss</span> <span class="p">{</span>
+		<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">v</span><span class="p">.</span><span class="n">Age</span><span class="p">,</span> <span class="s2">" : "</span><span class="p">,</span> <span class="n">v</span><span class="p">.</span><span class="n">Name</span><span class="p">)</span>
+	<span class="p">}</span>
+
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="s2">"----------"</span><span class="p">)</span>
+
+	<span class="n">sort</span><span class="p">.</span><span class="n">Sort</span><span class="p">(</span><span class="n">stuss</span><span class="p">)</span>
+
+	<span class="n">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">v</span> <span class="p">:=</span> <span class="k">range</span> <span class="n">stuss</span> <span class="p">{</span>
+		<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">v</span><span class="p">.</span><span class="n">Age</span><span class="p">,</span> <span class="s2">" : "</span><span class="p">,</span> <span class="n">v</span><span class="p">.</span><span class="n">Name</span><span class="p">)</span>
+	<span class="p">}</span>
+
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="s2">"Is Sorted ?"</span><span class="p">,</span> <span class="n">sort</span><span class="p">.</span><span class="n">IsSorted</span><span class="p">(</span><span class="n">stuss</span><span class="p">))</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+<h6 id="reverse">Reverse()</h6>
+
+<p>若需要降序排列,可以更改Less()中的方法,sort包也提供了Reverse()方法,可以将其倒叙排序</p>
+
+<p>到Reverse()返回的⼀个sort.Interface接⼝类型</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>//定义了⼀个reverse结构类型，嵌⼊Interface接⼝
+type reverse struct {
+    Interface
+}
+//reverse结构类型的Less()⽅法拥有嵌⼊的Less()⽅法相反的⾏为
+//Len()和Swap()⽅法则会保持嵌⼊类型的⽅法⾏为
+func (r reverse) Less(i, j int) bool {
+    return r.Interface.Less(j, i)
+}
+//返回新的实现Interface接⼝的数据类型
+func Reverse(data Interface) Interface {
+    return &amp;reverse{data}
+}
+</code></pre></div></div>
+
+<h6 id="search">Search(()</h6>
+
+<blockquote>
+  <p>Search()⽅法回使⽤“⼆分查找”算法来搜索某指定切⽚[0:n]，并返回能够使
+f(i)=true的最 ⼩的i（0&lt;=i&lt;n）值，并且会假定，如果f(i)=true，则f(i+1)=true，即对于切⽚[0:n]，i之前的切⽚元素会使f()函数返回false，i及i之后的元素会使f()函数返回true。但是，当在切⽚中⽆法找到时f(i)=true的i时（此时切⽚元素都不能使f()函数返回true），Search() ⽅法会返回n</p>
+</blockquote>
+
+<p>Search()函数⼀个常⽤的使⽤⽅式是搜索元素x是否在已经升序排好的切⽚s中</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>x := 11
+s := []int{3, 6, 8, 11, 45} //注意已经升序排序
+pos := sort.Search(len(s), func(i int) bool { return s[i] &gt;= x })
+if pos &lt; len(s) &amp;&amp; s[pos] == x {
+    fmt.Println(x, "在s中的位置为：", pos)
+} else {
+    fmt.Println("s不包含元素", x)
+}
+</code></pre></div></div>
+
+<h5 id="原声支持方法">原声支持方法</h5>
+
+<p>sort包原生支持[]int,[]float64,[]string三种内建数据类型切片的排序操作,即不必我们自己实现相关的Len()、Less()、Swap()方法</p>
+
+<ul>
+  <li>sort.Ints()</li>
+</ul>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>s := []int{5, 2, 6, 3, 1, 4} // 未排序的切⽚数据
+sort.Ints(s)
+fmt.Println(s) //将会输出[1 2 3 4 5 6]
+
+// 若需要降序排列
+s := []int{5, 2, 6, 3, 1, 4} // 未排序的切⽚数据
+sort.Sort(sort.Reverse(sort.IntSlice(s)))
+fmt.Println(s) //将会输出[6 5 4 3 2 1]
+</code></pre></div></div>
+
+<ul>
+  <li>Float64Slice类型及[]float64排序</li>
+</ul>
+
+<p>与Sort()、IsSorted()、Search()相对应的三个⽅法</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>func Float64s(a []float64)
+func Float64sAreSorted(a []float64) bool
+func SearchFloat64s(a []float64, x float64) int
+</code></pre></div></div>
+
+<ul>
+  <li>StringSlice类型及[]string排序</li>
+</ul>
+
+<p>与Sort()、IsSorted()、Search()相对应的三个⽅法</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>func Strings(a []string)
+func StringsAreSorted(a []string) bool
+func SearchStrings(a []string, x string) int
+</code></pre></div></div>
+
+<h4 id="container">container</h4>
+
+<p>该包实现了三个复杂的数据结构:堆(heap),链表(list),环(ring)。</p>
+
+<h5 id="heap堆">heap(堆)</h5>
+
+<p>堆使⽤的数据结构是最⼩⼆叉树，即根节点⽐左边⼦树和右边⼦树的所有值都
+⼩。 go的堆包只是实现了⼀个接⼝</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>type Interface interface {
+    sort.Interface
+    Push(x interface{}) // add x as element Len()
+    Pop() interface{} // remove and return element Len() - 1.
+}
+</code></pre></div></div>
+
+<p>示例</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>// 定义实现了相关接口的类型
+type IntHeap []int
+func (h IntHeap) Len() int { return len(h) }
+func (h IntHeap) Less(i, j int) bool { return h[i] &lt; h[j] }
+func (h IntHeap) Swap(i, j int) { h[i], h[j] = h[j], h[i] }
+
+func (h *IntHeap) Push(x interface{}) {
+    *h = append(*h, x.(int))
+}
+func (h *IntHeap) Pop() interface{} {
+    old := *h
+    n := len(old)
+    x := old[n-1]
+    *h = old[0 : n-1]
+    return x
+}
+
+// 调用
+h := &amp;IntHeap{2, 1, 5}
+heap.Init(h)
+heap.Push(h, 3)
+heap.Pop(h)
+</code></pre></div></div>
+<h5 id="list链表">list(链表)</h5>
+
+<p>链表就是⼀个有prev和next指针的数组了</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+// list 包定义
+
+type Element struct {
+    next, prev *Element // 上⼀个元素和下⼀个元素
+    list *List // 元素所在链表
+    Value interface{} // 元素
+}
+
+type List struct {
+    root Element // 链表的根元素
+    len int // 链表的⻓度
+}
+</code></pre></div></div>
+
+<p>示例</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>list := list.New()
+list.PushBack(1)
+list.PushBack(2)
+fmt.Printf("len: %v\n", list.Len());
+fmt.Printf("first: %#v\n", list.Front());
+fmt.Printf("second: %#v\n", list.Front().Next());
+</code></pre></div></div>
+
+<p>list对应相关方法</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>type Element
+    func (e *Element) Next() *Element
+    func (e *Element) Prev() *Element
+type List
+    func New() *List
+    func (l *List) Back() *Element // 最后⼀个元素
+    func (l *List) Front() *Element // 第⼀个元素
+    func (l *List) Init() *List // 链表初始化
+    func (l *List) InsertAfter(v interface{}, mark *Element) *Element // 在某个元素前插
+    ⼊
+    func (l *List) InsertBefore(v interface{}, mark *Element) *Element // 在某个元素后
+    插⼊
+    func (l *List) Len() int // 在链表⻓度
+    func (l *List) MoveAfter(e, mark *Element) // 把e元素移动到mark之后
+    func (l *List) MoveBefore(e, mark *Element) // 把e元素移动到mark之前
+    func (l *List) MoveToBack(e *Element) // 把e元素移动到队列最后
+    func (l *List) MoveToFront(e *Element) // 把e元素移动到队列最头部
+    func (l *List) PushBack(v interface{}) *Element // 在队列最后插⼊元素
+    func (l *List) PushBackList(other *List) // 在队列最后插⼊接上新队列
+    func (l *List) PushFront(v interface{}) *Element // 在队列头部插⼊元素
+    func (l *List) PushFrontList(other *List) // 在队列头部插⼊接上新队列
+    func (l *List) Remove(e *Element) interface{} // 删除某个元素
+</code></pre></div></div>
+
+<h5 id="环ring">环(ring)</h5>
+
+<p>环的结构有点特殊，环的尾部就是头部，所以每个元素实际上就可以代表⾃身的这个环.它不需要像list⼀样保持list和element两个结构，只需要保持⼀个结构就⾏</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>type Ring struct {
+    next, prev *Ring
+    Value interface{}
+}
+</code></pre></div></div>
+
+<p>我们初始化环的时候，需要定义好环的⼤⼩，然后对环的每个元素进⾏赋值。环还提供⼀个Do⽅法，能便利⼀遍环，对每个元素执⾏⼀个function</p>
+
+<p>示例</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">package</span> <span class="n">main</span>
+
+<span class="n">import</span> <span class="p">(</span>
+	<span class="s2">"container/ring"</span>
+	<span class="s2">"fmt"</span>
+<span class="p">)</span>
+
+<span class="n">func</span> <span class="n">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="n">ring</span> <span class="p">:=</span> <span class="n">ring</span><span class="p">.</span><span class="n">New</span><span class="p">(</span><span class="m">3</span><span class="p">)</span>
+	<span class="n">for</span> <span class="n">i</span> <span class="p">:=</span> <span class="m">1</span><span class="p">;</span> <span class="n">i</span> <span class="p">&lt;=</span> <span class="m">3</span><span class="p">;</span> <span class="n">i</span><span class="p">++</span> <span class="p">{</span>
+		<span class="n">ring</span><span class="p">.</span><span class="n">Value</span> <span class="p">=</span> <span class="n">i</span>
+		<span class="n">ring</span> <span class="p">=</span> <span class="n">ring</span><span class="p">.</span><span class="k">Next</span><span class="p">()</span>
+	<span class="p">}</span>
+	<span class="p">//</span> <span class="err">计算</span><span class="m">1</span><span class="p">+</span><span class="m">2</span><span class="p">+</span><span class="m">3</span>
+	<span class="n">s</span> <span class="p">:=</span> <span class="m">0</span>
+	<span class="n">ring</span><span class="p">.</span><span class="k">Do</span><span class="p">(</span><span class="n">func</span><span class="p">(</span><span class="n">p</span> <span class="n">interface</span><span class="p">{})</span> <span class="p">{</span>
+		<span class="n">s</span> <span class="p">+=</span> <span class="n">p</span><span class="p">.(</span><span class="n">int</span><span class="p">)</span>
+	<span class="p">})</span>
+
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="s2">"sum is"</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span>
+
+<span class="p">}</span>
+
+</code></pre></div></div>
+
+<p>ring提供的⽅法</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>type Ring
+    func New(n int) *Ring // 初始化环
+    func (r *Ring) Do(f func(interface{})) // 循环环进⾏操作
+    func (r *Ring) Len() int // 环⻓度
+    func (r *Ring) Link(s *Ring) *Ring // 连接两个环
+    func (r *Ring) Move(n int) *Ring // 指针从当前元素开始向后移动或者向前（n可以为负数）
+    func (r *Ring) Next() *Ring // 当前元素的下个元素
+    func (r *Ring) Prev() *Ring // 当前元素的上个元素
+    func (r *Ring) Unlink(n int) *Ring // 从当前元素开始，删除n个元素
+</code></pre></div></div>
+
+
+                <hr>
+
+                
+
+
+                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="/YaPiBlog/2019/08/13/Golang-base-pkg-strings/" data-toggle="tooltip" data-placement="top" title="Golang标准库-strings">&larr; Previous Post</a>
+                    </li>
+                    
+                    
+                    <li class="next">
+                        <a href="/YaPiBlog/2019/08/13/Golang-base-pkg-strconv-regexp/" data-toggle="tooltip" data-placement="top" title="Golang标准库-strconv、regexp">Next Post &rarr;</a>
+                    </li>
+                    
+                </ul>
+
+
+                
+
+                
+
+            </div>
+
+    <!-- Sidebar Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+                <section>
+                    <hr class="hidden-sm hidden-xs">
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+        				
+                            
+                				<a href="/YaPiBlog/tags/#JVM" title="JVM" rel="7">
+                                    JVM
+                                </a>
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#docker" title="docker" rel="4">
+                                    docker
+                                </a>
+                            
+        				
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#mongodb" title="mongodb" rel="4">
+                                    mongodb
+                                </a>
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#redis" title="redis" rel="5">
+                                    redis
+                                </a>
+                            
+        				
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#golang" title="golang" rel="12">
+                                    golang
+                                </a>
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#设计模式" title="设计模式" rel="24">
+                                    设计模式
+                                </a>
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#大数据" title="大数据" rel="5">
+                                    大数据
+                                </a>
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#数据结构" title="数据结构" rel="11">
+                                    数据结构
+                                </a>
+                            
+        				
+        			</div>
+                </section>
+                
+
+                <!-- Friends Blog -->
+                
+                <hr>
+                <h5>FRIENDS</h5>
+                <ul class="list-inline">
+                    
+                        <li><a href="http://server.scncys.cn">YaPi Blog</a></li>
+                    
+                </ul>
+                
+            </div>
+        </div>
+    </div>
+</article>
+
+
+
+
+
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("http://cdn.bootcss.com/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'always',
+          placement: 'right',
+          icon: '#'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading').remove('.sidebar-container h5');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
+
+
+
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                    
+                    
+
+                    <!-- add Weibo, Zhihu by Hux, add target = "_blank" to <a> by Hux -->
+                    
+                    
+
+
+                    
+                    
+                </ul>
+
+                <p class="copyright text-muted">
+                    蜀ICP备18030170号-2    Copyright &copy; YaPiBlog 2019
+                    <br>
+
+                    <!---->
+                    <!--Theme by <a href="http://huangxuan.me">Hux</a> |-->
+                    <!--<iframe-->
+                        <!--style="margin-left: 2px; margin-bottom:-5px;"-->
+                        <!--frameborder="0" scrolling="0" width="91px" height="20px"-->
+                        <!--src="https://ghbtns.com/github-btn.html?user=huxpro&repo=huxpro.github.io&type=star&count=true" >-->
+                    <!--</iframe>-->
+
+
+                </p>
+
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/YaPiBlog/js/jquery.min.js "></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="/YaPiBlog/js/bootstrap.min.js "></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/YaPiBlog/js/yapi-blog.min.js "></script>
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- 
+     Because of the native support for backtick-style fenced code blocks 
+     right within the Markdown is landed in Github Pages, 
+     From V1.6, There is no need for Highlight.js, 
+     so Huxblog drops it officially.
+
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0  
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/    
+-->
+<!--
+    <script>
+        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
+            hljs.initHighlightingOnLoad();
+        })
+    </script>
+    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+-->
+
+
+<!-- jquery.tagcloud.js -->
+<script>
+    // only load tagcloud.js in tag.html
+    if($('#tag_cloud').length !== 0){
+        async("/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                //size: {start: 1, end: 1, unit: 'em'},
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+<!--fastClick.js -->
+<script>
+    async("http://cdn.bootcss.com/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+
+
+<!-- Baidu Tongji -->
+
+
+
+
+<!-- Image to hack wechat -->
+<!--<img src="../img/icon_wechat.png" width="0" height="0" />-->
+<!-- Migrate from head to bottom, no longer block render and still work -->
+
+</body>
+
+</html>

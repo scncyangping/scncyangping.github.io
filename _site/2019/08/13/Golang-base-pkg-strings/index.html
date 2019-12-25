@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="keyword"  content="">
+    <link rel="shortcut icon" href="/YaPiBlog/img/favicon.ico">
+
+    <title>Golang标准库-strings - YaPiBlog</title>
+
+    <link rel="canonical" href="http://localhost:4000/YaPiBlog/2019/08/13/Golang-base-pkg-strings/">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/YaPiBlog/css/bootstrap.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/YaPiBlog/css/yapi-blog.min.css">
+
+    <!-- Pygments Github CSS -->
+    <link rel="stylesheet" href="/YaPiBlog/css/syntax.css">
+
+    <!-- Custom Fonts -->
+    <!-- <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <link href="http://cdn.staticfile.org/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+
+    <!-- Hux Delete, sad but pending in China
+    <link href='http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/
+    css'>
+    -->
+
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- ga & ba script hoook -->
+    <script></script>
+</head>
+
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <!--<a class="navbar-brand" href="/YaPiBlog/">YaPiBlog</a>-->
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <!-- Known Issue, found by Hux:
+            <nav>'2019-06-20-HDFS-base.markdown height woule be hold on by its content.
+            so, when navbar scale out, the <nav> will cover tags.
+            also mask any touch event of tags, unfortunately.
+        -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <!--
+                     <li>
+                         <a href="/YaPiBlog/"><span style="font-size: 20px">主页</span></a>
+                     </li>
+
+                     <li>
+                         <a href="/YaPiBlog/tags"><span style="font-size: 20px">分类</span></a>
+                     </li>
+
+                     <li>
+                         <a href="/YaPiBlog/about/"><span style="font-size: 20px">关于</span></a>
+                     </li>
+                    -->
+
+                    <li>
+                        <a href="/YaPiBlog/">Home</a>
+                    </li>
+                     
+                     <li>
+                         <a href="/YaPiBlog/about/">ABOUT</a>
+                     </li>
+                     
+                     <li>
+                         <a href="/YaPiBlog/tags/">Tags</a>
+                     </li>
+                     
+
+
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        // CLOSE
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        // OPEN
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+    <!-- Image to hack wechat -->
+<!-- <img src="/img/icon_wechat.png" width="0" height="0"> -->
+<!-- <img src="/YaPiBlog/" width="0" height="0"> -->
+
+<!-- Post Header -->
+<style type="text/css">
+    header.intro-header{
+        background-image: url('/YaPiBlog/')
+    }
+</style>
+<header class="intro-header" >
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                        <a class="tag" href="/YaPiBlog/tags/#golang" title="golang">golang</a>
+                        
+                    </div>
+                    <h1>Golang标准库-strings</h1>
+                    
+                    
+                    <h2 class="subheading"></h2>
+                    
+                    <span class="meta">Posted by YaPi on August 13, 2019</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+
+    <!-- Post Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+				<h5 id="是否存在某个字符或者字串">是否存在某个字符或者字串</h5>
+
+<ul>
+  <li>func Contains(s, substr string) bool</li>
+  <li>func ContainsAny(s, chars string) bool</li>
+  <li>func ContainsRune(s string, r rune) bool</li>
+</ul>
+
+<h5 id="字串出现次数字符串匹配">字串出现次数(字符串匹配)</h5>
+
+<ul>
+  <li>朴素匹配算法</li>
+  <li>KMP算法</li>
+  <li>Rabin-Karp算法</li>
+  <li>Boyer-Moore算法</li>
+</ul>
+
+<p>Go语言中查找字串出现次数实现的是Rabin-Karp算法</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>func Count(s, substr string) int
+</code></pre></div></div>
+
+<h6 id="特殊处理">特殊处理</h6>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>fmt.Print(strings.Count("five", "")) // 5
+
+// Count仅计算字串在字符串中出现的无重叠次数
+fmt.Print(strings.Count("fivevev", "vev")) // 1
+</code></pre></div></div>
+
+<h5 id="字符串分割为-string">字符串分割为 []string</h5>
+
+<h6 id="fields-和-fieldsfunc">Fields 和 FieldsFunc</h6>
+
+<p>Fields ⽤⼀个或多个连续的空格分隔字符串 s，返回⼦字符串的数组（slice）。如果
+字符串 s 只包含空格，则返回空列表([]string的⻓度为0）</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>func Fields(s string) []string
+</code></pre></div></div>
+
+<p>FieldsFunc  自定义分割函数,其实Fields就是调用了指定函数为unicode.IsSpace的FieldsFunc</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>func FieldsFunc(s string, f func(rune) bool) []string
+</code></pre></div></div>
+
+<h6 id="splitsplitafter-和-splitnsplitaftern">Split、SplitAfter 和 SplitN、SplitAfterN</h6>
+
+<p>它们都是通过⼀个同⼀个内部函数来实现的,若分隔符(sep)为空,则分割成
+一个一个的字符</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>func Split(s, sep string) []string { return genSplit(s, sep, 0, -1) }
+
+func SplitAfter(s, sep string) []string { return genSplit(s, sep, len(sep), -1) }
+
+func SplitN(s, sep string, n int) []string { return genSplit(s, sep, 0, n) }
+
+func SplitAfterN(s, sep string, n int) []string { return genSplit(s, sep, len(sep), n)}
+</code></pre></div></div>
+
+<p>Split 会将 s 中的 sep(分隔符) 去掉，⽽ SplitAfter 会保留 sep</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>带 N 的⽅法可以通过最后⼀个参数 n 控制返回的结果中的 slice 中的元素个数，当 n
+&lt; 0 时，返回所有的⼦字符串；当 n == 0 时，返回的结果是 nil；当 n &gt; 0 时，表示返
+回的 slice 中最多只有 n 个元素，其中，最后⼀个元素不会分割，
+
+fmt.Printf("%q\n", strings.SplitN("foo,bar,baz", ",", 2))
+输出 : ["foo" "bar,baz"]
+</code></pre></div></div>
+
+<h5 id="是否已某个字符串开始或结尾">是否已某个字符串开始或结尾</h5>
+
+<ul>
+  <li>func HasPrefix(s, prefix string) bool</li>
+  <li>func HasSuffix(s, suffix string) bool</li>
+</ul>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>// s 中是否以 prefix 开始
+func HasPrefix(s, prefix string) bool {
+	return len(s) &gt;= len(prefix) &amp;&amp; s[0:len(prefix)] == prefix
+}
+
+
+// s 中是否以 suffix 结尾
+func HasSuffix(s, suffix string) bool {
+	return len(s) &gt;= len(suffix) &amp;&amp; s[len(s)-len(suffix):] == suffix
+}
+</code></pre></div></div>
+
+<h5 id="字符或字串在字符串中的位置函数">字符或字串在字符串中的位置函数</h5>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>// 在 s 中查找 sep 的第⼀次出现，返回第⼀次出现的索引
+func Index(s, sep string) int
+
+// chars中任何⼀个Unicode代码点在s中⾸次出现的位置
+func IndexAny(s, chars string) int
+
+// 查找字符 c 在 s 中第⼀次出现的位置，其中 c 满⾜ f(c) 返回 true
+func IndexFunc(s string, f func(rune) bool) int
+
+// Unicode 代码点 r 在 s 中第⼀次出现的位置
+func IndexRune(s string, r rune) int
+
+// 有三个对应的查找最后⼀次出现的位置
+func LastIndex(s, sep string) int
+
+func LastIndexAny(s, chars string) int
+
+func LastIndexFunc(s string, f func(rune) bool) int
+
+</code></pre></div></div>
+
+<h5 id="字符数组连接">字符数组连接</h5>
+
+<ul>
+  <li>func Join(a []string, sep string) string</li>
+</ul>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>GO语言中str是不可变的,所有用byte数组避免⼤量的字符串连接操作
+
+func Join(a []string, sep string) string {
+    // 特殊情况处理
+	switch len(a) {
+	case 0:
+		return ""
+	case 1:
+		return a[0]
+	}
+	// 计算分隔符所占据的空间
+	// 加上原有字符的空间,用于生成byte数组
+	n := len(sep) * (len(a) - 1)
+	for i := 0; i &lt; len(a); i++ {
+		n += len(a[i])
+	}
+
+	var b Builder
+	// 生成数组
+	b.Grow(n)
+	// 添加第一个元素
+	b.WriteString(a[0])
+	// 若数组不止一个,添加后续数据
+	for _, s := range a[1:] {
+	    // 写入分隔符
+		b.WriteString(sep)
+		// 写入数据
+		b.WriteString(s)
+	}
+	return b.String()
+}
+</code></pre></div></div>
+
+<h5 id="字符串重复">字符串重复</h5>
+
+<ul>
+  <li>func Repeat(s string, count int) string</li>
+</ul>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>// 输出 hehexixi
+fmt.Println("hehe" + strings.Repeat("xi", 2))
+</code></pre></div></div>
+
+<h5 id="字符串替换">字符串替换</h5>
+
+<p>进⾏字符串替换时，考虑到性能问题，能不⽤正则尽量别⽤.应该⽤函数</p>
+
+<ul>
+  <li>func Replace(s, old, new string, n int)</li>
+  <li>func ReplaceAll(s, old, new string) string</li>
+</ul>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>// ⽤ new 替换 s 中的 old，⼀共替换 n 个。
+// 如果 n &lt; 0，则不限制替换次数，即全部替换
+func Replace(s, old, new string, n int) string
+
+
+
+func ReplaceAll(s, old, new string) string {
+	return Replace(s, old, new, -1)
+}
+</code></pre></div></div>
+
+<p>若需要一次替换调多个值,可以用Replacer 类型</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>func NewReplacer(oldnew ...string) *Replacer {
+	if len(oldnew)%2 == 1 {
+		panic("strings.NewReplacer: odd argument count")
+	}
+	return &amp;Replacer{oldnew: append([]string(nil), oldnew...)}
+}
+
+
+使用
+
+r := strings.NewReplacer("&lt;", "&amp;lt;", "&gt;", "&amp;gt;")
+fmt.Println(r.Replace("This is &lt;b&gt;HTML&lt;/b&gt;!"))
+
+
+// 也可调用 r.WriteString()方法将替换过后的内容放在io.Writer中
+func (r *Replacer) WriteString(w io.Writer, s string) (n int, err error)
+</code></pre></div></div>
+
+
+                <hr>
+
+                
+
+
+                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="/YaPiBlog/2019/07/20/HBase-optimize/" data-toggle="tooltip" data-placement="top" title="HBase优化、协处理器、容灾">&larr; Previous Post</a>
+                    </li>
+                    
+                    
+                    <li class="next">
+                        <a href="/YaPiBlog/2019/08/13/Golang-base-pkg-sort-container/" data-toggle="tooltip" data-placement="top" title="Golang标准库-sort、container">Next Post &rarr;</a>
+                    </li>
+                    
+                </ul>
+
+
+                
+
+                
+
+            </div>
+
+    <!-- Sidebar Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+                <section>
+                    <hr class="hidden-sm hidden-xs">
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+        				
+                            
+                				<a href="/YaPiBlog/tags/#JVM" title="JVM" rel="7">
+                                    JVM
+                                </a>
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#docker" title="docker" rel="4">
+                                    docker
+                                </a>
+                            
+        				
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#mongodb" title="mongodb" rel="4">
+                                    mongodb
+                                </a>
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#redis" title="redis" rel="5">
+                                    redis
+                                </a>
+                            
+        				
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#golang" title="golang" rel="12">
+                                    golang
+                                </a>
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#设计模式" title="设计模式" rel="24">
+                                    设计模式
+                                </a>
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#大数据" title="大数据" rel="5">
+                                    大数据
+                                </a>
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#数据结构" title="数据结构" rel="11">
+                                    数据结构
+                                </a>
+                            
+        				
+        			</div>
+                </section>
+                
+
+                <!-- Friends Blog -->
+                
+                <hr>
+                <h5>FRIENDS</h5>
+                <ul class="list-inline">
+                    
+                        <li><a href="http://server.scncys.cn">YaPi Blog</a></li>
+                    
+                </ul>
+                
+            </div>
+        </div>
+    </div>
+</article>
+
+
+
+
+
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("http://cdn.bootcss.com/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'always',
+          placement: 'right',
+          icon: '#'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading').remove('.sidebar-container h5');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
+
+
+
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                    
+                    
+
+                    <!-- add Weibo, Zhihu by Hux, add target = "_blank" to <a> by Hux -->
+                    
+                    
+
+
+                    
+                    
+                </ul>
+
+                <p class="copyright text-muted">
+                    蜀ICP备18030170号-2    Copyright &copy; YaPiBlog 2019
+                    <br>
+
+                    <!---->
+                    <!--Theme by <a href="http://huangxuan.me">Hux</a> |-->
+                    <!--<iframe-->
+                        <!--style="margin-left: 2px; margin-bottom:-5px;"-->
+                        <!--frameborder="0" scrolling="0" width="91px" height="20px"-->
+                        <!--src="https://ghbtns.com/github-btn.html?user=huxpro&repo=huxpro.github.io&type=star&count=true" >-->
+                    <!--</iframe>-->
+
+
+                </p>
+
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/YaPiBlog/js/jquery.min.js "></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="/YaPiBlog/js/bootstrap.min.js "></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/YaPiBlog/js/yapi-blog.min.js "></script>
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- 
+     Because of the native support for backtick-style fenced code blocks 
+     right within the Markdown is landed in Github Pages, 
+     From V1.6, There is no need for Highlight.js, 
+     so Huxblog drops it officially.
+
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0  
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/    
+-->
+<!--
+    <script>
+        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
+            hljs.initHighlightingOnLoad();
+        })
+    </script>
+    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+-->
+
+
+<!-- jquery.tagcloud.js -->
+<script>
+    // only load tagcloud.js in tag.html
+    if($('#tag_cloud').length !== 0){
+        async("/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                //size: {start: 1, end: 1, unit: 'em'},
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+<!--fastClick.js -->
+<script>
+    async("http://cdn.bootcss.com/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+
+
+<!-- Baidu Tongji -->
+
+
+
+
+<!-- Image to hack wechat -->
+<!--<img src="../img/icon_wechat.png" width="0" height="0" />-->
+<!-- Migrate from head to bottom, no longer block render and still work -->
+
+</body>
+
+</html>

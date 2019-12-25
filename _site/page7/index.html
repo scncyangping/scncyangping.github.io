@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="keyword"  content="">
+    <link rel="shortcut icon" href="/YaPiBlog/img/favicon.ico">
+
+    <title>YaPiBlog</title>
+
+    <link rel="canonical" href="http://localhost:4000/YaPiBlog/page7/">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/YaPiBlog/css/bootstrap.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/YaPiBlog/css/yapi-blog.min.css">
+
+    <!-- Pygments Github CSS -->
+    <link rel="stylesheet" href="/YaPiBlog/css/syntax.css">
+
+    <!-- Custom Fonts -->
+    <!-- <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <link href="http://cdn.staticfile.org/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+
+    <!-- Hux Delete, sad but pending in China
+    <link href='http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/
+    css'>
+    -->
+
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- ga & ba script hoook -->
+    <script></script>
+</head>
+
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <!--<a class="navbar-brand" href="/YaPiBlog/">YaPiBlog</a>-->
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <!-- Known Issue, found by Hux:
+            <nav>'2019-06-20-HDFS-base.markdown height woule be hold on by its content.
+            so, when navbar scale out, the <nav> will cover tags.
+            also mask any touch event of tags, unfortunately.
+        -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <!--
+                     <li>
+                         <a href="/YaPiBlog/"><span style="font-size: 20px">主页</span></a>
+                     </li>
+
+                     <li>
+                         <a href="/YaPiBlog/tags"><span style="font-size: 20px">分类</span></a>
+                     </li>
+
+                     <li>
+                         <a href="/YaPiBlog/about/"><span style="font-size: 20px">关于</span></a>
+                     </li>
+                    -->
+
+                    <li>
+                        <a href="/YaPiBlog/">Home</a>
+                    </li>
+                     
+                     <li>
+                         <a href="/YaPiBlog/about/">ABOUT</a>
+                     </li>
+                     
+                     <li>
+                         <a href="/YaPiBlog/tags/">Tags</a>
+                     </li>
+                     
+
+
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        // CLOSE
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        // OPEN
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+    <!-- Page Header -->
+<header class="intro-header" style="background-image: url('/YaPiBlog/img/longmao.jpeg')">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1 ">
+                <div class="site-heading">
+                    <h1>YaPiBlog</h1>
+                    <hr class="small">
+                    <span class="subheading">You look look you one day day de</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Main Content -->
+<div class="container">
+	<div class="row">
+        
+
+<!-- USE SIDEBAR -->
+    <!-- Post Container -->
+    		<div class="
+                col-lg-8 col-lg-offset-1
+                col-md-8 col-md-offset-1
+                col-sm-12
+                col-xs-12
+                post-container
+            ">
+    			
+<div class="post-preview">
+    <a href="/YaPiBlog/2018/04/12/mongo-ha/">
+        <h2 class="post-title">
+            MongoDB复制、副本集、分片集群
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            主从复制
+
+
+  mongodb的复制至少需要两个节点。其中一个是主节点，负责处理客户端请求，其余的都是从节点，负责复制主节点上的数据。
+  mongodb各个节点常见的搭配方式为：一主一从、一主多从。
+  主节点记录在其上的所有操作oplog，从节点定期轮询主节点获取这些操作，然后对自己的数据副本执行这些操作，从而保证从节点的数据与主节点一致。
+
+
+原理
+
+在主从结构中，主节点的操作记录成...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on April 12, 2018
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/YaPiBlog/2018/04/12/mongo-%E5%A4%87%E4%BB%BD/">
+        <h2 class="post-title">
+            MongoDB备份
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            启动
+docker run --name mongodb -v /root/opt/data/mongodbData:/data/db -p 27017:27017 -d
+
+
+
+// 从阿里云服务器mongodb数据备份到腾讯云
+mongodump -h 120.77.154.206 -d codechain -o /data/db/replicateData
+
+
+// 用备份数据进行恢复
+...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on April 12, 2018
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/YaPiBlog/2018/04/12/mongo-%E8%AF%BB%E5%86%99%E5%88%86%E7%A6%BB/">
+        <h2 class="post-title">
+            MongoDB读写分离
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            MongoDB复制集（Replica Set）通过存储多份数据副本来保证数据的高可靠，通过自动的主备切换机制来保证服务的高可用。但需要注意的时，连接副本集的姿势如果不对，服务高可用将不复存在。
+
+使用前须知
+MongoDB复制集里Primary节点是不固定的。当遇到复制集轮转升级、Primary宕机、网络分区等场景时，复制集可能会选举出一个新的Primary，而原来的Primary则会降级为...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on April 12, 2018
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/YaPiBlog/2018/04/12/mongo-base/">
+        <h2 class="post-title">
+            MongoDB基础知识点
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            基础知识点
+
+规范
+
+数据库规范
+
+数据库名称要求满足如下特征：
+
+
+  不能是空字符串(“”)
+  不得含有‘’、空格、. 、$、/、\、\0(空字符)
+  应该全部小写
+  最多64字节
+  不得是保留数据库名(admin、config、local)
+
+
+MongoDB中默认的数据库为test,如果没有创建新的数据库，集合将存放在test数据中
+
+查看数据库版本: db.version(...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on April 12, 2018
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/YaPiBlog/2018/01/12/k8s%E5%9F%BA%E7%A1%80-%E8%B5%84%E6%BA%90%E5%AF%B9%E8%B1%A1/">
+        <h2 class="post-title">
+            K8S基础-资源对象
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            Kubernetes基本概念和术语
+
+Kubernetes中几乎所有的资源对象都可以通过kubectl执行CURD操作，并在etcd中持久化保存。它通过跟踪对比etcd库里保存的资源期望状态与当前世纪资源状态的差异来实现自动控制和自动纠错的功能。
+
+Master
+每个集群都有一个Master节点负责整个集群的管理和控制，基本上所有的命令都是发给它。其运行着如下关键进程
+
+
+  Kuberne...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on January 12, 2018
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/YaPiBlog/2018/01/12/k8s-%E5%9F%BA%E6%9C%AC%E5%91%BD%E4%BB%A4/">
+        <h2 class="post-title">
+            K8S基本命令
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            基本命令
+
+镜像分发打包
+
+docker save -o calico-v319.tar.gz  `docker image ls |grep calico |awk '{position=$1":"$2;print $1,position}' |awk '{print $2}'`
+
+
+
+获取集群中有多少个Node
+
+kubectl get nodes
+
+分析node详情
+kubectl d...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on January 12, 2018
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/YaPiBlog/2018/01/12/k8s-1.16.1-kubeadm/">
+        <h2 class="post-title">
+            k8s-v1.16.1安装(kubeadm)
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            安装
+安装docker
+
+Master、Node节点都需要安装
+# 卸载原来的docker
+sudo yum remove docker \
+                  docker-client \
+                  docker-client-latest \
+                  docker-common \
+                 ...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on January 12, 2018
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/YaPiBlog/2018/01/12/docker-CICD/">
+        <h2 class="post-title">
+            CI/CD
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            gitlab、gitlab-ci 服务器搭建
+
+略
+
+CI/CD
+
+
+  注册runner
+    
+      suudo gitlab-ci-multi-runner register
+    
+  
+
+
+
+  按要求输入gitlab服务器的地址、tags等信息
+
+
+
+  增加.gitlab-ci.yml文件
+
+
+
+stages:
+    - style
+    - test
+    -...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on January 12, 2018
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/YaPiBlog/2018/01/12/docker-%E7%A7%81%E6%9C%89%E9%95%9C%E5%83%8F%E4%BB%93%E5%BA%93%E6%90%AD%E5%BB%BA/">
+        <h2 class="post-title">
+            docker私有镜像仓库搭建
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            搭建本地docker hub 仓库
+
+
+  私有仓库服务器执行
+
+
+创建用户
+
+为用户创建一个带有一个条目的密码文件testuser，密码为 testpassword：
+
+$ mkdir auth
+$ docker run   --entrypoint htpasswd   registry -Bbn dockerpull ypazl1314 &gt; /auth/htpasswd
+
+
+启动...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on January 12, 2018
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/YaPiBlog/2018/01/12/docker-swarm-%E7%BD%91%E7%BB%9C/">
+        <h2 class="post-title">
+            docker网络 + docker-swarm
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            Docker 网络
+
+ping telnet
+ping 验证IP的可达性
+
+telnet 检查服务的可用性
+
+安装telnet
+
+  yum install telnet-server
+  yum install telnet
+
+
+telnet 127.0.0.1 8080
+
+Linux 网络命名空间
+
+添加
+
+ip netns add test1
+
+查看
+
+ip netns list
+
+删...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on January 12, 2018
+    </p>
+</div>
+<hr>
+
+
+<!-- Pager -->
+
+<ul class="pager">
+    
+    <li class="previous">
+        <a href="/YaPiBlog/page6">&larr; Newer Posts</a>
+    </li>
+    
+    
+    <li class="next">
+        <a href="/YaPiBlog/page8">Older Posts &rarr;</a>
+    </li>
+    
+</ul>
+
+
+    		</div>
+    <!-- Sidebar Container -->
+            <div class="
+                col-lg-3 col-lg-offset-0
+                col-md-3 col-md-offset-0
+                col-sm-12
+                col-xs-12
+                sidebar-container
+            ">
+                <!-- Featured Tags -->
+                
+                <section>
+                    <hr class="hidden-sm hidden-xs">
+                    <h5><a href="/YaPiBlog/tags/">Hot Tags</a></h5>
+                    <div class="tags">
+                        
+                            
+                                <a href="/YaPiBlog/tags/#JVM" title="JVM" rel="7">
+                                    JVM
+                                </a>
+                            
+                        
+                            
+                                <a href="/YaPiBlog/tags/#docker" title="docker" rel="4">
+                                    docker
+                                </a>
+                            
+                        
+                            
+                        
+                            
+                                <a href="/YaPiBlog/tags/#mongodb" title="mongodb" rel="4">
+                                    mongodb
+                                </a>
+                            
+                        
+                            
+                                <a href="/YaPiBlog/tags/#redis" title="redis" rel="5">
+                                    redis
+                                </a>
+                            
+                        
+                            
+                        
+                            
+                                <a href="/YaPiBlog/tags/#golang" title="golang" rel="12">
+                                    golang
+                                </a>
+                            
+                        
+                            
+                                <a href="/YaPiBlog/tags/#设计模式" title="设计模式" rel="24">
+                                    设计模式
+                                </a>
+                            
+                        
+                            
+                                <a href="/YaPiBlog/tags/#大数据" title="大数据" rel="5">
+                                    大数据
+                                </a>
+                            
+                        
+                            
+                                <a href="/YaPiBlog/tags/#数据结构" title="数据结构" rel="11">
+                                    数据结构
+                                </a>
+                            
+                        
+                    </div>
+                </section>
+                
+
+                <!-- Short About -->
+                <section class="visible-md visible-lg">
+                    <hr><h5><a href="/YaPiBlog/about/">About Me</a></h5>
+                    <div class="short-about">
+                        
+                            <img src="/YaPiBlog/img/labi.jpg" />
+                        
+                        
+                            <p>待到秋来九月八  我花开后百花杀</p>
+                        
+                        <!-- SNS Link -->
+                        <ul class="list-inline">
+                            
+                            
+                            
+                            
+                            
+                            
+                        </ul>
+                    </div>
+                </section>
+                <!-- Friends Blog -->
+                
+                <hr>
+                <h5>Links</h5>
+                <ul class="list-inline">
+                    
+                        <li><a href="http://server.scncys.cn">YaPi Blog</a></li>
+                    
+                </ul>
+                
+    		</div>
+        
+	</div>
+</div>
+
+
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                    
+                    
+
+                    <!-- add Weibo, Zhihu by Hux, add target = "_blank" to <a> by Hux -->
+                    
+                    
+
+
+                    
+                    
+                </ul>
+
+                <p class="copyright text-muted">
+                    蜀ICP备18030170号-2    Copyright &copy; YaPiBlog 2019
+                    <br>
+
+                    <!---->
+                    <!--Theme by <a href="http://huangxuan.me">Hux</a> |-->
+                    <!--<iframe-->
+                        <!--style="margin-left: 2px; margin-bottom:-5px;"-->
+                        <!--frameborder="0" scrolling="0" width="91px" height="20px"-->
+                        <!--src="https://ghbtns.com/github-btn.html?user=huxpro&repo=huxpro.github.io&type=star&count=true" >-->
+                    <!--</iframe>-->
+
+
+                </p>
+
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/YaPiBlog/js/jquery.min.js "></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="/YaPiBlog/js/bootstrap.min.js "></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/YaPiBlog/js/yapi-blog.min.js "></script>
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- 
+     Because of the native support for backtick-style fenced code blocks 
+     right within the Markdown is landed in Github Pages, 
+     From V1.6, There is no need for Highlight.js, 
+     so Huxblog drops it officially.
+
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0  
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/    
+-->
+<!--
+    <script>
+        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
+            hljs.initHighlightingOnLoad();
+        })
+    </script>
+    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+-->
+
+
+<!-- jquery.tagcloud.js -->
+<script>
+    // only load tagcloud.js in tag.html
+    if($('#tag_cloud').length !== 0){
+        async("/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                //size: {start: 1, end: 1, unit: 'em'},
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+<!--fastClick.js -->
+<script>
+    async("http://cdn.bootcss.com/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+
+
+<!-- Baidu Tongji -->
+
+
+
+
+<!-- Image to hack wechat -->
+<!--<img src="../img/icon_wechat.png" width="0" height="0" />-->
+<!-- Migrate from head to bottom, no longer block render and still work -->
+
+</body>
+
+</html>

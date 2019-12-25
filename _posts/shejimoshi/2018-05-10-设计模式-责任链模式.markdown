@@ -1,0 +1,92 @@
+---
+layout:     post
+title:      "设计模式-行为型-责任链模式"
+subtitle:   ""
+date:       2018-05-10 12:22:00
+author:     "YaPi"
+header-img: ""
+tags:
+    - 设计模式
+---
+#### 基础与定义
+
+- 为请求创建一个接收此处请求的对象链
+- 类型：行为型
+
+
+使用场景
+1. 一个请求的处理需要多个对象当中的一个或几个协作的过程
+
+优点：
+1. 责任链可以动态组合
+2. 请求的发送者和接受者解耦
+
+#### 源码实例
+
+1. java.serverlet.Filter
+
+#### 代码实例
+
+发布一个课程，需要判断该课程是否有名称和手记，必须都有才能发布
+
+```
+@Data
+public class Course {
+    private String name;
+    private String article;
+}
+
+public abstract class Approver {
+    protected Approver approver;
+    public void setNextApprover(Approver approver){
+        this.approver = approver;
+    }
+
+
+    public abstract void deploy(Course course);
+}
+
+public class ArticleApprover extends Approver {
+    @Override
+    public void deploy(Course course) {
+        if (course.getArticle() != null){
+            System.out.println(course.getName() +"包含手记，批准");
+            if (approver != null){
+                approver.deploy(course);
+            }
+        }else {
+            System.out.println("不包含手记不批准，流程结束");
+        }
+    }
+}
+
+public class NameApprover extends Approver {
+    @Override
+    public void deploy(Course course) {
+        if (course.getName() != null){
+            System.out.println(course.getName() +"包含名称，批准");
+            if (approver != null){
+                approver.deploy(course);
+            }
+        }else {
+            System.out.println("不包含名称不批准，流程结束");
+        }
+    }
+}
+
+
+// 使用
+public class Test {
+    public static void main(String[] args){
+        Course course = new Course();
+        course.setArticle("123");
+        //course.setName("Java");
+
+        Approver approver = new ArticleApprover();
+        approver.setNextApprover(new NameApprover());
+        approver.deploy(course);
+    }
+}
+
+
+```

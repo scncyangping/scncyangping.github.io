@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="keyword"  content="">
+    <link rel="shortcut icon" href="/YaPiBlog/img/favicon.ico">
+
+    <title>K8S基础-资源对象 - YaPiBlog</title>
+
+    <link rel="canonical" href="http://localhost:4000/YaPiBlog/2018/01/12/k8s%E5%9F%BA%E7%A1%80-%E8%B5%84%E6%BA%90%E5%AF%B9%E8%B1%A1/">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/YaPiBlog/css/bootstrap.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/YaPiBlog/css/yapi-blog.min.css">
+
+    <!-- Pygments Github CSS -->
+    <link rel="stylesheet" href="/YaPiBlog/css/syntax.css">
+
+    <!-- Custom Fonts -->
+    <!-- <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <link href="http://cdn.staticfile.org/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+
+    <!-- Hux Delete, sad but pending in China
+    <link href='http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/
+    css'>
+    -->
+
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- ga & ba script hoook -->
+    <script></script>
+</head>
+
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <!--<a class="navbar-brand" href="/YaPiBlog/">YaPiBlog</a>-->
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <!-- Known Issue, found by Hux:
+            <nav>'2019-06-20-HDFS-base.markdown height woule be hold on by its content.
+            so, when navbar scale out, the <nav> will cover tags.
+            also mask any touch event of tags, unfortunately.
+        -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <!--
+                     <li>
+                         <a href="/YaPiBlog/"><span style="font-size: 20px">主页</span></a>
+                     </li>
+
+                     <li>
+                         <a href="/YaPiBlog/tags"><span style="font-size: 20px">分类</span></a>
+                     </li>
+
+                     <li>
+                         <a href="/YaPiBlog/about/"><span style="font-size: 20px">关于</span></a>
+                     </li>
+                    -->
+
+                    <li>
+                        <a href="/YaPiBlog/">Home</a>
+                    </li>
+                     
+                     <li>
+                         <a href="/YaPiBlog/about/">ABOUT</a>
+                     </li>
+                     
+                     <li>
+                         <a href="/YaPiBlog/tags/">Tags</a>
+                     </li>
+                     
+
+
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        // CLOSE
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        // OPEN
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+    <!-- Image to hack wechat -->
+<!-- <img src="/img/icon_wechat.png" width="0" height="0"> -->
+<!-- <img src="/YaPiBlog/" width="0" height="0"> -->
+
+<!-- Post Header -->
+<style type="text/css">
+    header.intro-header{
+        background-image: url('/YaPiBlog/')
+    }
+</style>
+<header class="intro-header" >
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                        <a class="tag" href="/YaPiBlog/tags/#Kubernetes" title="Kubernetes">Kubernetes</a>
+                        
+                    </div>
+                    <h1>K8S基础-资源对象</h1>
+                    
+                    
+                    <h2 class="subheading"></h2>
+                    
+                    <span class="meta">Posted by YaPi on January 12, 2018</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+
+    <!-- Post Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+				<h4 id="kubernetes基本概念和术语">Kubernetes基本概念和术语</h4>
+
+<p>Kubernetes中几乎所有的资源对象都可以通过kubectl执行CURD操作，并在etcd中持久化保存。它通过跟踪对比etcd库里保存的资源期望状态与当前世纪资源状态的差异来实现自动控制和自动纠错的功能。</p>
+
+<h5 id="master">Master</h5>
+<p>每个集群都有一个Master节点负责整个集群的管理和控制，基本上所有的命令都是发给它。其运行着如下关键进程</p>
+
+<ul>
+  <li>Kubernets API Server(kube-apiserver)
+    <blockquote>
+      <p>提供了HTTP Rest接口的关键服务进程，是所有资源CURD等操作的唯一入口</p>
+    </blockquote>
+  </li>
+  <li>Kubernets Controller Manager(kube-controller-manager) (kube-controller-manager)，Kubernetes里所有资源对象的自动控制中心</li>
+  <li>Kubernets Scheduler(kube-scheduler)，负责资源调度(Pod调度)的进程</li>
+</ul>
+
+<h5 id="node">Node</h5>
+<p>除Master节点外，集群中其他机器被称为Node节点。其运行着如下关键进程</p>
+
+<ul>
+  <li>kubelet
+    <blockquote>
+      <p>负责Pod对应的容器的创建、启停等任务，同时与Master节点密切协作，实现集群管理</p>
+    </blockquote>
+  </li>
+  <li>kube-proxy
+    <blockquote>
+      <p>实现kubernetes service的通信与负载均衡机制的重要租金</p>
+    </blockquote>
+  </li>
+  <li>Docker Engine
+    <blockquote>
+      <p>负责本机容器创建和管理</p>
+    </blockquote>
+  </li>
+</ul>
+
+<p>Node可以在运行期间动态增加到集群中。</p>
+
+<h5 id="pod">Pod</h5>
+<p>Pod是kubernets最基本最重要的概念，每个Pod都有一个特殊的被称为根容器的Pause容器。Pause容器对应的镜像属于Kubernetes平台的一部分，除了Pause容器，还包含其他的用户业务容器</p>
+
+<p>引入Pod概念的原因</p>
+
+<ol>
+  <li>在一组容器作为一个单元时，很难判断整体的存亡，比如一个容器死了算整体死亡了？还是死亡的容器占的比例达到一定就算死亡了？因此，引入了Pause容器，以它的状态来确定整体的状态</li>
+  <li>Pod里的多个业务容器共享Pause容器的IP，共享Pause容器挂接的Volume。</li>
+</ol>
+
+<p>kubeernets为每个pod都分配了唯一的IP，称为PodIP，一个Pod里的多个容器共享此IP。其，Kubernetes要求底层网络支持集群内任意两个Pod之间的TCP/IP直接通信，通常采用虚拟二层网络技术来实现，通常框架，fiannel等。总的来说，在Kubernetes里，一个Pod里的容器与另外主机上的Pod容器能够直接通信。</p>
+
+<p>Pod其实有两种类型，静态和普通，静态的在具体某一个NOde上的一个具体文件中，并且只在此Node上启动运行。普通Pod一旦创建就会被放入到etcd中存储，随后会被kubernetes master调度到某个具体的node上并进行绑定，随后该pod被对应node上的kubelet进程实例化一组相关的docker容器并启动。当pod某个容器停止时，kubernetes会检测这个问题并重新启动这个pod(重启所有容器)。若node宕机，会将此node上所有pod重新调度到其他节点上。</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>apiVersion: v1
+kind: Pod
+metadata:
+  name: myweb
+  labels:
+    name:myweb
+spec:
+  containers:
+  - name: myweb
+    image: xxxximage
+    ports:
+    - containerPort: 8080
+    env:
+    - name: MYSQL_SERVICE_HOST
+      value: 'mysql'
+    - name: MYSQL_SERVICE_PORT
+      value: '3306'
+</code></pre></div></div>
+
+<h5 id="label">Label</h5>
+<p>Label是kubernets系统中另一个概念。其中key和value由用户自己指定。Label可以附加到各种资源对象上。如：Node,RC,POD,Service。一个资源对象可以定义任意数量的Label，同一个Label也可以被添加到任意数量的资源对象上去。Label通常在资源对象定义时确定，也可以在对象创建后动态添加或者删除。</p>
+
+<p>使用场景</p>
+
+<ol>
+  <li>kube-controller进程通过资源对象RC上定义的Label Selector来筛选要监控的Pod副本的数量，从而实现Pod副本的数量始终符合预期设定的全自动控制流程</li>
+  <li>kube-proxy进程通过service的Label Selector 来选择对应的Pod,自动建立起每个Service到对应Pod的请求转发路由表，从而实现Service的智能负载均衡机制。</li>
+  <li>通过对某些Node定义特定的Label,并且在Pod定义文件中国呢使用NodeSelector这种标签调度策略，kube-schedule进程可以实现od定向调度的特性。</li>
+</ol>
+
+<h5 id="replication-controllerrc">Replication Controller(RC)</h5>
+
+<p>RC声明某种POD的副本数量在任意时刻都符合某个预期值，RC的定义包括如下几个部分：</p>
+<ul>
+  <li>Pod期待的副本数</li>
+  <li>用语言筛选目标Pod的Label Selector</li>
+  <li>当Pod的副本数量小于预期数量的时候，用于创建新Pod的Pod模版。</li>
+</ul>
+
+<p>当使用命令创建一个RC过后，kubernetes的Controller Manager就得到通知了，定期巡检系统中当前存活的目标POD,若当前POD数量多余定义的数量，则停掉一些，若少于则根据模板新建一些POD。</p>
+
+<p>在运行的时候，可以动态的修改RC副本数量来实现POD的动态缩放</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl scale rc xxxxx --replicas=3
+</code></pre></div></div>
+
+<p>删除RC并不会影响通过该RC创建好的POD，为了删除所有POD，可以设置replicas的值为0。</p>
+
+<h5 id="deployment">Deployment</h5>
+
+<p>Deployment是kubernetes1.2引入的新概念，内部使用Replica Set来实现。无论从Deployment的作用与目的、他的Yaml定义还是具体命令行操作来看，都可以把它看成RC的一次升级。</p>
+
+<p>Deployment相对于RC的一个最大升级是我们可以随时知道当前POD部署的进度。</p>
+
+<h5 id="service">Service</h5>
+<p>kubernets里的每个Service其实就是微服务架构中的一个微服务，之前建立的pod、rc等资源都是为此服务。</p>
+
+
+                <hr>
+
+                
+
+
+                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="/YaPiBlog/2018/01/12/k8s-%E5%9F%BA%E6%9C%AC%E5%91%BD%E4%BB%A4/" data-toggle="tooltip" data-placement="top" title="K8S基本命令">&larr; Previous Post</a>
+                    </li>
+                    
+                    
+                    <li class="next">
+                        <a href="/YaPiBlog/2018/04/12/mongo-base/" data-toggle="tooltip" data-placement="top" title="MongoDB基础知识点">Next Post &rarr;</a>
+                    </li>
+                    
+                </ul>
+
+
+                
+
+                
+
+            </div>
+
+    <!-- Sidebar Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+                <section>
+                    <hr class="hidden-sm hidden-xs">
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+        				
+                            
+                				<a href="/YaPiBlog/tags/#JVM" title="JVM" rel="7">
+                                    JVM
+                                </a>
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#docker" title="docker" rel="4">
+                                    docker
+                                </a>
+                            
+        				
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#mongodb" title="mongodb" rel="4">
+                                    mongodb
+                                </a>
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#redis" title="redis" rel="5">
+                                    redis
+                                </a>
+                            
+        				
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#golang" title="golang" rel="12">
+                                    golang
+                                </a>
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#设计模式" title="设计模式" rel="24">
+                                    设计模式
+                                </a>
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#大数据" title="大数据" rel="5">
+                                    大数据
+                                </a>
+                            
+        				
+                            
+                				<a href="/YaPiBlog/tags/#数据结构" title="数据结构" rel="11">
+                                    数据结构
+                                </a>
+                            
+        				
+        			</div>
+                </section>
+                
+
+                <!-- Friends Blog -->
+                
+                <hr>
+                <h5>FRIENDS</h5>
+                <ul class="list-inline">
+                    
+                        <li><a href="http://server.scncys.cn">YaPi Blog</a></li>
+                    
+                </ul>
+                
+            </div>
+        </div>
+    </div>
+</article>
+
+
+
+
+
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("http://cdn.bootcss.com/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'always',
+          placement: 'right',
+          icon: '#'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading').remove('.sidebar-container h5');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
+
+
+
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                    
+                    
+
+                    <!-- add Weibo, Zhihu by Hux, add target = "_blank" to <a> by Hux -->
+                    
+                    
+
+
+                    
+                    
+                </ul>
+
+                <p class="copyright text-muted">
+                    蜀ICP备18030170号-2    Copyright &copy; YaPiBlog 2019
+                    <br>
+
+                    <!---->
+                    <!--Theme by <a href="http://huangxuan.me">Hux</a> |-->
+                    <!--<iframe-->
+                        <!--style="margin-left: 2px; margin-bottom:-5px;"-->
+                        <!--frameborder="0" scrolling="0" width="91px" height="20px"-->
+                        <!--src="https://ghbtns.com/github-btn.html?user=huxpro&repo=huxpro.github.io&type=star&count=true" >-->
+                    <!--</iframe>-->
+
+
+                </p>
+
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/YaPiBlog/js/jquery.min.js "></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="/YaPiBlog/js/bootstrap.min.js "></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/YaPiBlog/js/yapi-blog.min.js "></script>
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- 
+     Because of the native support for backtick-style fenced code blocks 
+     right within the Markdown is landed in Github Pages, 
+     From V1.6, There is no need for Highlight.js, 
+     so Huxblog drops it officially.
+
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0  
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/    
+-->
+<!--
+    <script>
+        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
+            hljs.initHighlightingOnLoad();
+        })
+    </script>
+    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+-->
+
+
+<!-- jquery.tagcloud.js -->
+<script>
+    // only load tagcloud.js in tag.html
+    if($('#tag_cloud').length !== 0){
+        async("/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                //size: {start: 1, end: 1, unit: 'em'},
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+<!--fastClick.js -->
+<script>
+    async("http://cdn.bootcss.com/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+
+
+<!-- Baidu Tongji -->
+
+
+
+
+<!-- Image to hack wechat -->
+<!--<img src="../img/icon_wechat.png" width="0" height="0" />-->
+<!-- Migrate from head to bottom, no longer block render and still work -->
+
+</body>
+
+</html>

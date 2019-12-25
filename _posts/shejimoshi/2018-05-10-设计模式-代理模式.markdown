@@ -1,0 +1,149 @@
+---
+layout:     post
+title:      "设计模式-结构型-代理模式"
+subtitle:   ""
+date:       2018-05-10 12:13:00
+author:     "YaPi"
+header-img: ""
+tags:
+    - 设计模式
+---
+#### 基础与定义
+
+- 代理模式给某一个对象提供一个代理对象，并由代理对象控制对原对象的引用
+- 代理对象在客户端和目标对象之间起到中介的作用
+- 类型：结构型
+
+使用场景：
+1. 保护目标对象
+2. 增强目标对象
+
+优点：
+1. 将代理对象与真实被调用的目标对象分离
+2. 一定程度上降低了系统的耦合度
+3. 增强了对象
+
+缺点：
+1. 会增加系统设计中类的数目
+2. 会造成请求处理速度变慢
+3. 增加系统复杂度
+
+##### 源码
+
+1. cglibApoProxy
+2. jdkAopProxy
+3. MapperProxyFactory
+
+
+三种方式
+
+##### 静态代理
+通过在代码中显示定义类一个代理类的代理，在代理类中声明一个与被代理类相同名称的方法，客户端通过调用代理类的方法来调用实际的方法
+
+```
+// 创建服务类接口
+public interface BuyHouse {
+    void buyHosue();
+}
+
+// 实现服务接口
+public class BuyHouseImpl implements BuyHouse {
+
+    @Override
+    public void buyHosue() {
+        System.out.println("我要买房");
+    }
+}
+
+// 创建代理类
+public class BuyHouseProxy implements BuyHouse {
+
+    private BuyHouse buyHouse;
+
+    public BuyHouseProxy(final BuyHouse buyHouse) {
+        this.buyHouse = buyHouse;
+    }
+
+    @Override
+    public void buyHosue() {
+        System.out.println("买房前准备");
+        buyHouse.buyHosue();
+        System.out.println("买房后装修");
+
+    }
+}
+```
+
+
+##### 动态代理
+通过接口中的方法名，在动态生成的代理类中调用业务实现类的同名方法，这种嗲里方式仅仅支持接口
+
+```
+public class DynamicProxyHandler implements InvocationHandler {
+
+    private Object object;
+
+    public DynamicProxyHandler(final Object object) {
+        this.object = object;
+    }
+
+    @Override
+    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        System.out.println("买房前准备");
+        Object result = method.invoke(object, args);
+        System.out.println("买房后装修");
+        return result;
+    }
+}
+
+
+// 使用
+public class DynamicProxyTest {
+    public static void main(String[] args) {
+        BuyHouse buyHouse = new BuyHouseImpl();
+        BuyHouse proxyBuyHouse = (BuyHouse) Proxy.newProxyInstance(BuyHouse.class.getClassLoader(), new
+                Class[]{BuyHouse.class}, new DynamicProxyHandler(buyHouse));
+        proxyBuyHouse.buyHosue();
+    }
+}
+```
+
+
+##### CGLib代理
+ JDK实现动态代理需要实现类通过接口定义业务方法，对于没有接口的类，如何实现动态代理呢，这就需要CGLib了。CGLib采用了非常底层的字节码技术，其原理是通过字节码技术为一个类创建子类，并在子类中采用方法拦截的技术拦截所有父类方法的调用，顺势织入横切逻辑。但因为采用的是继承，所以不能对final修饰的类进行代理。JDK动态代理与CGLib动态代理均是实现Spring AOP的基础。
+
+ ```
+ public class CglibProxy implements MethodInterceptor {
+    private Object target;
+    public Object getInstance(final Object target) {
+        this.target = target;
+        Enhancer enhancer = new Enhancer();
+        enhancer.setSuperclass(this.target.getClass());
+        enhancer.setCallback(this);
+        return enhancer.create();
+    }
+
+    public Object intercept(Object object, Method method, Object[] args, MethodProxy methodProxy) throws Throwable {
+        System.out.println("买房前准备");
+        Object result = methodProxy.invokeSuper(object, args);
+        System.out.println("买房后装修");
+        return result;
+    }
+}
+
+// 使用
+public class CglibProxyTest {
+    public static void main(String[] args){
+        BuyHouse buyHouse = new BuyHouseImpl();
+        CglibProxy cglibProxy = new CglibProxy();
+        BuyHouseImpl buyHouseCglibProxy = (BuyHouseImpl) cglibProxy.getInstance(buyHouse);
+        buyHouseCglibProxy.buyHosue();
+    }
+}
+ ```
+##### String 代理选择
+- 当Bean有实现接口时，Spring就会用JDK的动态代理
+- 当Bean没有实现接口时，Spring使用CGlib
+- 可以强制使用Cglib
+    1. 在spring配置中加入<aop:aspectj-autoproxy proxy-target-class="true"/>
+- CGLIB创建的动态代理对象比JDK创建的动态代理对象的性能更高，但是CGLIB创建代理对象时所花费的时间却比JDK多得多。所以对于单例的对象，因为无需频繁创建对象，用CGLIB合适，反之使用JDK方式要更为合适一些。同时由于CGLib由于是采用动态创建子类的方法，对于final修饰的方法无法进行代理
