@@ -1,9 +1,9 @@
 {
     "name": "yapi-blog",
-    "title": "Hux Blog",
+    "title": "YaPi Blog",
     "version": "1.0.0",
-    "homepage": "http://huxpro.github.io",
-    "author": "Hux",
+    "homepage": "https://scncyangping.github.io",
+    "author": "scncyangping",
     "devDependencies": {
         "grunt": "~0.4.5",
         "grunt-contrib-less": "~0.11.4",
