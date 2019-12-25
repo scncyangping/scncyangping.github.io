@@ -74,7 +74,7 @@ kramdown:
 sidebar: true
 sidebar-about-description: "待到秋来九月八  我花开后百花杀"
 # use absolute URL, seeing it'2019-06-20-HDFS-base.markdown used in both `/` and `/about/`
-sidebar-avatar: /YaPiBlog/img/labi.jpg
+sidebar-avatar: /img/labi.jpg
 
 
 
