@@ -170,6 +170,47 @@
             ">
     			
 <div class="post-preview">
+    <a href="/2019/08/25/data-structure-%E5%A0%86%E5%92%8C%E4%BC%98%E5%85%88%E9%98%9F%E5%88%97/">
+        <h2 class="post-title">
+            数据结构(六)堆和优先队列
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            优先队列
+
+普通队列：先进先出、后进后出
+优先队列：出队顺序和入队顺序无关；和优先级有关
+
+操作系统中进行任务的调用就是优先队列，会动态的选择优先级最高的任务执行。
+
+优先队列经典问题
+
+在N个元素中选出M个元素
+
+使用优先队列，维护当前看到的前M的元素
+
+使用最小堆，每次将根节点的那个最小的元素提出来
+
+java 中的PriorityQueue默认实现就是最小堆
+
+堆
+
+堆的基本结构
+
+最...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on August 25, 2019
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
     <a href="/2019/08/24/data-structure-%E4%BA%8C%E5%88%86%E6%90%9C%E7%B4%A2%E6%A0%91/">
         <h2 class="post-title">
             数据结构(五)树-二分搜索树
@@ -481,37 +522,6 @@ strconv 包转换错误处理
 </div>
 <hr>
 
-<div class="post-preview">
-    <a href="/2019/08/13/Golang-base-pkg-sort-container/">
-        <h2 class="post-title">
-            Golang标准库-sort、container
-        </h2>
-        
-        <h3 class="post-subtitle">
-            
-        </h3>
-        
-        <div class="post-content-preview">
-            sort包
-
-该包实现了四种基本排序算法：插⼊排序、归并排序、堆排序和快速排序.但是这四
-种排序⽅法是不公开的，它们只被⽤于sort包内部使⽤。所以在对数据集合排序时不必考虑应当选择哪⼀种排序⽅法，只要实现了sort.Interface定义的三个⽅法：
-
-
-  获取数据集合⻓度的Len()⽅法
-  ⽐较两个元素⼤⼩的Less()⽅法
-  交换两个元素位置的Swap()⽅法
-
-
-就可以顺利对数...
-        </div>
-    </a>
-    <p class="post-meta">
-        Created by YaPi on August 13, 2019
-    </p>
-</div>
-<hr>
-
 
 <!-- Pager -->
 
@@ -595,6 +605,8 @@ strconv 包转换错误处理
                                 <a href="/tags/#数据结构" title="数据结构" rel="11">
                                     数据结构
                                 </a>
+                            
+                        
                             
                         
                     </div>

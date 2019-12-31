@@ -1,0 +1,241 @@
+---
+layout:     post
+title:      "API安全"
+subtitle:   ""
+date:       2019-12-30 12:00:00
+author:     "YaPi"
+header-img: ""
+tags:
+    - SpringCloud
+---
+
+### API安全
+
+#### 基础知识点
+- 请求未被授权，则应该返回403状态码
+- 请求验证需要认证，但未认证，则应返回401状态码。比如：没有携带认证信息，或者携带的信息错误
+- 请求数过多，返回429
+
+实现访问控制有两种方法
+1. ACL: Access Control Lists
+    1. 简单易用，实现容易，但不易管理。比如：linux的用户管理，需要对每个用户设置它能干什么，读啊，写啊的权限
+2. RBAC: Role Based Access Control
+    1. 引入角色概念，简化管理。但开发较为复杂
+
+##### SQL注入攻击
+mybatis 有两种参数的赋值方法。#{} 和 ${},其中#{}会将参数转换为字符串传递，而${}是原样输入，容易造成SQL注入攻击
+
+##### 过滤器、拦截器
+过滤器、拦截器及spring mvc 的分发器servlet的执行顺序
+
+![avatar](http://blog-1257627424.cos.ap-chengdu.myqcloud.com/springCloud%E5%AE%89%E5%85%A8/%E8%BF%87%E6%BB%A4%E5%99%A8%E6%8B%A6%E6%88%AA%E5%99%A8.png)
+
+![avatar](http://blog-1257627424.cos.ap-chengdu.myqcloud.com/springCloud%E5%AE%89%E5%85%A8/%E8%BF%87%E6%BB%A4%E5%99%A8%E6%8B%A6%E6%88%AA%E5%99%A802.png)
+
+![avatar](http://blog-1257627424.cos.ap-chengdu.myqcloud.com/springCloud%E5%AE%89%E5%85%A8/%E8%BF%87%E6%BB%A4%E5%99%A8%E6%8B%A6%E6%88%AA%E5%99%A803.png)
+
+
+#### 请求认证基础流程
+![avatar](http://blog-1257627424.cos.ap-chengdu.myqcloud.com/springCloud%E5%AE%89%E5%85%A8/%E6%B5%81%E7%A8%8B%E5%9B%BE.png)
+
+- 流控 : 流量控制,保证系统可用。整个安全机制最前面
+- 认证 : 校验用户是否存在
+- 审计 : 统计请求信息,谁在什么时候干了什么事儿
+- 授权 : 给登录的用户授权
+
+##### 常用验证
+
+Token验证
+
+![avatar](http://blog-1257627424.cos.ap-chengdu.myqcloud.com/springCloud%E5%AE%89%E5%85%A8/token%E7%99%BB%E5%BD%95.png)
+
+Cookie-Session验证
+
+![avatar](http://blog-1257627424.cos.ap-chengdu.myqcloud.com/springCloud%E5%AE%89%E5%85%A8/cookie-session%E7%99%BB%E5%BD%95.png)
+
+Session攻击
+![avatar](http://blog-1257627424.cos.ap-chengdu.myqcloud.com/springCloud%E5%AE%89%E5%85%A8/session%E6%94%BB%E5%87%BB.png)
+
+Session攻击解决方法
+
+```
+// 每次登录的时候，都将对应Session设置为失效
+// 然后重新生成SessoinId，存储对应信息
+UserInfo info = userService.login(user);
+HttpSession session = request.getSession(false);
+if(session != null) {
+	session.invalidate();
+}
+request.getSession(true).setAttribute("user", info);
+```
+
+##### 流控 - 限流过滤器实现
+```
+package com.imooc.security.filter;
+
+import java.io.IOException;
+
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import com.google.common.util.concurrent.RateLimiter;
+
+@Component
+// 注解@Order或者接口Ordered的作用是定义
+// Spring IOC容器中Bean的执行顺序的优先级，而不是定义Bean的加载顺序，
+// Bean的加载顺序不受@Order或Ordered接口的影响
+@Order(1)
+// OncePerRequestFilter
+// 它能够确保在一次请求中只通过一次filter，而不需要重复执行
+// 比如：
+// 在servlet-2.3中，Filter会过滤一切请求，包括服务器内部使用forward转发请求
+// 和<%@ include file="/index.jsp"%>的情况。
+//
+// 到了servlet-2.4中Filter默认下只拦截外部提交的请求，forward和include
+// 这些内部转发都不会被过滤，但是有时候我们需要 forward的时候也用到Filter
+public class RateLimitFilter extends OncePerRequestFilter {
+
+	// Google开源工具包Guava提供了限流工具类RateLimiter
+	// 该类基于令牌桶算法(Token Bucket)来完成限流
+
+	// 参考
+	// https://www.jianshu.com/p/693031015940
+	private RateLimiter rateLimiter = RateLimiter.create(1);
+
+	/* (non-Javadoc)
+	 * @see org.springframework.web.filter.OncePerRequestFilter#doFilterInternal(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, javax.servlet.FilterChain)
+	 */
+	@Override
+	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+			throws ServletException, IOException {
+
+		System.out.println(1);
+
+		if(rateLimiter.tryAcquire()) {
+			filterChain.doFilter(request, response);
+		}else {
+			response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
+			response.getWriter().write("too many request!!!");
+			response.getWriter().flush();
+			return;
+		}
+
+	}
+
+}
+```
+
+##### 拦截器实现
+
+继承HandlerInterceptorAdapter类，实现preHandle方法
+```
+// 不用复写postHandle,这个方法是在请求结束的时候执行的
+@Component
+public class AclInterceptor extends HandlerInterceptorAdapter {
+
+	private String[] permitUrls = new String[] {"/users/login"};
+
+	@Override
+	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
+			throws Exception {
+
+		System.out.println(4);
+
+		boolean result = true;
+
+		if(!ArrayUtils.contains(permitUrls, request.getRequestURI())) {
+
+			UserInfo user = (UserInfo) request.getSession().getAttribute("user");
+
+			if(user == null) {
+				response.setContentType("text/plain");
+				response.getWriter().write("need authentication");
+				response.setStatus(HttpStatus.UNAUTHORIZED.value());
+				result = false;
+			}else {
+
+				String method = request.getMethod();
+
+				if(!user.hasPermission(method)) {
+					response.setContentType("text/plain");
+					response.getWriter().write("forbidden");
+					response.setStatus(HttpStatus.FORBIDDEN.value());
+					result = false;
+				}
+			}
+		}
+		return result;
+	}
+}
+```
+
+若有多个拦截器，需要配置拦截器的顺序
+
+1. 实现WebMvcConfigurer类
+2. 复写addInterceptors方法
+
+```
+@Configuration
+// 审计功能使用
+@EnableJpaAuditing
+public class SecurityConfig implements WebMvcConfigurer {
+
+	@Autowired
+	private AuditLogInterceptor auditLogInterceptor;
+
+	@Autowired
+	private AclInterceptor aclInterceptor;
+
+	@Override
+	public void addInterceptors(InterceptorRegistry registry) {
+		registry.addInterceptor(auditLogInterceptor);
+		registry.addInterceptor(aclInterceptor);
+	}
+
+	// 审计功能使用
+	@Bean
+	public AuditorAware<String> auditorAware() {
+		return new AuditorAware<String>() {
+			@Override
+			public Optional<String> getCurrentAuditor() {
+				ServletRequestAttributes servletRequestAttributes = (ServletRequestAttributes)RequestContextHolder.getRequestAttributes();
+				UserInfo info = (UserInfo)servletRequestAttributes.getRequest().getSession().getAttribute("user");
+				String username = null;
+				if(info != null) {
+					username = info.getUsername();
+				}
+				return Optional.ofNullable(username);
+			}};
+	}
+
+}
+```
+
+全局异常检验
+
+```
+@RestControllerAdvice
+@Slf4j
+public class ErrorHandler {
+
+	// 抛出异常的时候指定校验返回码为500
+	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+	@ExceptionHandler(Exception.class)
+	public Map<String, Object> handle(Exception ex){
+		log.error("system error", ex);
+		Map<String, Object> info = new HashMap<>();
+		info.put("message", ex.getMessage());
+		info.put("time", new Date().getTime());
+		return info;
+	}
+
+
+}
+```

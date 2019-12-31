@@ -170,6 +170,36 @@
             ">
     			
 <div class="post-preview">
+    <a href="/2018/04/13/redis-base/">
+        <h2 class="post-title">
+            Redis基础命令及内存划分
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            基本数据类型
+string
+String类型是包含很多种类型的特殊类型，并且是二进制安全的。比如序列化的对象进行储存，比如一张图片进行二进制储存，比如一个简单的字符串数值等等
+
+set和get方法：
+设置值set  name realValue
+取值 get name
+说明：set设置name的时候，如果name重复，设置的值会进行覆盖。
+
+setnx 方法
+设置值setnx name re...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on April 13, 2018
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
     <a href="/2018/04/12/mongo-ha/">
         <h2 class="post-title">
             MongoDB复制、副本集、分片集群
@@ -460,51 +490,6 @@ $ docker run   --entrypoint htpasswd   registry -Bbn dockerpull ypazl1314 &gt; /
 </div>
 <hr>
 
-<div class="post-preview">
-    <a href="/2018/01/12/docker-swarm-%E7%BD%91%E7%BB%9C/">
-        <h2 class="post-title">
-            docker网络 + docker-swarm
-        </h2>
-        
-        <h3 class="post-subtitle">
-            
-        </h3>
-        
-        <div class="post-content-preview">
-            Docker 网络
-
-ping telnet
-ping 验证IP的可达性
-
-telnet 检查服务的可用性
-
-安装telnet
-
-  yum install telnet-server
-  yum install telnet
-
-
-telnet 127.0.0.1 8080
-
-Linux 网络命名空间
-
-添加
-
-ip netns add test1
-
-查看
-
-ip netns list
-
-删...
-        </div>
-    </a>
-    <p class="post-meta">
-        Created by YaPi on January 12, 2018
-    </p>
-</div>
-<hr>
-
 
 <!-- Pager -->
 
@@ -588,6 +573,8 @@ ip netns list
                                 <a href="/tags/#数据结构" title="数据结构" rel="11">
                                     数据结构
                                 </a>
+                            
+                        
                             
                         
                     </div>
