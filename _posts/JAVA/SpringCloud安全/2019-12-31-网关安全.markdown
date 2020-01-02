@@ -1,0 +1,146 @@
+---
+layout:     post
+title:      "网关安全"
+subtitle:   ""
+date:       2019-12-31 12:00:00
+author:     "YaPi"
+header-img: ""
+tags:
+    - SpringCloud
+---
+
+### 网关安全
+
+##### 微服务整体架构图
+![avatar](http://blog-1257627424.cos.ap-chengdu.myqcloud.com/springCloud%E5%AE%89%E5%85%A8/%E5%BE%AE%E6%9C%8D%E5%8A%A1%E5%9F%BA%E7%A1%80%E6%9E%B6%E6%9E%84.png)
+
+相关功能组件
+
+- 服务注册与发现：consul,etcd,zookeeper,eureka
+- 配置中心：Spring Cloud Config,携程的阿波罗,duic
+
+#### OAuth2
+OAuth（Open Authorization，开放授权）是为用户资源的授权定义了一个安全、开放及简单的标准，第三方无需知道用户的账号及密码，就可获取到用户的授权信息
+
+##### 主要角色及步骤
+
+角色：
+- 用户
+- 客户端应用
+- 认证服务器
+- 订单服务
+
+认证步骤
+1. 用户直接访问客户端应用(可能是一个WebApp，也可能是一个手机App)
+2. 客户端应用从认证服务器获取令牌
+3. 客户端应用访问资源服务器
+4. 资源服务访问认证服务器来验证从客户端应用获取的请求中的令牌
+
+##### 主要类及流程代码
+使用Spring Security OAuth2 构建认证服务
+
+1. 配置认证服务基础类AuthorizationServerConfigurerAdapter
+
+```
+@Configuration
+// 设置当前服务器用来作为授权服务
+@EnableAuthorizationServer
+public class OAuth2AuthServerConfig extends AuthorizationServerConfigurerAdapter {
+
+	// 配置的认证控制器，自定义认证的流程，比如获取到用户名，查询数据库然后比较验证
+	@Autowired
+	private AuthenticationManager authenticationManager;
+
+
+	// 配置的数据库信息
+	@Autowired
+	private DataSource dataSource;
+
+	// 设置存储token为mysql数据库，默认存在内存中
+	// 也可设置为Redis
+	@Bean
+	public TokenStore tokenStore() {
+		return new JdbcTokenStore(dataSource);
+	}
+
+	@Override
+	public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
+		endpoints
+			.tokenStore(tokenStore())
+			.authenticationManager(authenticationManager);
+	}
+	// 配置客户端应用信息
+	// 使用数据mysql数据库存储
+	@Override
+	public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
+		clients.jdbc(dataSource);
+	}
+
+
+	// 设置服务的策略为认证通过才能继续
+	@Override
+	public void configure(AuthorizationServerSecurityConfigurer security) throws Exception {
+		security.checkTokenAccess("isAuthenticated()");
+	}
+
+}
+```
+2. 配置具体认证流程
+
+```
+@Configuration
+@EnableWebSecurity
+public class OAuth2WebSecurityConfig extends WebSecurityConfigurerAdapter {
+
+	// 自定义的认证类，返回一个UserDetails对象
+	@Autowired
+	private UserDetailsService userDetailsService;
+
+	// 密码转换
+	@Bean
+	public BCryptPasswordEncoder passwordEncoder() {
+		return new BCryptPasswordEncoder();
+	}
+
+	// 继承 WebSecurityConfigurerAdapter 的验证方式
+	@Override
+	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+		auth.userDetailsService(userDetailsService)
+			.passwordEncoder(passwordEncoder());
+	}
+
+
+	// 继承 WebSecurityConfigurerAdapter 的验证方式
+	@Bean
+	@Override
+	public AuthenticationManager authenticationManagerBean() throws Exception {
+		return super.authenticationManagerBean();
+	}
+
+}
+```
+
+3. 配置具体的用户信息类，返回UserDetails
+
+```
+@Component
+public class UserDetailsServiceImpl implements UserDetailsService {
+
+	@Autowired
+	private PasswordEncoder passwordEncoder;
+
+    // UserDetailsService的方法
+	@Override
+	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+	    // 这儿写死了，应该调用DB查询相关信息，然后返回对应的用户信息
+		return User.withUsername(username)
+					.password(passwordEncoder.encode("12345"))
+					.authorities("ROLE_ADMIN")
+					.build();
+	}
+
+}
+
+```
+
+4. 写具体的对象信息继承UserDetails，实现其中的方法
