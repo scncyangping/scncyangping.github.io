@@ -36,10 +36,67 @@ OAuth（Open Authorization，开放授权）是为用户资源的授权定义了
 3. 客户端应用访问资源服务器
 4. 资源服务访问认证服务器来验证从客户端应用获取的请求中的令牌
 
-##### 主要类及流程代码
+![avatar](http://blog-1257627424.cos.ap-chengdu.myqcloud.com/springCloud%E5%AE%89%E5%85%A8/oauth2%E8%A7%92%E8%89%B2.png)
+
+##### Oauth认证服务器服务端配置
 使用Spring Security OAuth2 构建认证服务
 
-1. 配置认证服务基础类AuthorizationServerConfigurerAdapter
+- 创建相关数据库表文件
+
+```
+create table oauth_client_details (
+  client_id VARCHAR(256) PRIMARY KEY,
+  resource_ids VARCHAR(256),
+  client_secret VARCHAR(256),
+  scope VARCHAR(256),
+  authorized_grant_types VARCHAR(256),
+  web_server_redirect_uri VARCHAR(256),
+  authorities VARCHAR(256),
+  access_token_validity INTEGER,
+  refresh_token_validity INTEGER,
+  additional_information VARCHAR(4096),
+  autoapprove VARCHAR(256)
+);
+
+create table oauth_client_token (
+  token_id VARCHAR(256),
+  token BLOB,
+  authentication_id VARCHAR(256) PRIMARY KEY,
+  user_name VARCHAR(256),
+  client_id VARCHAR(256)
+);
+
+create table oauth_access_token (
+  token_id VARCHAR(256),
+  token BLOB,
+  authentication_id VARCHAR(256) PRIMARY KEY,
+  user_name VARCHAR(256),
+  client_id VARCHAR(256),
+  authentication BLOB,
+  refresh_token VARCHAR(256)
+);
+
+create table oauth_refresh_token (
+  token_id VARCHAR(256),
+  token BLOB,
+  authentication BLOB
+);
+
+create table oauth_code (
+  code VARCHAR(256), authentication BLOB
+);
+
+create table oauth_approvals (
+	userId VARCHAR(256),
+	clientId VARCHAR(256),
+	scope VARCHAR(256),
+	status VARCHAR(10),
+	expiresAt DATETIME,
+	lastModifiedAt DATETIME
+);
+```
+
+- 配置认证服务基础类AuthorizationServerConfigurerAdapter
 
 ```
 @Configuration
@@ -85,7 +142,7 @@ public class OAuth2AuthServerConfig extends AuthorizationServerConfigurerAdapter
 
 }
 ```
-2. 配置具体认证流程
+- 配置具体认证流程
 
 ```
 @Configuration
@@ -120,7 +177,7 @@ public class OAuth2WebSecurityConfig extends WebSecurityConfigurerAdapter {
 }
 ```
 
-3. 配置具体的用户信息类，返回UserDetails
+- 配置具体的用户信息类，返回UserDetails
 
 ```
 @Component
@@ -142,5 +199,56 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 }
 
 ```
+- 写具体的对象信息继承UserDetails，实现其中的方法
 
-4. 写具体的对象信息继承UserDetails，实现其中的方法
+##### Oauth2服务使用验证
+
+- 配置服务为一个资源服务，相当于加了一个过滤器，到来的请求会发送到相应认证服务器服务端
+
+```
+@Configuration
+// 声明为资源服务器
+@EnableResourceServer
+public class Oauth2ResourceServiceConfig extends ResourceServerConfigurerAdapter {
+    @Override
+    public void configure(ResourceServerSecurityConfigurer resources) throws Exception {
+        // 设置当前资源服务器的名称
+        resources.resourceId("order-server");
+    }
+
+    @Override
+    public void configure(HttpSecurity http) throws Exception {
+        http.authorizeRequests().anyRequest().authenticated();
+        // 这里可以自定义配置路由规则
+        // http.authorizeRequests().antMatchers("/haha").permitAll();
+
+    }
+}
+```
+
+- 配置认证服务器连接地址信息
+
+```
+@EnableWebSecurity
+@Configuration
+public class Oauth2WebSecurityConfig extends WebSecurityConfigurerAdapter {
+    @Bean
+    public ResourceServerTokenServices tokenServices(){
+        RemoteTokenServices tokenServices = new RemoteTokenServices();
+        tokenServices.setClientId("orderService");
+        tokenServices.setClientSecret("12345");
+        tokenServices.setCheckTokenEndpointUrl("http://localhost:9090/oauth/check_token");
+
+        return tokenServices;
+    }
+
+    @Bean
+    @Override
+    public AuthenticationManager authenticationManagerBean() throws Exception {
+        OAuth2AuthenticationManager auth2AuthenticationManager = new OAuth2AuthenticationManager();
+        auth2AuthenticationManager.setTokenServices(tokenServices());
+        return auth2AuthenticationManager;
+    }
+}
+
+```
