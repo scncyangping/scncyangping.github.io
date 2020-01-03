@@ -252,3 +252,319 @@ public class Oauth2WebSecurityConfig extends WebSecurityConfigurerAdapter {
 }
 
 ```
+
+这种认证方法会使得系统很臃肿，并且不好维护，一般我们都是在网关的地方进行认证。如下。
+
+#### 引入网关
+将认证信息写在特定的资源服务里面的缺点：
+1. 认证代码与业务代码耦合度高，不便于修改
+2. 服务之间调用复杂
+
+所以需要将认证的步骤放在网关内。便于控制
+
+简单测试
+
+```
+引入zuul相关包
+<dependency>
+	<groupId>org.springframework.cloud</groupId>
+	<artifactId>spring-cloud-starter-netflix-zuul</artifactId>
+</dependency>
+
+配置对应yaml文件
+
+zuul:
+  routes:
+    token:
+      url: http://localhost:9090
+    order:
+      url: http://localhost:9080
+server:
+    port: 9079
+
+这样每次访问9070/token的接口都会转发到对应认证服务
+```
+
+正式步骤
+
+1. 配置认证过滤器，继承ZuulFilter实现相应方法
+2. 配置日志过滤器，记录响应访问日志
+3. 配置授权过滤器，对响应请求授权
+4. 配置流控设置
+5. 将获取到的用户信息设置到请求头中，转发到对应服务器
+
+
+##### 配置认证过滤器
+
+```
+@Slf4j
+@Component
+public class OAuthFilter extends ZuulFilter {
+
+	private RestTemplate restTemplate = new RestTemplate();
+
+
+	// 判断过滤器是不是起作用
+	@Override
+	public boolean shouldFilter() {
+		return true;
+	}
+
+
+	@Override
+	public Object run() throws ZuulException {
+
+		log.info("oauth start");
+
+		// 获取请求对象
+		RequestContext requestContext = RequestContext.getCurrentContext();
+		HttpServletRequest request = requestContext.getRequest();
+
+		// 发往token服务器的请求，直接过去，因为现在还没有token
+		if(StringUtils.startsWith(request.getRequestURI(), "/token")) {
+			return null;
+		}
+
+		// 不是发往认证服务器的，就需要校验token
+		String authHeader = request.getHeader("Authorization");
+		// 没有认证信息 也继续往下走
+		if(StringUtils.isBlank(authHeader)) {
+			return null;
+		}
+
+		// 判断是否是Bearer认证
+		if(!StringUtils.startsWithIgnoreCase(authHeader, "bearer ")) {
+			return null;
+		}
+
+		try {
+			// 获取token中的相关信息
+			TokenInfo info = getTokenInfo(authHeader);
+			request.setAttribute("tokenInfo", info);
+
+		} catch (Exception e) {
+			log.error("get token info fail", e);
+		}
+
+		return null;
+	}
+
+    // 发送请求到认证服务器，验证获取相关token信息
+    // 这里的配置信息可以注入其他Bean来实现
+    // 也可用consul等配置中心配置
+	private TokenInfo getTokenInfo(String authHeader) {
+
+		String token = StringUtils.substringAfter(authHeader, "Bearer ");
+		String oauthServiceUrl = "http://localhost:9090/oauth/check_token";
+
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+		headers.setBasicAuth("gateway", "12345");
+
+		MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+		params.add("token", token);
+
+		HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(params, headers);
+
+		ResponseEntity<TokenInfo> response = restTemplate.exchange(oauthServiceUrl, HttpMethod.POST, entity, TokenInfo.class);
+
+		log.info("token info :" + response.getBody().toString());
+
+		return response.getBody();
+	}
+
+	// 过滤器类型 有四种 pre,post,error,route
+	// pre: 业务逻辑执行之前，执行run里的逻辑
+	// post : 执行之后...
+	// error : 报错之后，执行...
+	@Override
+	public String filterType() {
+		return "pre";
+	}
+
+	// 过滤器执行顺序
+	@Override
+	public int filterOrder() {
+		return 1;
+	}
+
+}
+```
+
+##### 配置日志过滤器
+
+```
+@Slf4j
+@Component
+public class AuditLogFilter extends ZuulFilter {
+
+	@Override
+	public boolean shouldFilter() {
+		return true;
+	}
+
+    // 业务处理插入相关日志信息
+	@Override
+	public Object run() throws ZuulException {
+		log.info("audit log insert");
+		return null;
+	}
+
+
+	@Override
+	public String filterType() {
+		return "pre";
+	}
+
+
+	@Override
+	public int filterOrder() {
+		return 2;
+	}
+
+}
+```
+
+##### 配置授权过滤器
+
+```
+@Slf4j
+@Component
+public class AuthorizationFilter extends ZuulFilter {
+
+	@Override
+	public boolean shouldFilter() {
+		return true;
+	}
+
+    // 主要是将认证服务返回的token信息进行权限认证
+    // 没有对应权限的话就调用 requestContext.setSendZuulResponse(false);
+    // 设置zull网关不通过
+    // 有对应权限就放开，发送到具体的地方
+	@Override
+	public Object run() throws ZuulException {
+
+		log.info("authorization start");
+
+		RequestContext requestContext = RequestContext.getCurrentContext();
+		HttpServletRequest request = requestContext.getRequest();
+
+		if(isNeedAuth(request)) {
+
+			TokenInfo tokenInfo = (TokenInfo)request.getAttribute("tokenInfo");
+
+			if(tokenInfo != null && tokenInfo.isActive()) {
+				if(!hasPermission(tokenInfo, request)) {
+					log.info("audit log update fail 403");
+					handleError(403, requestContext);
+				}
+
+				requestContext.addZuulRequestHeader("username", tokenInfo.getUser_name());
+			}else {
+				// 去获取token的请求不做校验
+				if(!StringUtils.startsWith(request.getRequestURI(), "/token")) {
+					log.info("audit log update fail 401");
+					handleError(401, requestContext);
+				}
+			}
+		}
+
+		return null;
+	}
+
+	private void handleError(int status, RequestContext requestContext) {
+		requestContext.getResponse().setContentType("application/json");
+		requestContext.setResponseStatusCode(status);
+		requestContext.setResponseBody("{\"message\":\"auth fail\"}");
+		// 调用这句话就不会向下执行了
+		requestContext.setSendZuulResponse(false);
+	}
+
+	private boolean hasPermission(TokenInfo tokenInfo, HttpServletRequest request) {
+		return true; //RandomUtils.nextInt() % 2 == 0;
+	}
+
+	private boolean isNeedAuth(HttpServletRequest request) {
+		return true;
+	}
+
+	@Override
+	public String filterType() {
+		return "pre";
+	}
+
+	@Override
+	public int filterOrder() {
+		return 3;
+	}
+
+}
+```
+
+##### 流控配置
+1. 引入相关包
+```
+
+```
+
+2. 配置对应application.yaml
+
+```
+zuul:
+  routes:
+    token:
+      url: http://localhost:9090
+    order:
+      url: http://localhost:9080
+  # 默认不会转发请求头包含Authorization 、cookie的服务
+  # 这儿设置为空，都会转发
+  sensitive-headers:
+  ratelimit:
+    enabled: true
+    # 这里可以设置存储的方式
+    repository: JPA
+    default-policy-list:
+    # 3秒中最多2个请求 限制请求数
+    - limit: 2
+      # 2个请求的处理时间加起来不能超过1s,在请求数量少，但处理时间长的情景中使用
+      quota: 1
+      refresh-interval: 3
+      # 根据url、请求方式、ip去限制流量
+      type:
+        - url
+        - httpmethod
+        #- origin
+```
+
+上述的方法会根据自己的策略生成对应请求的限流控制，这种策略可以自己设置，
+根据自己的规则，设置相关的key
+
+```
+@Component
+public class MyKeyGen extends DefaultRateLimitKeyGenerator {
+
+	public MyKeyGen(RateLimitProperties properties,
+			RateLimitUtils rateLimitUtils) {
+		super(properties, rateLimitUtils);
+	}
+
+	@Override
+	public String key(HttpServletRequest request, Route route, Policy policy) {
+		// TODO Auto-generated method stub
+		return super.key(request, route, policy);
+	}
+}
+```
+
+当请求数操作限制被拦截的时候，可以自定义错误处理
+
+```
+@Component
+public class MyRateLimitErrorHandler extends DefaultRateLimiterErrorHandler {
+
+	@Override
+	public void handleError(String msg, Exception e) {
+		super.handleError(msg, e);
+	}
+}
+```
