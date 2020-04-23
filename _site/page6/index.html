@@ -170,6 +170,349 @@
             ">
     			
 <div class="post-preview">
+    <a href="/2018/05/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E9%80%82%E9%85%8D%E5%99%A8/">
+        <h2 class="post-title">
+            设计模式-结构型-适配器模式
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            基础定义
+
+
+  将一个类的接口转换成客户期望的另一个接口
+  使原本接口不兼容的类可以一起工作
+  类型：结构型
+
+
+使用场景：
+
+
+  已经存在的类，它的方法和需求不匹配时(方法结果相同或相似)
+  不是软件设计阶段考虑的设计模式，是随着软件维护，由于不同产品、不同厂家造成功能类似而接口不相同情况下的解决方案
+
+
+优点：
+
+
+  现有类复用
+  目标类和适配器类结偶
+  符合开闭原则
+
+...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on May 10, 2018
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/2018/05/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E8%A3%85%E9%A5%B0%E8%80%85/">
+        <h2 class="post-title">
+            设计模式-结构型-装饰者模式
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            基础与定义
+
+
+  在不改变原有对象的基础上，将功能附加到对象上
+  提供了比继承更有弹性的替代方案(扩展原有对象功能)
+  类型：结构型
+
+
+使用场景：
+
+  扩展一个类的功能
+  动态给对象添加功能，功能可动态的撤销
+
+
+优点：
+
+  继承的有力补充，比继承灵活，不改变原有对象的情况下给一个扩展功能
+  符合开闭原则
+
+
+缺点：
+
+  出现更多的代码更多的类
+  增加程序的复杂性
+
+
+源...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on May 10, 2018
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/2018/05/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E5%A4%96%E8%A7%82%E6%A8%A1%E5%BC%8F/">
+        <h2 class="post-title">
+            设计模式-结构型-外观模式
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            定义
+
+
+  又叫门面模式，提供了一个统一的接口，用来访问子系统中的一群接口
+  外观模式定义了一个高成接口，让子系统更容易使用
+  类型：结构型
+
+
+使用场景：
+
+  子系统越来越复杂，增加外观模式提供简单调用接口
+  构建多层系统调用，利用外观对象作为每层的入口，简化层间调用
+
+
+优点：
+
+  简化调用过程，无须了解深入子系统
+  减少系统依赖，松散耦合
+  更好的划分访问层次
+  复合...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on May 10, 2018
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/2018/05/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E5%8E%9F%E5%9E%8B%E6%A8%A1%E5%BC%8F/">
+        <h2 class="post-title">
+            设计模式-原型模式
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            基础定义
+
+
+  指原型实例指定创建对象的种类，并且通过拷贝这些原型创建新的对象
+  不需要知道任何创建的细节，不调用构造函数
+  类型：创建型
+  可以通过克隆的方式破坏单例模式
+
+
+使用场景
+
+  类初始化消耗较多资源
+  new产生的一个对象需要非常繁琐的过程
+  构造函数比较复杂
+  循环体中产生大量对象
+
+
+优点：
+
+  简化过程
+
+
+缺点：
+
+  必须配置克隆方法(重写Objec...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on May 10, 2018
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/2018/05/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E5%BB%BA%E9%80%A0%E8%80%85/">
+        <h2 class="post-title">
+            设计模式-建造者模式
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            基础定义
+
+
+  将一个复杂对象的构建与它的表示分离，使得同样的构建过程可以创建不同的表示，使用多个简单的对象一步一步构建成一个复杂的对象
+  用户只需指定需要建造的类型就可以得到它们，建造过程及细节不需要知道
+  创建型
+
+
+使用场景：
+
+  如果一个对象有非常复杂的内部结构(属性)
+  想把复杂对象的创建和使用分离
+
+
+优点：
+
+  封装性好，创建和使用分离
+  结偶
+
+
+缺点：
+
+  ...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on May 10, 2018
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/2018/05/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E6%8A%BD%E8%B1%A1%E5%B7%A5%E5%8E%82/">
+        <h2 class="post-title">
+            设计模式-抽象工厂
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            基础与定义
+
+
+  抽象工厂模式提供一个创建一些列相关或相互依赖对象的接口
+  无须指定他们具体的类
+  类型：创建型
+
+
+适用场景
+
+  客户端不依赖产品实例实现等细节
+  强调一系列相关产品对象(属于同一产品族)一起适用创建对象需要大量重复的代码
+  提供一个产品类的库，所有的产品以同样的接口出现，从而使客户端不依赖于具体实现
+
+
+优点：
+
+  将一个系列的产品族统一到一起创建
+
+
+抽象...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on May 10, 2018
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/2018/05/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E5%B7%A5%E5%8E%82%E6%96%B9%E6%B3%95/">
+        <h2 class="post-title">
+            设计模式-工厂方法
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            基础定义
+
+
+  定义一个创建对象的接口，但让实现这个接口的类来决定实例化哪个类。
+  工厂方法让类的实例化推迟到子类中运行
+  类型：创建型
+
+
+使用场景：
+
+  创建对象需要大量重复代码
+  客户端(应用层)不依赖于产品类实例如何被创建、实现等细节
+  通过其子类来指定创建哪个对象
+
+
+优点：
+
+  用户只需要关心所需产品对应的工厂
+  复合开闭原则
+
+
+缺点：
+
+  类的个数容易过多，...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on May 10, 2018
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/2018/05/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E7%AE%80%E5%8D%95%E5%B7%A5%E5%8E%82/">
+        <h2 class="post-title">
+            设计模式-简单工厂
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            基础定义
+
+
+  由一个工厂对象决定创建出哪一种产品类实例
+  类型：创建型，但不属于GOF23种设计模式
+
+
+使用场景：
+
+
+  工程类负责创建的对象比较少
+  客户端只知道传入工厂类的参数，对于如何创建对象不关心
+
+
+优点：
+
+  只需要知道传入的参数不需要知道类的信息，无须知道其创建的细节
+
+
+缺点：
+
+  增加新的产品需要修改工厂类的判断逻辑，违背开闭原则
+
+
+源码实例
+
+
+  Ca...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on May 10, 2018
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
     <a href="/2018/05/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/">
         <h2 class="post-title">
             设计原则
@@ -247,232 +590,6 @@ int类...
 </div>
 <hr>
 
-<div class="post-preview">
-    <a href="/2018/04/15/Go%E5%9C%A3%E7%BB%8F-%E5%9F%BA%E7%A1%80/">
-        <h2 class="post-title">
-            Go语言圣经(一)基础知识
-        </h2>
-        
-        <h3 class="post-subtitle">
-            
-        </h3>
-        
-        <div class="post-content-preview">
-            命令行参数
-
-程序的命令行参数可从os包的Args变量获取；os包外部使用os.Args访问该变量
-
-os.Args变量是一个字符串（string）的切片（slice）
-
-os.Args的第一个元素，os.Args[0],是命令本身的名字；其它的元素则是程序启动时传给它的参数。s[m:n]形式的切片表达式，产生从第m个元素到第n-1个元素的切片，下个例子用到的元素包含在os.Args[1:l...
-        </div>
-    </a>
-    <p class="post-meta">
-        Created by YaPi on April 15, 2018
-    </p>
-</div>
-<hr>
-
-<div class="post-preview">
-    <a href="/2018/04/14/mysql-%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6/">
-        <h2 class="post-title">
-            Mysql主从复制
-        </h2>
-        
-        <h3 class="post-subtitle">
-            
-        </h3>
-        
-        <div class="post-content-preview">
-            复制类型
-
-
-  基于语句复制
-```
-主服务器上面执行的语句在从服务器上面再执行一遍，在MySQL-3.23版本以后支持。
-
-
-存在的问题：时间上可能不完全同步造成偏差，执行语句的用户也可能是不同一个用户。
-- 基于行复制
-
-把主服务器上面改编后的内容直接复制过去，而不关心到底改变该内容是由哪条语句引发的，在MySQL-5.0版本以后引入。
-存在的问题：比如一个工资表中有一万个用户，我们把...
-        </div>
-    </a>
-    <p class="post-meta">
-        Created by YaPi on April 14, 2018
-    </p>
-</div>
-<hr>
-
-<div class="post-preview">
-    <a href="/2018/04/14/mysql-%E7%B4%A2%E5%BC%95/">
-        <h2 class="post-title">
-            Mysql 索引
-        </h2>
-        
-        <h3 class="post-subtitle">
-            
-        </h3>
-        
-        <div class="post-content-preview">
-            类别
-
-Mysql 中 :
-
-  如果一个主键被定义了，那么这个主键就是作为聚集索引
-  如果没有主键被定义，那么该表的第一个唯一非空索引被作为聚集索引
-  如果没有主键也没有合适的唯一索引，那么innodb内部会生成一个隐藏的主键作为聚集索引，这个隐藏的主键是一个6个字节的列，改列的值会随着数据的插入自增。
-
-
-InnoDB引擎会为每张表都加一个聚集索引，而聚集索引指向的的数据又是以物理磁...
-        </div>
-    </a>
-    <p class="post-meta">
-        Created by YaPi on April 14, 2018
-    </p>
-</div>
-<hr>
-
-<div class="post-preview">
-    <a href="/2018/04/14/mysql-%E9%87%8D%E7%82%B9/">
-        <h2 class="post-title">
-            Mysql基础
-        </h2>
-        
-        <h3 class="post-subtitle">
-            
-        </h3>
-        
-        <div class="post-content-preview">
-            存储引擎 MyISAM和InnoDB区别
-
-
-  MyISAM不支持外键和事务，innodb支持
-  MyISAM锁的粒度是表级，而InnoDB支持行级锁定
-  MyISAM支持全文类型索引，而InnoDB不支持全文索引
-  MyISAM相对简单，所以在效率上要优于InnoDB，小型应用可以考虑使用MyISAM
-  Myisam创建表生成三个文件：.frm数据表结构  .myd数据文件 .m...
-        </div>
-    </a>
-    <p class="post-meta">
-        Created by YaPi on April 14, 2018
-    </p>
-</div>
-<hr>
-
-<div class="post-preview">
-    <a href="/2018/04/13/redis-%E6%80%A7%E8%83%BD%E8%B0%83%E4%BC%98/">
-        <h2 class="post-title">
-            Redis性能调优
-        </h2>
-        
-        <h3 class="post-subtitle">
-            
-        </h3>
-        
-        <div class="post-content-preview">
-            性能调优
-
-尽管Redis是一个非常快速的内存数据存储媒介，也并不代表Redis不会产生性能问题。Redis采用单线程模型，所有的命令都是由一个线程串行执行的，所以当某个命令执行耗时较长时，会拖慢其后的所有命令，这使得Redis对每个任务的执行效率更加敏感。
-
-
-  性能优化
-    
-      确保没有让Redis执行耗时长的命令
-    
-    
-      不要把List当做列表使...
-        </div>
-    </a>
-    <p class="post-meta">
-        Created by YaPi on April 13, 2018
-    </p>
-</div>
-<hr>
-
-<div class="post-preview">
-    <a href="/2018/04/13/redis-%E5%93%A8%E5%85%B5/">
-        <h2 class="post-title">
-            Redis哨兵
-        </h2>
-        
-        <h3 class="post-subtitle">
-            
-        </h3>
-        
-        <div class="post-content-preview">
-            Redis Sentinel 哨兵
-
-Redis Sentinel，即Redis哨兵，在Redis 2.8版本开始引入。哨兵的核心功能是主节点的自动故障转移
-它由两部分组成，哨兵节点和数据节点：
-
-
-  哨兵节点：哨兵系统由一个或多个哨兵节点组成，哨兵节点是特殊的redis节点，不存储数据。
-  数据节点：主节点和从节点都是数据节点。
-
-
-Redis的主从复制功能本身只是做数据同步，并不提供...
-        </div>
-    </a>
-    <p class="post-meta">
-        Created by YaPi on April 13, 2018
-    </p>
-</div>
-<hr>
-
-<div class="post-preview">
-    <a href="/2018/04/13/redis-%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6/">
-        <h2 class="post-title">
-            Redis主从复制、分片
-        </h2>
-        
-        <h3 class="post-subtitle">
-            
-        </h3>
-        
-        <div class="post-content-preview">
-            主从复制与集群分片
-
-主从复制
-
-Redis支持一主多从的主从复制架构。一个Master实例负责处理所有的写请求，Master将写操作同步至所有Slave。
-
-
-  实时性要求不是特别高的读请求，可以在Slave上完成，提升效率。特别是一些周期性执行的统计任务，这些任务可能需要执行一些长耗时的Redis命令，可以专门规划出1个或几个Slave用于服务这些统计任务
-  借助Redis Sent...
-        </div>
-    </a>
-    <p class="post-meta">
-        Created by YaPi on April 13, 2018
-    </p>
-</div>
-<hr>
-
-<div class="post-preview">
-    <a href="/2018/04/13/redis-%E6%8C%81%E4%B9%85%E5%8C%96/">
-        <h2 class="post-title">
-            Redis持久化
-        </h2>
-        
-        <h3 class="post-subtitle">
-            
-        </h3>
-        
-        <div class="post-content-preview">
-            持久化
-
-持久化的功能：Redis是内存数据库，数据都是存储在内存中，为了避免进程退出导致数据的永久丢失，需要定期将Redis中的数据以某种形式(数据或命令)从内存保存到硬盘；当下次Redis重启时，利用持久化文件实现数据恢复。除此之外，为了进行灾难备份，可以将持久化文件拷贝到一个远程位置。
-
-Redis持久化分为RDB持久化和AOF持久化：前者将当前数据保存到硬盘，后者则是将每次执行的写命...
-        </div>
-    </a>
-    <p class="post-meta">
-        Created by YaPi on April 13, 2018
-    </p>
-</div>
-<hr>
-
 
 <!-- Pager -->
 
@@ -513,6 +630,8 @@ Redis持久化分为RDB持久化和AOF持久化：前者将当前数据保存到
                             
                         
                             
+                        
+                            
                                 <a href="/tags/#docker" title="docker" rel="4">
                                     docker
                                 </a>
@@ -535,7 +654,7 @@ Redis持久化分为RDB持久化和AOF持久化：前者将当前数据保存到
                             
                         
                             
-                                <a href="/tags/#golang" title="golang" rel="12">
+                                <a href="/tags/#golang" title="golang" rel="16">
                                     golang
                                 </a>
                             
@@ -558,6 +677,10 @@ Redis持久化分为RDB持久化和AOF持久化：前者将当前数据保存到
                                 </a>
                             
                         
+                            
+                                <a href="/tags/#SpringCloud" title="SpringCloud" rel="4">
+                                    SpringCloud
+                                </a>
                             
                         
                     </div>
@@ -620,7 +743,7 @@ Redis持久化分为RDB持久化和AOF持久化：前者将当前数据保存到
                 </ul>
 
                 <p class="copyright text-muted">
-                    蜀ICP备18030170号-2    Copyright &copy; YaPiBlog 2019
+                    蜀ICP备18030170号-2    Copyright &copy; YaPiBlog 2020
                     <br>
 
                     <!---->

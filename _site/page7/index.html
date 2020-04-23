@@ -170,6 +170,232 @@
             ">
     			
 <div class="post-preview">
+    <a href="/2018/04/15/Go%E5%9C%A3%E7%BB%8F-%E5%9F%BA%E7%A1%80/">
+        <h2 class="post-title">
+            Go语言圣经(一)基础知识
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            命令行参数
+
+程序的命令行参数可从os包的Args变量获取；os包外部使用os.Args访问该变量
+
+os.Args变量是一个字符串（string）的切片（slice）
+
+os.Args的第一个元素，os.Args[0],是命令本身的名字；其它的元素则是程序启动时传给它的参数。s[m:n]形式的切片表达式，产生从第m个元素到第n-1个元素的切片，下个例子用到的元素包含在os.Args[1:l...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on April 15, 2018
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/2018/04/14/mysql-%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6/">
+        <h2 class="post-title">
+            Mysql主从复制
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            复制类型
+
+
+  基于语句复制
+```
+主服务器上面执行的语句在从服务器上面再执行一遍，在MySQL-3.23版本以后支持。
+
+
+存在的问题：时间上可能不完全同步造成偏差，执行语句的用户也可能是不同一个用户。
+- 基于行复制
+
+把主服务器上面改编后的内容直接复制过去，而不关心到底改变该内容是由哪条语句引发的，在MySQL-5.0版本以后引入。
+存在的问题：比如一个工资表中有一万个用户，我们把...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on April 14, 2018
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/2018/04/14/mysql-%E7%B4%A2%E5%BC%95/">
+        <h2 class="post-title">
+            Mysql 索引
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            类别
+
+Mysql 中 :
+
+  如果一个主键被定义了，那么这个主键就是作为聚集索引
+  如果没有主键被定义，那么该表的第一个唯一非空索引被作为聚集索引
+  如果没有主键也没有合适的唯一索引，那么innodb内部会生成一个隐藏的主键作为聚集索引，这个隐藏的主键是一个6个字节的列，改列的值会随着数据的插入自增。
+
+
+InnoDB引擎会为每张表都加一个聚集索引，而聚集索引指向的的数据又是以物理磁...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on April 14, 2018
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/2018/04/14/mysql-%E9%87%8D%E7%82%B9/">
+        <h2 class="post-title">
+            Mysql基础
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            存储引擎 MyISAM和InnoDB区别
+
+
+  MyISAM不支持外键和事务，innodb支持
+  MyISAM锁的粒度是表级，而InnoDB支持行级锁定
+  MyISAM支持全文类型索引，而InnoDB不支持全文索引
+  MyISAM相对简单，所以在效率上要优于InnoDB，小型应用可以考虑使用MyISAM
+  Myisam创建表生成三个文件：.frm数据表结构  .myd数据文件 .m...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on April 14, 2018
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/2018/04/13/redis-%E6%80%A7%E8%83%BD%E8%B0%83%E4%BC%98/">
+        <h2 class="post-title">
+            Redis性能调优
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            性能调优
+
+尽管Redis是一个非常快速的内存数据存储媒介，也并不代表Redis不会产生性能问题。Redis采用单线程模型，所有的命令都是由一个线程串行执行的，所以当某个命令执行耗时较长时，会拖慢其后的所有命令，这使得Redis对每个任务的执行效率更加敏感。
+
+
+  性能优化
+    
+      确保没有让Redis执行耗时长的命令
+    
+    
+      不要把List当做列表使...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on April 13, 2018
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/2018/04/13/redis-%E5%93%A8%E5%85%B5/">
+        <h2 class="post-title">
+            Redis哨兵
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            Redis Sentinel 哨兵
+
+Redis Sentinel，即Redis哨兵，在Redis 2.8版本开始引入。哨兵的核心功能是主节点的自动故障转移
+它由两部分组成，哨兵节点和数据节点：
+
+
+  哨兵节点：哨兵系统由一个或多个哨兵节点组成，哨兵节点是特殊的redis节点，不存储数据。
+  数据节点：主节点和从节点都是数据节点。
+
+
+Redis的主从复制功能本身只是做数据同步，并不提供...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on April 13, 2018
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/2018/04/13/redis-%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6/">
+        <h2 class="post-title">
+            Redis主从复制、分片
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            主从复制与集群分片
+
+主从复制
+
+Redis支持一主多从的主从复制架构。一个Master实例负责处理所有的写请求，Master将写操作同步至所有Slave。
+
+
+  实时性要求不是特别高的读请求，可以在Slave上完成，提升效率。特别是一些周期性执行的统计任务，这些任务可能需要执行一些长耗时的Redis命令，可以专门规划出1个或几个Slave用于服务这些统计任务
+  借助Redis Sent...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on April 13, 2018
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/2018/04/13/redis-%E6%8C%81%E4%B9%85%E5%8C%96/">
+        <h2 class="post-title">
+            Redis持久化
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            持久化
+
+持久化的功能：Redis是内存数据库，数据都是存储在内存中，为了避免进程退出导致数据的永久丢失，需要定期将Redis中的数据以某种形式(数据或命令)从内存保存到硬盘；当下次Redis重启时，利用持久化文件实现数据恢复。除此之外，为了进行灾难备份，可以将持久化文件拷贝到一个远程位置。
+
+Redis持久化分为RDB持久化和AOF持久化：前者将当前数据保存到硬盘，后者则是将每次执行的写命...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on April 13, 2018
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
     <a href="/2018/04/13/redis-base/">
         <h2 class="post-title">
             Redis基础命令及内存划分
@@ -229,267 +455,6 @@ setnx 方法
 </div>
 <hr>
 
-<div class="post-preview">
-    <a href="/2018/04/12/mongo-%E5%A4%87%E4%BB%BD/">
-        <h2 class="post-title">
-            MongoDB备份
-        </h2>
-        
-        <h3 class="post-subtitle">
-            
-        </h3>
-        
-        <div class="post-content-preview">
-            启动
-docker run --name mongodb -v /root/opt/data/mongodbData:/data/db -p 27017:27017 -d
-
-
-
-// 从阿里云服务器mongodb数据备份到腾讯云
-mongodump -h 120.77.154.206 -d codechain -o /data/db/replicateData
-
-
-// 用备份数据进行恢复
-...
-        </div>
-    </a>
-    <p class="post-meta">
-        Created by YaPi on April 12, 2018
-    </p>
-</div>
-<hr>
-
-<div class="post-preview">
-    <a href="/2018/04/12/mongo-%E8%AF%BB%E5%86%99%E5%88%86%E7%A6%BB/">
-        <h2 class="post-title">
-            MongoDB读写分离
-        </h2>
-        
-        <h3 class="post-subtitle">
-            
-        </h3>
-        
-        <div class="post-content-preview">
-            MongoDB复制集（Replica Set）通过存储多份数据副本来保证数据的高可靠，通过自动的主备切换机制来保证服务的高可用。但需要注意的时，连接副本集的姿势如果不对，服务高可用将不复存在。
-
-使用前须知
-MongoDB复制集里Primary节点是不固定的。当遇到复制集轮转升级、Primary宕机、网络分区等场景时，复制集可能会选举出一个新的Primary，而原来的Primary则会降级为...
-        </div>
-    </a>
-    <p class="post-meta">
-        Created by YaPi on April 12, 2018
-    </p>
-</div>
-<hr>
-
-<div class="post-preview">
-    <a href="/2018/04/12/mongo-base/">
-        <h2 class="post-title">
-            MongoDB基础知识点
-        </h2>
-        
-        <h3 class="post-subtitle">
-            
-        </h3>
-        
-        <div class="post-content-preview">
-            基础知识点
-
-规范
-
-数据库规范
-
-数据库名称要求满足如下特征：
-
-
-  不能是空字符串(“”)
-  不得含有‘’、空格、. 、$、/、\、\0(空字符)
-  应该全部小写
-  最多64字节
-  不得是保留数据库名(admin、config、local)
-
-
-MongoDB中默认的数据库为test,如果没有创建新的数据库，集合将存放在test数据中
-
-查看数据库版本: db.version(...
-        </div>
-    </a>
-    <p class="post-meta">
-        Created by YaPi on April 12, 2018
-    </p>
-</div>
-<hr>
-
-<div class="post-preview">
-    <a href="/2018/01/12/k8s%E5%9F%BA%E7%A1%80-%E8%B5%84%E6%BA%90%E5%AF%B9%E8%B1%A1/">
-        <h2 class="post-title">
-            K8S基础-资源对象
-        </h2>
-        
-        <h3 class="post-subtitle">
-            
-        </h3>
-        
-        <div class="post-content-preview">
-            Kubernetes基本概念和术语
-
-Kubernetes中几乎所有的资源对象都可以通过kubectl执行CURD操作，并在etcd中持久化保存。它通过跟踪对比etcd库里保存的资源期望状态与当前世纪资源状态的差异来实现自动控制和自动纠错的功能。
-
-Master
-每个集群都有一个Master节点负责整个集群的管理和控制，基本上所有的命令都是发给它。其运行着如下关键进程
-
-
-  Kuberne...
-        </div>
-    </a>
-    <p class="post-meta">
-        Created by YaPi on January 12, 2018
-    </p>
-</div>
-<hr>
-
-<div class="post-preview">
-    <a href="/2018/01/12/k8s-%E5%9F%BA%E6%9C%AC%E5%91%BD%E4%BB%A4/">
-        <h2 class="post-title">
-            K8S基本命令
-        </h2>
-        
-        <h3 class="post-subtitle">
-            
-        </h3>
-        
-        <div class="post-content-preview">
-            基本命令
-
-镜像分发打包
-
-docker save -o calico-v319.tar.gz  `docker image ls |grep calico |awk '{position=$1":"$2;print $1,position}' |awk '{print $2}'`
-
-
-
-获取集群中有多少个Node
-
-kubectl get nodes
-
-分析node详情
-kubectl d...
-        </div>
-    </a>
-    <p class="post-meta">
-        Created by YaPi on January 12, 2018
-    </p>
-</div>
-<hr>
-
-<div class="post-preview">
-    <a href="/2018/01/12/k8s-1.16.1-kubeadm/">
-        <h2 class="post-title">
-            k8s-v1.16.1安装(kubeadm)
-        </h2>
-        
-        <h3 class="post-subtitle">
-            
-        </h3>
-        
-        <div class="post-content-preview">
-            安装
-安装docker
-
-Master、Node节点都需要安装
-# 卸载原来的docker
-sudo yum remove docker \
-                  docker-client \
-                  docker-client-latest \
-                  docker-common \
-                 ...
-        </div>
-    </a>
-    <p class="post-meta">
-        Created by YaPi on January 12, 2018
-    </p>
-</div>
-<hr>
-
-<div class="post-preview">
-    <a href="/2018/01/12/docker-CICD/">
-        <h2 class="post-title">
-            CI/CD
-        </h2>
-        
-        <h3 class="post-subtitle">
-            
-        </h3>
-        
-        <div class="post-content-preview">
-            gitlab、gitlab-ci 服务器搭建
-
-略
-
-CI/CD
-
-
-  注册runner
-    
-      suudo gitlab-ci-multi-runner register
-    
-  
-
-
-
-  按要求输入gitlab服务器的地址、tags等信息
-
-
-
-  增加.gitlab-ci.yml文件
-
-
-
-stages:
-    - style
-    - test
-    -...
-        </div>
-    </a>
-    <p class="post-meta">
-        Created by YaPi on January 12, 2018
-    </p>
-</div>
-<hr>
-
-<div class="post-preview">
-    <a href="/2018/01/12/docker-%E7%A7%81%E6%9C%89%E9%95%9C%E5%83%8F%E4%BB%93%E5%BA%93%E6%90%AD%E5%BB%BA/">
-        <h2 class="post-title">
-            docker私有镜像仓库搭建
-        </h2>
-        
-        <h3 class="post-subtitle">
-            
-        </h3>
-        
-        <div class="post-content-preview">
-            搭建本地docker hub 仓库
-
-
-  私有仓库服务器执行
-
-
-创建用户
-
-为用户创建一个带有一个条目的密码文件testuser，密码为 testpassword：
-
-$ mkdir auth
-$ docker run   --entrypoint htpasswd   registry -Bbn dockerpull ypazl1314 &gt; /auth/htpasswd
-
-
-启动...
-        </div>
-    </a>
-    <p class="post-meta">
-        Created by YaPi on January 12, 2018
-    </p>
-</div>
-<hr>
-
 
 <!-- Pager -->
 
@@ -530,6 +495,8 @@ $ docker run   --entrypoint htpasswd   registry -Bbn dockerpull ypazl1314 &gt; /
                             
                         
                             
+                        
+                            
                                 <a href="/tags/#docker" title="docker" rel="4">
                                     docker
                                 </a>
@@ -552,7 +519,7 @@ $ docker run   --entrypoint htpasswd   registry -Bbn dockerpull ypazl1314 &gt; /
                             
                         
                             
-                                <a href="/tags/#golang" title="golang" rel="12">
+                                <a href="/tags/#golang" title="golang" rel="16">
                                     golang
                                 </a>
                             
@@ -575,6 +542,10 @@ $ docker run   --entrypoint htpasswd   registry -Bbn dockerpull ypazl1314 &gt; /
                                 </a>
                             
                         
+                            
+                                <a href="/tags/#SpringCloud" title="SpringCloud" rel="4">
+                                    SpringCloud
+                                </a>
                             
                         
                     </div>
@@ -637,7 +608,7 @@ $ docker run   --entrypoint htpasswd   registry -Bbn dockerpull ypazl1314 &gt; /
                 </ul>
 
                 <p class="copyright text-muted">
-                    蜀ICP备18030170号-2    Copyright &copy; YaPiBlog 2019
+                    蜀ICP备18030170号-2    Copyright &copy; YaPiBlog 2020
                     <br>
 
                     <!---->

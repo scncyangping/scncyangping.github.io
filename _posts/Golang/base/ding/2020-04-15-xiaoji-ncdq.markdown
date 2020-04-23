@@ -1,6 +1,6 @@
 ---
 layout:     post
-title:      "Go小记 - 指针运算和内存对其"
+title:      "Go小记 - 指针运算和内存对齐"
 subtitle:   ""
 date:       2020-04-16 02:40:00
 author:     "YaPi"

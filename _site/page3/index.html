@@ -170,6 +170,236 @@
             ">
     			
 <div class="post-preview">
+    <a href="/2019/08/22/data-structure-%E6%A0%88-%E9%98%9F%E5%88%97/">
+        <h2 class="post-title">
+            数据结构(三)栈、队列
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            栈
+
+基础特点
+
+
+  栈也是一种线性结构
+  相比数组，栈对应的操作是数组的子集
+  只能从一段添加元素，也只能从一段取出元素
+  添加(入栈)或取出(出栈)的那一段称之为栈顶
+
+
+后进先出 (Last In First Out) LIFO
+
+栈的应用
+
+
+  无处不在的Undo操作(撤销操作)
+
+
+操作系统或程序会将你的操作放进一个栈中。点击撤销的时候，将最后添加的操作出栈。
+
+
+  程...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on August 22, 2019
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/2019/08/21/data-structure-%E8%87%AA%E5%AE%9A%E4%B9%89%E6%95%B0%E7%BB%84/">
+        <h2 class="post-title">
+            数据结构(二)时间复杂度分析+自定义数组
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            简单的时间复杂度分析
+
+
+  O(1)、 O(n)、 O(lgn)、 O(nlogn)、
+  大O描述的是算法的运行时间和输入数据之间的关系
+
+
+例：
+
+public static int sum(int[] nums){
+    int sum = 0;
+    for(int num : nums)sum += num;
+    return sum;
+}
+
+上述的时间复杂度是 O(n)...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on August 21, 2019
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/2019/08/20/data-structure-rumen/">
+        <h2 class="post-title">
+            数据结构(一) 入门
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            入门
+
+什么是数据结构？
+
+数据结构研究的是数据如何在计算机中进行组织和存储，使得我们可以高效的获取数据或者修改数据。
+
+近乎所有的算法都需要数据结构做为基石。
+
+总的来说可以分为三种结构
+
+线性结构
+
+数组、栈、队列、链表、哈希表…
+
+树结构
+
+二叉树、二分搜索树、AVL、红黑树、Treap、Splay、堆、Trie、线段树、K-D树、并查集、哈夫曼树…
+
+图结构
+
+领结矩阵、邻接表
+
+
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on August 20, 2019
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/2019/08/18/Golang-base-pkg-time/">
+        <h2 class="post-title">
+            Go标准库-time
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            Time
+
+Time 代表一个纳秒精度的时间点。程序中应使用Time类型值来保存和传递时间,而不是指针。 就是说,表示时间的变量和字段应为time.Time类型,而不是*time.Time类型。
+
+一个Time类型的值可以被多个go程同时使用。时间点可以使用Before、After、Equal方法进行比较。Sub方法让两个时间点相减,生成一个Duration类型值(代表时间段)。Add方法给...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on August 18, 2019
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/2019/08/18/Golang-base-pkg-testing/">
+        <h2 class="post-title">
+            Go标准库-testing
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            test - Go包的⾃动化单元测试
+
+测试文件的文件名需要以_test.go结尾,测试用例需要以TestXxxx的样式存在
+
+
+  testing 基本用例测试
+  testing/iotest - io测试
+  testing/quick 进⾏⿊盒测试的辅助功能包
+  net/http/httptest 提供测试 HTTP 的⼯具
+
+
+Test
+
+
+  TestXxxx(t *testi...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on August 18, 2019
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/2019/08/18/Golang-base-pkg-os-sync-atomic/">
+        <h2 class="post-title">
+            Go标准库-进程、os、sync、atomic
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            创建进程
+
+在Unix中，创建⼀个进程，通过系统调⽤fork实现（及其⼀些变种，如vfork、clone）。在Go语⾔中，Linux下创建进程使⽤的系统调⽤是clone。很多时候，系统调⽤fork、execve、wait和exit会在⼀起出现。此处先简要介绍这4个系统调⽤及其典型⽤法
+
+
+  fork: 允许⼀进程（⽗进程）创建⼀新进程（⼦进程）。具体做法是，新的⼦进程⼏近于对⽗进程的翻版：...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on August 18, 2019
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/2019/08/13/Golang-base-pkg-strconv-regexp/">
+        <h2 class="post-title">
+            Golang标准库-strconv、regexp
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            strconv包
+
+定义了字符串和基本数据类型之间转换的方法,这⾥的基本数据类型包括:布尔、整型（包括有/⽆符号、⼆进制、⼋进制、⼗进制和⼗六进制）和浮点型等
+
+strconv 包转换错误处理
+
+由于将字符串转为其他数据类型可能会出错，strconv 包定义了两个 error 类型的变
+量：ErrRange 和 ErrSyntax。其中，ErrRange 表示值超过了类型能表示的最⼤范
+围，...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on August 13, 2019
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
     <a href="/2019/08/13/Golang-base-pkg-sort-container/">
         <h2 class="post-title">
             Golang标准库-sort、container
@@ -268,247 +498,6 @@ HBase存储时耗时操作
 </div>
 <hr>
 
-<div class="post-preview">
-    <a href="/2019/07/18/HBase-introduction/">
-        <h2 class="post-title">
-            HBase入门及简单应用
-        </h2>
-        
-        <h3 class="post-subtitle">
-             "Apache HBase is the Hadoop database, a distributed, scalable, big data store "
-        </h3>
-        
-        <div class="post-content-preview">
-            HBase
-
-
-  HBase简介
-  HBase安装
-  HBase读写流程
-  HBase实战使用
-
-
-HBase简介
-
-
-  面向列、适合非结构化数据存储
-
-
-HBase是一个分布式的、面向列的开源数据库，该技术来源于 Fay Chang 所撰写的Google论文“Bigtable：一个结构化数据的分布式存储系统”。就像Bigtable利用了Google文件系统（File System...
-        </div>
-    </a>
-    <p class="post-meta">
-        Created by YaPi on July 18, 2019
-    </p>
-</div>
-<hr>
-
-<div class="post-preview">
-    <a href="/2019/06/20/MapReduce-base/">
-        <h2 class="post-title">
-            MapReduce基础
-        </h2>
-        
-        <h3 class="post-subtitle">
-             "Hadoop MapReduce is a software framework for easily writing applications which process vast amounts of data (multi-terabyte data-sets) in-parallel on large clusters (thousands of nodes) of commodity hardware in a reliable, fault-tolerant manner. "
-        </h3>
-        
-        <div class="post-content-preview">
-            概述
-
-
-  源自与谷歌的MapReduce的论文,发表于2004年12月
-  Hadoop MapReduce 是 Google MapReduce的克隆版
-  MapReduce的有点 : 海量数据的离线处理&amp;易开发&amp;易运行
-  MapReduce的缺点 : 实时流式计算
-
-
-input --&gt; spliting --&gt; Maping --&gt;
-
-shuf...
-        </div>
-    </a>
-    <p class="post-meta">
-        Created by YaPi on June 20, 2019
-    </p>
-</div>
-<hr>
-
-<div class="post-preview">
-    <a href="/2019/06/20/Hadoop-base/">
-        <h2 class="post-title">
-            Hadoop基础
-        </h2>
-        
-        <h3 class="post-subtitle">
-             "The Apache™ Hadoop® project develops open-source software for reliable, scalable, distributed computing "
-        </h3>
-        
-        <div class="post-content-preview">
-            Hadoop初识
-
-
-  
-    狭义的Hadoop: 是一个舍和大数据分布式存储(HDFS)、分布式计算(MapReduce)和资源调度(YARN)的平台
-  
-  
-    广义Hadoop: 指的是Hadoop的生态系统,包含各种只解决某一个特定问题域的子系统，zk、hiv(sql查询)、pig(脚本)、R语言、Hbase、sqoop(将关系型数据库与hadoop的数据进行交换)、F...
-        </div>
-    </a>
-    <p class="post-meta">
-        Created by YaPi on June 20, 2019
-    </p>
-</div>
-<hr>
-
-<div class="post-preview">
-    <a href="/2019/06/20/HDFS-base/">
-        <h2 class="post-title">
-            HDFS基础
-        </h2>
-        
-        <h3 class="post-subtitle">
-             "HDFS is the primary distributed storage used by Hadoop applications. "
-        </h3>
-        
-        <div class="post-content-preview">
-            HDFS基础
-Hadoop Distributed File System
-
-  分布式文件系统
-  运行在 commodity hardware
-  fault-tolerant 高容错
-  部署在廉价的(low-cost hardware)的机器上
-  高吞吐量 high throughput
-  适用于大数据量
-
-
-普通文件系统
-
-
-  目录结构
-  存在的是文件或文件夹
-  对外提供...
-        </div>
-    </a>
-    <p class="post-meta">
-        Created by YaPi on June 20, 2019
-    </p>
-</div>
-<hr>
-
-<div class="post-preview">
-    <a href="/2018/05/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E7%8A%B6%E6%80%81%E6%A8%A1%E5%BC%8F/">
-        <h2 class="post-title">
-            设计模式-行为型-状态模式
-        </h2>
-        
-        <h3 class="post-subtitle">
-            
-        </h3>
-        
-        <div class="post-content-preview">
-            基础与定义
-
-
-  允许一个对象在其内部状态改变时，改变它的行为
-
-
-代码实例
-
-// 状态抽象类
-public abstract class CourseVideoState {
-    protected CourseVideoContext courseVideoContext;
-
-    public void setCourseVideoContext(CourseVideoCon...
-        </div>
-    </a>
-    <p class="post-meta">
-        Created by YaPi on May 10, 2018
-    </p>
-</div>
-<hr>
-
-<div class="post-preview">
-    <a href="/2018/05/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E8%AE%BF%E9%97%AE%E8%80%85%E6%A8%A1%E5%BC%8F/">
-        <h2 class="post-title">
-            设计模式-行为型-访问者模式
-        </h2>
-        
-        <h3 class="post-subtitle">
-            
-        </h3>
-        
-        <div class="post-content-preview">
-            基础与定义
-
-
-  访问者模式是一种将数据操作和数据结构分离的设计模式
-  封装作用于某数据结构(List,Set,Map)中的各个操作
-  需要对一个对象结构中的对象进行很多不同的并且不相关的操作，而需要避免这些操作“污染”这些对象的类，也不希望在增加新操作时修改这些类
-  可以在不改变各元素的类的前提下，定义作用于这些元素的操作
-  类型：行为型
-
-
-代码实例
-年底，CEO和CTO开始评...
-        </div>
-    </a>
-    <p class="post-meta">
-        Created by YaPi on May 10, 2018
-    </p>
-</div>
-<hr>
-
-<div class="post-preview">
-    <a href="/2018/05/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E8%B4%A3%E4%BB%BB%E9%93%BE%E6%A8%A1%E5%BC%8F/">
-        <h2 class="post-title">
-            设计模式-行为型-责任链模式
-        </h2>
-        
-        <h3 class="post-subtitle">
-            
-        </h3>
-        
-        <div class="post-content-preview">
-            基础与定义
-
-
-  为请求创建一个接收此处请求的对象链
-  类型：行为型
-
-
-使用场景
-
-  一个请求的处理需要多个对象当中的一个或几个协作的过程
-
-
-优点：
-
-  责任链可以动态组合
-  请求的发送者和接受者解耦
-
-
-源码实例
-
-
-  java.serverlet.Filter
-
-
-代码实例
-
-发布一个课程，需要判断该课程是否有名称和手记，必须都有才能发布
-
-@Data
-public cl...
-        </div>
-    </a>
-    <p class="post-meta">
-        Created by YaPi on May 10, 2018
-    </p>
-</div>
-<hr>
-
 
 <!-- Pager -->
 
@@ -549,6 +538,8 @@ public cl...
                             
                         
                             
+                        
+                            
                                 <a href="/tags/#docker" title="docker" rel="4">
                                     docker
                                 </a>
@@ -571,7 +562,7 @@ public cl...
                             
                         
                             
-                                <a href="/tags/#golang" title="golang" rel="12">
+                                <a href="/tags/#golang" title="golang" rel="16">
                                     golang
                                 </a>
                             
@@ -594,6 +585,10 @@ public cl...
                                 </a>
                             
                         
+                            
+                                <a href="/tags/#SpringCloud" title="SpringCloud" rel="4">
+                                    SpringCloud
+                                </a>
                             
                         
                     </div>
@@ -656,7 +651,7 @@ public cl...
                 </ul>
 
                 <p class="copyright text-muted">
-                    蜀ICP备18030170号-2    Copyright &copy; YaPiBlog 2019
+                    蜀ICP备18030170号-2    Copyright &copy; YaPiBlog 2020
                     <br>
 
                     <!---->

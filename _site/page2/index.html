@@ -170,6 +170,210 @@
             ">
     			
 <div class="post-preview">
+    <a href="/2019/08/28/Golang-base-binfa-Go%E7%BA%BF%E7%A8%8B%E6%A8%A1%E5%9E%8B%E5%AE%9E%E7%8E%B0/">
+        <h2 class="post-title">
+            Go并发编程 - (二)Go线程模型实现
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            线程模型实现
+
+goroutine是GO特有的应用程序线程。
+有3个必知的核心元素，它们支撑起了这个模型的主要框架
+
+
+  M：machine的缩写。一个M代表一个内核线程，或称“工作线程”
+  P：processor的缩写。一个P代表一个GO代码片段所必须的资源(或称上下文环境)
+  G：goroutine的缩写。一个G代表一个Go代码片段。
+
+
+简单来说，一个G的执行需要P和M的支持。一...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on August 28, 2019
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/2019/08/28/Golang-base-binfa-%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B%E5%9F%BA%E7%A1%80/">
+        <h2 class="post-title">
+            Go并发编程 - (一)并发编程基础
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            并发编程基础
+
+所谓并发编程是指在一台处理器上“同时”处理多个任务。并发是在同一实体上的多个事件。多个事件在同一时间间隔发生。
+
+串行程序与并发程序
+
+串行程序特指只能被顺序执行的指令列表,并发程序则是可以被并发执行的两个及以上的串行程序的综合体。并发程序允许其中的串行程序运行在一个或个可共享的CPU上,同时也允许每个串行程序都运行在专门为它服务的CPU上。前一种方式也被成为多元程序,由操作...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on August 28, 2019
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/2019/08/25/data-structure-readBlackTree/">
+        <h2 class="post-title">
+            数据结构(十一)红黑树
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            2-3树
+
+满足二分搜索树的基本性质，但是它不是一种二叉树，它有两种节点，节点可以存放一个元素或这两个元素，存放一个元素时有左右两个孩子，存在两个元素的节点有三个孩子
+
+2-3树添加节点不会添加到一个null的位置，比如从头开始添加节点，添加c，而后添加b的时候不会成为c的孩子节点。而会成为c的左孩子，当继续添加d的时候还是会添加到b旁边，成为3个节点，然后，从b进行分裂，d,c成为他的子孩...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on August 25, 2019
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/2019/08/25/data-structure-avl/">
+        <h2 class="post-title">
+            数据结构(十)AVL
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            二分搜索树的缺陷
+
+根据添加入树的顺序不同，树可能会退化称为链表，所以需要有一定的机制去避免。
+
+AVL树 (两个俄罗斯人的名字简写)
+
+通常被认为是最早的自平衡的二叉树,二分搜索树的变种
+
+AVL树中定义的平衡二叉树
+
+对于任意一个节点，左子树和右子树的高度差不能超过1(可以左边比右边高，也可以右边比左边高)，
+平衡二叉树的高度和节点数量之间的关系也是O(logn)的
+
+平衡因子： 左右子...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on August 25, 2019
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/2019/08/25/data-structure-bingchaji/">
+        <h2 class="post-title">
+            数据结构(九)并查集
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            并查集
+
+并查集，在一些有N个元素的集合应用问题中，我们通常是在开始时让每个元素构成一个单元素的集合，然后按一定顺序将属于同一组的元素所在的集合合并，其间要反复查找一个元素在哪个集合中。这一类问题近几年来反复出现在信息学的国际国内赛题中，其特点是看似并不复杂，但数据量极大，若用正常的数据结构来描述的话，往往在空间上过大，计算机无法承受；即使在空间上勉强通过，运行的时间复杂度也极高，根本就不可...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on August 25, 2019
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/2019/08/25/data-structure-trie/">
+        <h2 class="post-title">
+            数据结构(八)Trie 字典树
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            什么是前缀树 Trie
+
+多用来进行字符串匹配
+
+
+  多叉树
+
+
+// 如果不仅仅是英文单词的话，还会加上特殊字符等
+// 所以一般不会设置next为指定容量的结构
+type Node struct {
+    // 当前节点的值
+    s       string
+    // 是否代表了一个单词的结尾
+    isWord  bool
+    next    []Node
+}
+
+
+缺...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on August 25, 2019
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/2019/08/25/data-structure-%E7%BA%BF%E6%AE%B5%E6%A0%91/">
+        <h2 class="post-title">
+            数据结构(七)线段树
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            线段树
+
+平衡树
+
+平衡树，即平衡二叉树（Balanced Binary Tree），具有以下性质：它是一棵空树或它的左右两个子树的高度差的绝对值不超过1，并且左右两个子树都是一棵平衡二叉树。
+平衡二叉树的常用算法有红黑树、AVL、Treap、伸展树、SBT等
+
+线段树不是一个完全二叉树，但是是一颗平衡二叉树，如果把最下层空节点看成空的节点，那么它也是一颗满二叉树。
+
+对于一颗满二叉树来说有...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on August 25, 2019
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
     <a href="/2019/08/25/data-structure-%E5%A0%86%E5%92%8C%E4%BC%98%E5%85%88%E9%98%9F%E5%88%97/">
         <h2 class="post-title">
             数据结构(六)堆和优先队列
@@ -292,236 +496,6 @@ NULL 空也是二叉树
 </div>
 <hr>
 
-<div class="post-preview">
-    <a href="/2019/08/22/data-structure-%E6%A0%88-%E9%98%9F%E5%88%97/">
-        <h2 class="post-title">
-            数据结构(三)栈、队列
-        </h2>
-        
-        <h3 class="post-subtitle">
-            
-        </h3>
-        
-        <div class="post-content-preview">
-            栈
-
-基础特点
-
-
-  栈也是一种线性结构
-  相比数组，栈对应的操作是数组的子集
-  只能从一段添加元素，也只能从一段取出元素
-  添加(入栈)或取出(出栈)的那一段称之为栈顶
-
-
-后进先出 (Last In First Out) LIFO
-
-栈的应用
-
-
-  无处不在的Undo操作(撤销操作)
-
-
-操作系统或程序会将你的操作放进一个栈中。点击撤销的时候，将最后添加的操作出栈。
-
-
-  程...
-        </div>
-    </a>
-    <p class="post-meta">
-        Created by YaPi on August 22, 2019
-    </p>
-</div>
-<hr>
-
-<div class="post-preview">
-    <a href="/2019/08/21/data-structure-%E8%87%AA%E5%AE%9A%E4%B9%89%E6%95%B0%E7%BB%84/">
-        <h2 class="post-title">
-            数据结构(二)时间复杂度分析+自定义数组
-        </h2>
-        
-        <h3 class="post-subtitle">
-            
-        </h3>
-        
-        <div class="post-content-preview">
-            简单的时间复杂度分析
-
-
-  O(1)、 O(n)、 O(lgn)、 O(nlogn)、
-  大O描述的是算法的运行时间和输入数据之间的关系
-
-
-例：
-
-public static int sum(int[] nums){
-    int sum = 0;
-    for(int num : nums)sum += num;
-    return sum;
-}
-
-上述的时间复杂度是 O(n)...
-        </div>
-    </a>
-    <p class="post-meta">
-        Created by YaPi on August 21, 2019
-    </p>
-</div>
-<hr>
-
-<div class="post-preview">
-    <a href="/2019/08/20/data-structure-rumen/">
-        <h2 class="post-title">
-            数据结构(一) 入门
-        </h2>
-        
-        <h3 class="post-subtitle">
-            
-        </h3>
-        
-        <div class="post-content-preview">
-            入门
-
-什么是数据结构？
-
-数据结构研究的是数据如何在计算机中进行组织和存储，使得我们可以高效的获取数据或者修改数据。
-
-近乎所有的算法都需要数据结构做为基石。
-
-总的来说可以分为三种结构
-
-线性结构
-
-数组、栈、队列、链表、哈希表…
-
-树结构
-
-二叉树、二分搜索树、AVL、红黑树、Treap、Splay、堆、Trie、线段树、K-D树、并查集、哈夫曼树…
-
-图结构
-
-领结矩阵、邻接表
-
-
-        </div>
-    </a>
-    <p class="post-meta">
-        Created by YaPi on August 20, 2019
-    </p>
-</div>
-<hr>
-
-<div class="post-preview">
-    <a href="/2019/08/18/Golang-base-pkg-time/">
-        <h2 class="post-title">
-            Go标准库-time
-        </h2>
-        
-        <h3 class="post-subtitle">
-            
-        </h3>
-        
-        <div class="post-content-preview">
-            Time
-
-Time 代表一个纳秒精度的时间点。程序中应使用Time类型值来保存和传递时间,而不是指针。 就是说,表示时间的变量和字段应为time.Time类型,而不是*time.Time类型。
-
-一个Time类型的值可以被多个go程同时使用。时间点可以使用Before、After、Equal方法进行比较。Sub方法让两个时间点相减,生成一个Duration类型值(代表时间段)。Add方法给...
-        </div>
-    </a>
-    <p class="post-meta">
-        Created by YaPi on August 18, 2019
-    </p>
-</div>
-<hr>
-
-<div class="post-preview">
-    <a href="/2019/08/18/Golang-base-pkg-testing/">
-        <h2 class="post-title">
-            Go标准库-testing
-        </h2>
-        
-        <h3 class="post-subtitle">
-            
-        </h3>
-        
-        <div class="post-content-preview">
-            test - Go包的⾃动化单元测试
-
-测试文件的文件名需要以_test.go结尾,测试用例需要以TestXxxx的样式存在
-
-
-  testing 基本用例测试
-  testing/iotest - io测试
-  testing/quick 进⾏⿊盒测试的辅助功能包
-  net/http/httptest 提供测试 HTTP 的⼯具
-
-
-Test
-
-
-  TestXxxx(t *testi...
-        </div>
-    </a>
-    <p class="post-meta">
-        Created by YaPi on August 18, 2019
-    </p>
-</div>
-<hr>
-
-<div class="post-preview">
-    <a href="/2019/08/18/Golang-base-pkg-os-sync-atomic/">
-        <h2 class="post-title">
-            Go标准库-进程、os、sync、atomic
-        </h2>
-        
-        <h3 class="post-subtitle">
-            
-        </h3>
-        
-        <div class="post-content-preview">
-            创建进程
-
-在Unix中，创建⼀个进程，通过系统调⽤fork实现（及其⼀些变种，如vfork、clone）。在Go语⾔中，Linux下创建进程使⽤的系统调⽤是clone。很多时候，系统调⽤fork、execve、wait和exit会在⼀起出现。此处先简要介绍这4个系统调⽤及其典型⽤法
-
-
-  fork: 允许⼀进程（⽗进程）创建⼀新进程（⼦进程）。具体做法是，新的⼦进程⼏近于对⽗进程的翻版：...
-        </div>
-    </a>
-    <p class="post-meta">
-        Created by YaPi on August 18, 2019
-    </p>
-</div>
-<hr>
-
-<div class="post-preview">
-    <a href="/2019/08/13/Golang-base-pkg-strconv-regexp/">
-        <h2 class="post-title">
-            Golang标准库-strconv、regexp
-        </h2>
-        
-        <h3 class="post-subtitle">
-            
-        </h3>
-        
-        <div class="post-content-preview">
-            strconv包
-
-定义了字符串和基本数据类型之间转换的方法,这⾥的基本数据类型包括:布尔、整型（包括有/⽆符号、⼆进制、⼋进制、⼗进制和⼗六进制）和浮点型等
-
-strconv 包转换错误处理
-
-由于将字符串转为其他数据类型可能会出错，strconv 包定义了两个 error 类型的变
-量：ErrRange 和 ErrSyntax。其中，ErrRange 表示值超过了类型能表示的最⼤范
-围，...
-        </div>
-    </a>
-    <p class="post-meta">
-        Created by YaPi on August 13, 2019
-    </p>
-</div>
-<hr>
-
 
 <!-- Pager -->
 
@@ -562,6 +536,8 @@ strconv 包转换错误处理
                             
                         
                             
+                        
+                            
                                 <a href="/tags/#docker" title="docker" rel="4">
                                     docker
                                 </a>
@@ -584,7 +560,7 @@ strconv 包转换错误处理
                             
                         
                             
-                                <a href="/tags/#golang" title="golang" rel="12">
+                                <a href="/tags/#golang" title="golang" rel="16">
                                     golang
                                 </a>
                             
@@ -607,6 +583,10 @@ strconv 包转换错误处理
                                 </a>
                             
                         
+                            
+                                <a href="/tags/#SpringCloud" title="SpringCloud" rel="4">
+                                    SpringCloud
+                                </a>
                             
                         
                     </div>
@@ -669,7 +649,7 @@ strconv 包转换错误处理
                 </ul>
 
                 <p class="copyright text-muted">
-                    蜀ICP备18030170号-2    Copyright &copy; YaPiBlog 2019
+                    蜀ICP备18030170号-2    Copyright &copy; YaPiBlog 2020
                     <br>
 
                     <!---->

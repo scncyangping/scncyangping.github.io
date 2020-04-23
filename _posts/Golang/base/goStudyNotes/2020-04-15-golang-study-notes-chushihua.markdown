@@ -1,6 +1,6 @@
 ---
 layout:     post
-title:      "Go学习笔记 - (三)源码-初始化"
+title:      "Go学习笔记(三)源码-初始化"
 subtitle:   ""
 date:       2020-04-15 03:40:00
 author:     "YaPi"

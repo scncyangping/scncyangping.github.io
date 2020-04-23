@@ -170,6 +170,224 @@
             ">
     			
 <div class="post-preview">
+    <a href="/2020/04/16/xiaoji-ncdq/">
+        <h2 class="post-title">
+            Go小记 - 指针运算和内存对齐
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            为什么需要内存对齐
+
+
+  平台原因(移植原因)：不是所有的硬件平台都能访问任意地址上的任意数据的；某些硬件平台只能在某些地址处取某些特定类型的数据，否则抛出硬件异常（32位平台上运行64位平台上编译的程序要求必须8字节对齐，否则发生panic）
+  性能原因：数据结构(尤其是栈)应该尽可能地在自然边界上对齐。原因在于，为了访问未对齐的内存，处理器需要作两次内存访问；而对齐的内存访问仅需要一...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on April 16, 2020
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/2020/04/15/golang-study-notes-chushihua/">
+        <h2 class="post-title">
+            Go学习笔记(三)源码-初始化
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            启动流程
+
+
+  系统初始化 os_linux.go -&gt; osinit
+    
+      获取系统cpu信息等
+    
+  
+  调度器初始化方法 proc.go -&gt; schedinit
+    
+      内存相关初始化(如span信息的初始化)、命令行参数和环境变量、垃圾回收等
+    
+  
+  创建一个G
+  调用runtime.mstart 分配一个m
+  ...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on April 15, 2020
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/2020/04/15/golang-study-notes-yuanma/">
+        <h2 class="post-title">
+            Go学习笔记(二)源码-内存分配回收
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            内存分配
+
+Go的内存分配基于tcmalloc模型
+
+核心目标
+
+
+  从 mmap 申请⼤大块内存，⾃主管理，减少系统调⽤用。
+  基于块的内存复⽤用体系，加快内存分配和回收操作。
+
+
+分配器以页为单位向操作系统申请大块内存。这些大块内存由n个地址连续的页组成
+并用名为span的对象进行管理
+
+当需要时，span 所管理内存被切分成多个⼤大⼩小相等的⼩小块，每个⼩小块可存储⼀一个对象,故称...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on April 15, 2020
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/2020/03/31/golang-study-notes-base/">
+        <h2 class="post-title">
+            Go学习笔记(一)类型
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            类型
+Go语言是一门静态编译型语言，是一门强类型语言，Go语言中类型分为两种：命名类型(已定义类型)和未命名类型(组合类型)
+
+
+  命名类型
+
+
+uint8(byte) uint16 uint32 uint64 int int8 int16 int32(rune) int64 bool string
+float32 float64 complex64 complex128
+
+上面举例类型归...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on March 31, 2020
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/2020/01/02/JWT/">
+        <h2 class="post-title">
+            微服务之间的通信安全-JWT
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            微服务之间的通信安全
+
+JWT(Json Web Token)
+JWT的原则是在服务器身份验证后，将生成一个JSON对象，通过加密算法加密过后，并将其发送回用户。之后，客户端应用访问服务时，会带上此数据。服务器不会保存任何回话数据，提高了系统扩展性以及简易程度。
+
+JWT构成
+JWT由三大部分构成：JWT头，有效载荷，签名
+
+JWT头是一个JSON对象
+
+{
+    "alg":"HS256...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on January 2, 2020
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/2020/01/01/%E5%BE%AE%E6%9C%8D%E5%8A%A1%E7%8E%AF%E5%A2%83%E8%AE%A4%E8%AF%81%E5%92%8CSSO/">
+        <h2 class="post-title">
+            微服务环境认证和SSO
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            OAuth协议4中授权模型
+
+Resource owner password
+
+
+  用户提供用户名和密码给客户端应用
+  客户端应用使用用户提供的用户名密码和自己应用的ClientId和ClientSecreet来请求令牌
+  授权服务器校验用户身份和客户端应用省份，并返回令牌和刷新令牌
+  客户端应用运用令牌获取用户信息
+
+
+这种方式适用的场景，比如APP,这种方式app是比较安全的，a...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on January 1, 2020
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/2019/12/31/%E7%BD%91%E5%85%B3%E5%AE%89%E5%85%A8/">
+        <h2 class="post-title">
+            网关安全
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            网关安全
+
+微服务整体架构图
+
+
+相关功能组件
+
+
+  服务注册与发现：consul,etcd,zookeeper,eureka
+  配置中心：Spring Cloud Config,携程的阿波罗,duic
+
+
+OAuth2
+OAuth（Open Authorization，开放授权）是为用户资源的授权定义了一个安全、开放及简单的标准，第三方无需知道用户的账号及密码，就可获取到用户的授权信息...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on December 31, 2019
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
     <a href="/2019/12/30/API%E5%AE%89%E5%85%A8/">
         <h2 class="post-title">
             API安全
@@ -273,210 +491,6 @@ func main() {
 </div>
 <hr>
 
-<div class="post-preview">
-    <a href="/2019/08/28/Golang-base-binfa-Go%E7%BA%BF%E7%A8%8B%E6%A8%A1%E5%9E%8B%E5%AE%9E%E7%8E%B0/">
-        <h2 class="post-title">
-            Go并发编程 - (二)Go线程模型实现
-        </h2>
-        
-        <h3 class="post-subtitle">
-            
-        </h3>
-        
-        <div class="post-content-preview">
-            线程模型实现
-
-goroutine是GO特有的应用程序线程。
-有3个必知的核心元素，它们支撑起了这个模型的主要框架
-
-
-  M：machine的缩写。一个M代表一个内核线程，或称“工作线程”
-  P：processor的缩写。一个P代表一个GO代码片段所必须的资源(或称上下文环境)
-  G：goroutine的缩写。一个G代表一个Go代码片段。
-
-
-简单来说，一个G的执行需要P和M的支持。一...
-        </div>
-    </a>
-    <p class="post-meta">
-        Created by YaPi on August 28, 2019
-    </p>
-</div>
-<hr>
-
-<div class="post-preview">
-    <a href="/2019/08/28/Golang-base-binfa-%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B%E5%9F%BA%E7%A1%80/">
-        <h2 class="post-title">
-            Go并发编程 - (一)并发编程基础
-        </h2>
-        
-        <h3 class="post-subtitle">
-            
-        </h3>
-        
-        <div class="post-content-preview">
-            并发编程基础
-
-所谓并发编程是指在一台处理器上“同时”处理多个任务。并发是在同一实体上的多个事件。多个事件在同一时间间隔发生。
-
-串行程序与并发程序
-
-串行程序特指只能被顺序执行的指令列表,并发程序则是可以被并发执行的两个及以上的串行程序的综合体。并发程序允许其中的串行程序运行在一个或个可共享的CPU上,同时也允许每个串行程序都运行在专门为它服务的CPU上。前一种方式也被成为多元程序,由操作...
-        </div>
-    </a>
-    <p class="post-meta">
-        Created by YaPi on August 28, 2019
-    </p>
-</div>
-<hr>
-
-<div class="post-preview">
-    <a href="/2019/08/25/data-structure-readBlackTree/">
-        <h2 class="post-title">
-            数据结构(十一)红黑树
-        </h2>
-        
-        <h3 class="post-subtitle">
-            
-        </h3>
-        
-        <div class="post-content-preview">
-            2-3树
-
-满足二分搜索树的基本性质，但是它不是一种二叉树，它有两种节点，节点可以存放一个元素或这两个元素，存放一个元素时有左右两个孩子，存在两个元素的节点有三个孩子
-
-2-3树添加节点不会添加到一个null的位置，比如从头开始添加节点，添加c，而后添加b的时候不会成为c的孩子节点。而会成为c的左孩子，当继续添加d的时候还是会添加到b旁边，成为3个节点，然后，从b进行分裂，d,c成为他的子孩...
-        </div>
-    </a>
-    <p class="post-meta">
-        Created by YaPi on August 25, 2019
-    </p>
-</div>
-<hr>
-
-<div class="post-preview">
-    <a href="/2019/08/25/data-structure-avl/">
-        <h2 class="post-title">
-            数据结构(十)AVL
-        </h2>
-        
-        <h3 class="post-subtitle">
-            
-        </h3>
-        
-        <div class="post-content-preview">
-            二分搜索树的缺陷
-
-根据添加入树的顺序不同，树可能会退化称为链表，所以需要有一定的机制去避免。
-
-AVL树 (两个俄罗斯人的名字简写)
-
-通常被认为是最早的自平衡的二叉树,二分搜索树的变种
-
-AVL树中定义的平衡二叉树
-
-对于任意一个节点，左子树和右子树的高度差不能超过1(可以左边比右边高，也可以右边比左边高)，
-平衡二叉树的高度和节点数量之间的关系也是O(logn)的
-
-平衡因子： 左右子...
-        </div>
-    </a>
-    <p class="post-meta">
-        Created by YaPi on August 25, 2019
-    </p>
-</div>
-<hr>
-
-<div class="post-preview">
-    <a href="/2019/08/25/data-structure-bingchaji/">
-        <h2 class="post-title">
-            数据结构(九)并查集
-        </h2>
-        
-        <h3 class="post-subtitle">
-            
-        </h3>
-        
-        <div class="post-content-preview">
-            并查集
-
-并查集，在一些有N个元素的集合应用问题中，我们通常是在开始时让每个元素构成一个单元素的集合，然后按一定顺序将属于同一组的元素所在的集合合并，其间要反复查找一个元素在哪个集合中。这一类问题近几年来反复出现在信息学的国际国内赛题中，其特点是看似并不复杂，但数据量极大，若用正常的数据结构来描述的话，往往在空间上过大，计算机无法承受；即使在空间上勉强通过，运行的时间复杂度也极高，根本就不可...
-        </div>
-    </a>
-    <p class="post-meta">
-        Created by YaPi on August 25, 2019
-    </p>
-</div>
-<hr>
-
-<div class="post-preview">
-    <a href="/2019/08/25/data-structure-trie/">
-        <h2 class="post-title">
-            数据结构(八)Trie 字典树
-        </h2>
-        
-        <h3 class="post-subtitle">
-            
-        </h3>
-        
-        <div class="post-content-preview">
-            什么是前缀树 Trie
-
-多用来进行字符串匹配
-
-
-  多叉树
-
-
-// 如果不仅仅是英文单词的话，还会加上特殊字符等
-// 所以一般不会设置next为指定容量的结构
-type Node struct {
-    // 当前节点的值
-    s       string
-    // 是否代表了一个单词的结尾
-    isWord  bool
-    next    []Node
-}
-
-
-缺...
-        </div>
-    </a>
-    <p class="post-meta">
-        Created by YaPi on August 25, 2019
-    </p>
-</div>
-<hr>
-
-<div class="post-preview">
-    <a href="/2019/08/25/data-structure-%E7%BA%BF%E6%AE%B5%E6%A0%91/">
-        <h2 class="post-title">
-            数据结构(七)线段树
-        </h2>
-        
-        <h3 class="post-subtitle">
-            
-        </h3>
-        
-        <div class="post-content-preview">
-            线段树
-
-平衡树
-
-平衡树，即平衡二叉树（Balanced Binary Tree），具有以下性质：它是一棵空树或它的左右两个子树的高度差的绝对值不超过1，并且左右两个子树都是一棵平衡二叉树。
-平衡二叉树的常用算法有红黑树、AVL、Treap、伸展树、SBT等
-
-线段树不是一个完全二叉树，但是是一颗平衡二叉树，如果把最下层空节点看成空的节点，那么它也是一颗满二叉树。
-
-对于一颗满二叉树来说有...
-        </div>
-    </a>
-    <p class="post-meta">
-        Created by YaPi on August 25, 2019
-    </p>
-</div>
-<hr>
-
 
 <!-- Pager -->
 
@@ -513,6 +527,8 @@ type Node struct {
                             
                         
                             
+                        
+                            
                                 <a href="/tags/#docker" title="docker" rel="4">
                                     docker
                                 </a>
@@ -535,7 +551,7 @@ type Node struct {
                             
                         
                             
-                                <a href="/tags/#golang" title="golang" rel="12">
+                                <a href="/tags/#golang" title="golang" rel="16">
                                     golang
                                 </a>
                             
@@ -558,6 +574,10 @@ type Node struct {
                                 </a>
                             
                         
+                            
+                                <a href="/tags/#SpringCloud" title="SpringCloud" rel="4">
+                                    SpringCloud
+                                </a>
                             
                         
                     </div>
@@ -620,7 +640,7 @@ type Node struct {
                 </ul>
 
                 <p class="copyright text-muted">
-                    蜀ICP备18030170号-2    Copyright &copy; YaPiBlog 2019
+                    蜀ICP备18030170号-2    Copyright &copy; YaPiBlog 2020
                     <br>
 
                     <!---->

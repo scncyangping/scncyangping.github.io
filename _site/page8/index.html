@@ -170,6 +170,267 @@
             ">
     			
 <div class="post-preview">
+    <a href="/2018/04/12/mongo-%E5%A4%87%E4%BB%BD/">
+        <h2 class="post-title">
+            MongoDB备份
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            启动
+docker run --name mongodb -v /root/opt/data/mongodbData:/data/db -p 27017:27017 -d
+
+
+
+// 从阿里云服务器mongodb数据备份到腾讯云
+mongodump -h 120.77.154.206 -d codechain -o /data/db/replicateData
+
+
+// 用备份数据进行恢复
+...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on April 12, 2018
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/2018/04/12/mongo-%E8%AF%BB%E5%86%99%E5%88%86%E7%A6%BB/">
+        <h2 class="post-title">
+            MongoDB读写分离
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            MongoDB复制集（Replica Set）通过存储多份数据副本来保证数据的高可靠，通过自动的主备切换机制来保证服务的高可用。但需要注意的时，连接副本集的姿势如果不对，服务高可用将不复存在。
+
+使用前须知
+MongoDB复制集里Primary节点是不固定的。当遇到复制集轮转升级、Primary宕机、网络分区等场景时，复制集可能会选举出一个新的Primary，而原来的Primary则会降级为...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on April 12, 2018
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/2018/04/12/mongo-base/">
+        <h2 class="post-title">
+            MongoDB基础知识点
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            基础知识点
+
+规范
+
+数据库规范
+
+数据库名称要求满足如下特征：
+
+
+  不能是空字符串(“”)
+  不得含有‘’、空格、. 、$、/、\、\0(空字符)
+  应该全部小写
+  最多64字节
+  不得是保留数据库名(admin、config、local)
+
+
+MongoDB中默认的数据库为test,如果没有创建新的数据库，集合将存放在test数据中
+
+查看数据库版本: db.version(...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on April 12, 2018
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/2018/01/12/k8s%E5%9F%BA%E7%A1%80-%E8%B5%84%E6%BA%90%E5%AF%B9%E8%B1%A1/">
+        <h2 class="post-title">
+            K8S基础-资源对象
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            Kubernetes基本概念和术语
+
+Kubernetes中几乎所有的资源对象都可以通过kubectl执行CURD操作，并在etcd中持久化保存。它通过跟踪对比etcd库里保存的资源期望状态与当前世纪资源状态的差异来实现自动控制和自动纠错的功能。
+
+Master
+每个集群都有一个Master节点负责整个集群的管理和控制，基本上所有的命令都是发给它。其运行着如下关键进程
+
+
+  Kuberne...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on January 12, 2018
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/2018/01/12/k8s-%E5%9F%BA%E6%9C%AC%E5%91%BD%E4%BB%A4/">
+        <h2 class="post-title">
+            K8S基本命令
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            基本命令
+
+镜像分发打包
+
+docker save -o calico-v319.tar.gz  `docker image ls |grep calico |awk '{position=$1":"$2;print $1,position}' |awk '{print $2}'`
+
+
+
+获取集群中有多少个Node
+
+kubectl get nodes
+
+分析node详情
+kubectl d...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on January 12, 2018
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/2018/01/12/k8s-1.16.1-kubeadm/">
+        <h2 class="post-title">
+            k8s-v1.16.1安装(kubeadm)
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            安装
+安装docker
+
+Master、Node节点都需要安装
+# 卸载原来的docker
+sudo yum remove docker \
+                  docker-client \
+                  docker-client-latest \
+                  docker-common \
+                 ...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on January 12, 2018
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/2018/01/12/docker-CICD/">
+        <h2 class="post-title">
+            CI/CD
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            gitlab、gitlab-ci 服务器搭建
+
+略
+
+CI/CD
+
+
+  注册runner
+    
+      suudo gitlab-ci-multi-runner register
+    
+  
+
+
+
+  按要求输入gitlab服务器的地址、tags等信息
+
+
+
+  增加.gitlab-ci.yml文件
+
+
+
+stages:
+    - style
+    - test
+    -...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on January 12, 2018
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/2018/01/12/docker-%E7%A7%81%E6%9C%89%E9%95%9C%E5%83%8F%E4%BB%93%E5%BA%93%E6%90%AD%E5%BB%BA/">
+        <h2 class="post-title">
+            docker私有镜像仓库搭建
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            搭建本地docker hub 仓库
+
+
+  私有仓库服务器执行
+
+
+创建用户
+
+为用户创建一个带有一个条目的密码文件testuser，密码为 testpassword：
+
+$ mkdir auth
+$ docker run   --entrypoint htpasswd   registry -Bbn dockerpull ypazl1314 &gt; /auth/htpasswd
+
+
+启动...
+        </div>
+    </a>
+    <p class="post-meta">
+        Created by YaPi on January 12, 2018
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
     <a href="/2018/01/12/docker-swarm-%E7%BD%91%E7%BB%9C/">
         <h2 class="post-title">
             docker网络 + docker-swarm
@@ -252,209 +513,6 @@ Docker Image 概述
 </div>
 <hr>
 
-<div class="post-preview">
-    <a href="/2017/04/21/JVM07/">
-        <h2 class="post-title">
-            JVM高级特性-线程同步及锁优化
-        </h2>
-        
-        <h3 class="post-subtitle">
-            
-        </h3>
-        
-        <div class="post-content-preview">
-            线程安全实现
-
-互斥同步
-主要实现方式：临界区、互斥量和信号量都是主要的互斥实现方式
-
-在java中，最基本的同步手段就是synchronized关键字，synchronized关键字在经过编译过后，会在同步块前后分别形成monitorenter和monitorexit两个字节码指令。这两个指令都需要一个reference类型的参数来指明要锁定和解锁的对象。指定了对象参数就取对应对象参数，没...
-        </div>
-    </a>
-    <p class="post-meta">
-        Created by YaPi on April 21, 2017
-    </p>
-</div>
-<hr>
-
-<div class="post-preview">
-    <a href="/2017/04/20/JVM06/">
-        <h2 class="post-title">
-            JVM高级特性-内存模型与线程
-        </h2>
-        
-        <h3 class="post-subtitle">
-            
-        </h3>
-        
-        <div class="post-content-preview">
-            硬件效率一致性处理
-由于计算机存储设备与处理器的运算速度有几个数量级的差距，为了尽可能提升效率，计算机系统加入了一层读写速度尽可能接近处理器运算速度的高速缓存来作为内存与处理器之间的缓冲：将运算需要使用到的数据复制到缓存中，让运算能快速进行，当运算结束后再从缓存中同步回内存之中。
-
-在多处理器系统中，每个处理器都有自己的高速缓存，而它们又共享同一个主内存。当多个处理器运算任务都涉及同一块主内...
-        </div>
-    </a>
-    <p class="post-meta">
-        Created by YaPi on April 20, 2017
-    </p>
-</div>
-<hr>
-
-<div class="post-preview">
-    <a href="/2017/04/19/JVM05/">
-        <h2 class="post-title">
-            JVM高级特性-虚拟机执行引擎
-        </h2>
-        
-        <h3 class="post-subtitle">
-            
-        </h3>
-        
-        <div class="post-content-preview">
-            执行引擎
-
-运行时栈帧结构
-栈帧是用于支持虚拟机运行方法调用和方法执行的数据结构，它是虚拟机运行时数据区中的虚拟机栈的栈元素。栈帧存储了方法的局部变量表、操作数栈、动态连接和方法返回地址等信息。每一个方法的调用开始到执行完成都对应一个栈帧在虚拟机栈中入栈到出栈的过程。
-
-
-
-
-  局部变量表
-
-
-局部变量表是一组变量值的存储空间，用于存放方法参数和方法内定义的局部变量。局部变量表的容量已变量...
-        </div>
-    </a>
-    <p class="post-meta">
-        Created by YaPi on April 19, 2017
-    </p>
-</div>
-<hr>
-
-<div class="post-preview">
-    <a href="/2017/04/18/JVM04/">
-        <h2 class="post-title">
-            JVM高级特性-虚拟机执行子系统
-        </h2>
-        
-        <h3 class="post-subtitle">
-            
-        </h3>
-        
-        <div class="post-content-preview">
-            虚拟机执行子系统
-
-class文件
-class文件是一组以8位字节为基础单位的二进制流，各个数据项目严格按照顺序紧凑地排列在class文件之中。当遇到需要占用8字节以上空间的数据项时，会按照高位在前的方式分割成若干个8位字节进行存储。
-
-class文件采用类似于c语言的伪结构来存储。这种伪机构只有两种数据类型。无符号数和表。
-
-无符号数属于基本的数据类型，以u1,u2,u4,u8分别代表1个...
-        </div>
-    </a>
-    <p class="post-meta">
-        Created by YaPi on April 18, 2017
-    </p>
-</div>
-<hr>
-
-<div class="post-preview">
-    <a href="/2017/04/17/JVM03/">
-        <h2 class="post-title">
-            JVM高级特性-垃圾收集与内存分配策略
-        </h2>
-        
-        <h3 class="post-subtitle">
-            
-        </h3>
-        
-        <div class="post-content-preview">
-            对象存活判断
-
-
-  引用记数算法
-  可达性分析算法
-
-
-引用计数算法
-给对象中添加一个引用计数器，每当一个地方引用它时，计数器值就加1；当引用失效时，计数器值就减1；任何时刻计数器为0的对象就是不可能再被使用的。
-
-很难解决对象之间循环引用的问题
-
-可达性分析算法
-通过一系列的称为GC ROOTS 的对象作为起点，从这些节点开始向下搜索，搜索所走过的路径称为引用链，当一个对象到GC RO...
-        </div>
-    </a>
-    <p class="post-meta">
-        Created by YaPi on April 17, 2017
-    </p>
-</div>
-<hr>
-
-<div class="post-preview">
-    <a href="/2017/04/16/JVM02/">
-        <h2 class="post-title">
-            JVM高级特性-自动内存管理机制
-        </h2>
-        
-        <h3 class="post-subtitle">
-            
-        </h3>
-        
-        <div class="post-content-preview">
-            自动内存管理
-
-运行时数据区域
-
-
-  方法区(共享)
-  堆(共享)
-  虚拟机栈
-  本地方法栈
-  程序计数器
-
-
-程序计数器
-
-一块比较小的内存空间，它可以看作是当前线程所执行的字节码的行号指示器。在虚拟机的概念模型里，字节码解释器工作时，就是通过改变这个计数器的值来选取下一条需要执行的字节码指令。分支、循环、跳转、异常处理、线程恢复等基础功能都需要依赖这个计数器来完成。
-
-线程私有...
-        </div>
-    </a>
-    <p class="post-meta">
-        Created by YaPi on April 16, 2017
-    </p>
-</div>
-<hr>
-
-<div class="post-preview">
-    <a href="/2017/04/15/JVM01/">
-        <h2 class="post-title">
-            JVM高级特性-关于JAVA
-        </h2>
-        
-        <h3 class="post-subtitle">
-            
-        </h3>
-        
-        <div class="post-content-preview">
-            技术体系
-
-
-  1991.4 -&gt; James Gosling -&gt; Oak
-  1995.5.23 -&gt; 更名为Java
-  1996.1.23 -&gt; java 1.0 -&gt; 第一个虚拟机(Sun Class VM)
-
-
-并不是只有java运行在java虚拟机上，广义上来讲，Clojure,JRuby,Groovy等运行于java虚拟机上的语言及其他相关程序...
-        </div>
-    </a>
-    <p class="post-meta">
-        Created by YaPi on April 15, 2017
-    </p>
-</div>
-<hr>
-
 
 <!-- Pager -->
 
@@ -464,6 +522,10 @@ class文件采用类似于c语言的伪结构来存储。这种伪机构只有�
         <a href="/page7">&larr; Newer Posts</a>
     </li>
     
+    
+    <li class="next">
+        <a href="/page9">Older Posts &rarr;</a>
+    </li>
     
 </ul>
 
@@ -491,6 +553,8 @@ class文件采用类似于c语言的伪结构来存储。这种伪机构只有�
                             
                         
                             
+                        
+                            
                                 <a href="/tags/#docker" title="docker" rel="4">
                                     docker
                                 </a>
@@ -513,7 +577,7 @@ class文件采用类似于c语言的伪结构来存储。这种伪机构只有�
                             
                         
                             
-                                <a href="/tags/#golang" title="golang" rel="12">
+                                <a href="/tags/#golang" title="golang" rel="16">
                                     golang
                                 </a>
                             
@@ -536,6 +600,10 @@ class文件采用类似于c语言的伪结构来存储。这种伪机构只有�
                                 </a>
                             
                         
+                            
+                                <a href="/tags/#SpringCloud" title="SpringCloud" rel="4">
+                                    SpringCloud
+                                </a>
                             
                         
                     </div>
@@ -598,7 +666,7 @@ class文件采用类似于c语言的伪结构来存储。这种伪机构只有�
                 </ul>
 
                 <p class="copyright text-muted">
-                    蜀ICP备18030170号-2    Copyright &copy; YaPiBlog 2019
+                    蜀ICP备18030170号-2    Copyright &copy; YaPiBlog 2020
                     <br>
 
                     <!---->

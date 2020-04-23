@@ -1,6 +1,6 @@
 ---
 layout:     post
-title:      "Go学习笔记 - (二)源码-内存分配回收"
+title:      "Go学习笔记(二)源码-内存分配回收"
 subtitle:   ""
 date:       2020-04-15 02:40:00
 author:     "YaPi"

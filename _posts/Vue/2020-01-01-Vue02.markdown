@@ -1,8 +1,8 @@
 ---
 layout:     post
-title:      "Vue.js入门"
+title:      "Vue.js入门 - 赋值"
 subtitle:   ""
-date:       2020-01-01 12:00:00
+date:       2018-01-01 12:00:00
 author:     "YaPi"
 header-img: ""
 tags:

@@ -1,6 +1,6 @@
 ---
 layout:     post
-title:      "Go学习笔记 - (一)类型"
+title:      "Go学习笔记(一)类型"
 subtitle:   ""
 date:       2020-03-31 02:40:00
 author:     "YaPi"
