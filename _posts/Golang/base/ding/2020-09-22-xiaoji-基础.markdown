@@ -1,0 +1,52 @@
+---
+layout:     post
+title:      "Go小记 - 输入输出、文件处理"
+subtitle:   ""
+date:       2020-09-22 02:40:00
+author:     "YaPi"
+header-img: ""
+tags:
+    - golang
+---
+
+### 输入输出处理
+
+```
+	input := bufio.NewScanner(os.Stdin)
+
+    // 阻塞
+	for input.Scan() {
+    	fmt.Println(input.Text())
+    }
+
+    // 后续流程
+
+```
+处理控制台或命令行输入，启动程序后即可输入，输入control + d 结束输入，进入后续流程(按行读取，只输入一行无效，需要输入一行后回车换行)
+
+
+#### os.Open
+
+```
+r , err := os.Open(f)
+input := bufio.NewScanner(r)
+
+for input.Scan() {
+    // input.Text()
+}
+// 读取指定路径下文件数据
+// 获取到 *os.file 类型数据，可用NewScanner接收按行输出
+// r 只有 Close()方法，无其他方法
+
+```
+
+#### ioutil.ReadFile
+
+```
+// 获取到 []byte 数组 data
+data ,err := ioutil.ReadFile(fileName)
+// 转换 使用
+for _,line := range strings.Split(string(data),"\n"){
+    counts[line]++
+}
+```
