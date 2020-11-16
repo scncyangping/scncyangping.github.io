@@ -1,0 +1,39 @@
+---
+layout:     post
+title:      "SpringBoot源码系列(一)搭建流程对比之SSM与Spring Boot"
+subtitle:   ""
+date:       2020-11-16 12:00:00
+author:     "YaPi"
+header-img: ""
+tags:
+    - SpringCloud
+---
+
+### Java8新特性
+
+- Lambda表达式
+- stream操作
+- 接口默认&静态方法
+- 方法引用
+- 重复注解
+- 类型注解
+- 日期&时间API
+- base64加解密API
+- 数组并行操作
+- JVM新增元空间
+
+#### SSM搭建流程
+
+- 引入相关jar包
+- 编写web.xml(主要配置spring容器)
+- 配置applicationContext.xml (配置扫描包、数据库连接池、以及和mybatis整合的配置)
+- dispatcherServlet.xml (前端控制器的扫描路径配置、渲染等配置)
+- mybatis-config.xml (配置mybatis等)
+- 配置容器基础参数 (端口、名称等信息)
+- 编写业务逻辑
+
+#### SpringBoot 流程
+
+- 引入starter
+- 配置application.yml
+- 编写业务逻辑
