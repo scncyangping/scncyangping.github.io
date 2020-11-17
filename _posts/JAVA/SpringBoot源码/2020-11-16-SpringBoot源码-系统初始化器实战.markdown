@@ -1,6 +1,6 @@
 ---
 layout:     post
-title:      "SpringBoot源码系列(三)系统初始化器实战"
+title:      "SpringBoot源码系列之系统初始化器实战"
 subtitle:   ""
 date:       2020-11-16 14:00:00
 author:     "YaPi"
@@ -62,7 +62,7 @@ public class FirstInitializer implements ApplicationContextInitializer<Configura
 第三种：
 直接在application.properties配置文件中配置
 
-context.initailizer.classes=com.mooc.sb2.initializer.FirstInitializer
+context.initializer.classes=com.mooc.sb2.initializer.FirstInitializer
 
 ```
 
