@@ -81,7 +81,7 @@ application.run(args);
 
 #### 主要流程
 
-[avatar](https://blog-1257627424.cos.ap-chengdu.myqcloud.com/springBoot%E6%BA%90%E7%A0%81/SpringFactories%E6%B5%81%E7%A8%8B.jpg)
+![avatar](https://blog-1257627424.cos.ap-chengdu.myqcloud.com/springBoot%E6%BA%90%E7%A0%81/SpringFactories%E6%B5%81%E7%A8%8B.jpg)
 
 #### 调用实现源码
 
