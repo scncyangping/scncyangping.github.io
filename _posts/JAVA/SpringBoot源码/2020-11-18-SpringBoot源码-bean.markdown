@@ -40,7 +40,11 @@ public class Student {
     ...
 }
 ```
+
+
 - 无参构造
+
+
 
 ```
 xml配置方式：
@@ -75,7 +79,11 @@ xml配置方式：
         </property>
 </bean>
 ```
+
+
 - 静态工厂方法
+
+
 
 ```
 定义一个静态工厂方法，传入type，返回对应类型实体
@@ -108,6 +116,8 @@ xml配置方式：
 
 - 实例工厂方法
 
+
+
 ```
 
 public class AnimalFactory {
@@ -137,6 +147,8 @@ public class AnimalFactory {
 - @Component声明
 - 配置类中使用@Bean
 
+
+
 ```
 @Configuration
 public class BeanConfiguration{
@@ -150,7 +162,9 @@ public class BeanConfiguration{
 
 ```
 
+
 - 继承FactoryBean
+
 
 ```
 @Component
@@ -170,7 +184,9 @@ public class MyCat implements FactoryBean<Animal> {
 
 ```
 
+
 - 继承BeanDefinitionRegistryPostProcessor
+
 
 ```
 @Component
@@ -188,7 +204,9 @@ public class MyBeanRegister implements BeanDefinitionRegistryPostProcessor {
     }
 }
 ```
+
 - 继承ImportBeanDefinitionRegistrar
+
 
 ```
 public class MyBeanImport implements ImportBeanDefinitionRegistrar {
