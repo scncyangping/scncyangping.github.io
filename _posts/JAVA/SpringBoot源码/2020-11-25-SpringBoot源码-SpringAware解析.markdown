@@ -36,7 +36,7 @@ ApplicationContextAware | 获得当前应用上线哦
 
 #### 调用原理
 
-AbStractBeanFactory#getBean->doGetBean->AbstractAutowireCapableBeanFactory#createBean->doCreateBean(创建Bean的方法里面)-> initializeBean -> invokeAwareMethods(在这里处理一部分)
+AbstractBeanFactory#getBean->doGetBean->AbstractAutowireCapableBeanFactory#createBean->doCreateBean(创建Bean的方法里面)-> initializeBean -> invokeAwareMethods(在这里处理一部分)
 
 ->applayBeanPostProcessorsBeforeInitialization -> ApplicationContextAwareProcessor
 
