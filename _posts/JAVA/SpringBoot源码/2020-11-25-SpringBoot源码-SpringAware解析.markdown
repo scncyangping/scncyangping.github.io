@@ -31,7 +31,7 @@ EmbeddedValueResolverAware | 获取spring容器加载的properties文件属性�
 ResourceLoaderAware | 获得资源加载器
 ApplicationEventPublisherAware | 获得应用时间发布器
 MessageSourceAware | 获得文本信息(国际化)
-ApplicationContextAware | 获得当前应用上线哦
+ApplicationContextAware | 获得当前应用上线文
 
 
 #### 调用原理
