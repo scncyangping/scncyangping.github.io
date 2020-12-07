@@ -1,6 +1,6 @@
 ---
 layout:     post
-title:      "SpringBoot源码系列(一)搭建流程对比之SSM与Spring Boot"
+title:      "SpringBoot源码系列之搭建流程对比"
 subtitle:   ""
 date:       2019-01-01 12:00:00
 author:     "YaPi"
