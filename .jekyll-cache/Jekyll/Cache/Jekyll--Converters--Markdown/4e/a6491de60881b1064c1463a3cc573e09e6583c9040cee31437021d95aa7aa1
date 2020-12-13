@@ -1,0 +1,18 @@
+I"�<h4 id="启动流程">启动流程</h4>
+
+<ul>
+  <li>系统初始化 os_linux.go -&gt; osinit
+    <blockquote>
+      <p>获取系统cpu信息等</p>
+    </blockquote>
+  </li>
+  <li>调度器初始化方法 proc.go -&gt; schedinit
+    <blockquote>
+      <p>内存相关初始化(如span信息的初始化)、命令行参数和环境变量、垃圾回收等</p>
+    </blockquote>
+  </li>
+  <li>创建一个G</li>
+  <li>调用runtime.mstart 分配一个m</li>
+  <li>用创建的G调用runtime.main</li>
+</ul>
+:ET

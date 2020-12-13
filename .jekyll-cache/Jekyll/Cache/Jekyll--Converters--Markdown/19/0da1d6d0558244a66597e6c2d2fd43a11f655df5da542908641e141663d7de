@@ -1,0 +1,76 @@
+I"�<h4 id="基础定义">基础定义</h4>
+
+<ul>
+  <li>由一个工厂对象决定创建出哪一种产品类实例</li>
+  <li>类型：创建型，但不属于GOF23种设计模式</li>
+</ul>
+
+<p>使用场景：</p>
+
+<ol>
+  <li>工程类负责创建的对象比较少</li>
+  <li>客户端只知道传入工厂类的参数，对于如何创建对象不关心</li>
+</ol>
+
+<p>优点：</p>
+<ol>
+  <li>只需要知道传入的参数不需要知道类的信息，无须知道其创建的细节</li>
+</ol>
+
+<p>缺点：</p>
+<ol>
+  <li>增加新的产品需要修改工厂类的判断逻辑，违背开闭原则</li>
+</ol>
+
+<h5 id="源码实例">源码实例</h5>
+
+<ol>
+  <li>Calendar.getInstance()</li>
+</ol>
+
+<h5 id="代码实例">代码实例</h5>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>// 工厂方法抽象类
+public abstract class Video {
+    public abstract void produce();
+}
+
+// 实现1
+public class JavaVideo extends Video {
+    @Override
+    public void produce() {
+        System.out.println("Java课程视频");
+    }
+}
+// 实现2
+public class PythonVideo extends Video {
+    @Override
+    public void produce() {
+        System.out.println("Python课程");
+    }
+}
+
+// 工厂类
+public class VideoFactory {
+    public Video getVideo(String type){
+        if ("java".equalsIgnoreCase(type)){
+            return new JavaVideo();
+        }else if ("python".equalsIgnoreCase(type)){
+            return new PythonVideo();
+        }
+        return null;
+    }
+}
+
+// 使用
+
+public class Test {
+    public static void main(String[] args){
+        VideoFactory factory = new VideoFactory();
+        Video v = factory.getVideo("java");
+        v.produce();
+    }
+}
+
+</code></pre></div></div>
+:ET

@@ -1,0 +1,242 @@
+---
+layout:     post
+title:      "架构师(三) RSA加密"
+subtitle:   ""
+date:       2020-07-03 12:00:00
+author:     "YaPi"
+header-img: ""
+tags:
+    - 架构师
+---
+### RSA加密问题
+
+#### 定义
+RSA公开密钥密码体制是一种使用不同的加密密钥与解密密钥，“由已知加密密钥推导出解密密钥在计算上是不可行的”密码体制
+
+#### 原理
+
+RSA公开密钥密码体制的原理是：根据数论，寻求两个大素数比较简单，而将它们的乘积进行因式分解却极其困难，因此可以将乘积公开作为加密密钥
+
+#### 算法原理
+
+RSA算法的具体描述如下：
+（1）任意选取两个不同的大素数p和q计算乘积
+（2）任意选取一个大整数e，满足 ，整数e用做加密钥；
+（3）确定的解密钥d，满足 ，即 是一个任意的整数；所以，若知道e和，则很容易计算出d
+（4）公开整数n和e，秘密保存d
+（5）将明文m（m<n是一个整数）加密成密文c，加密算法为
+
+（6）将密文c解密为明文m，解密算法为
+
+然而只根据n和e（注意：不是p和q）要计算出d是不可能的。因此，任何人都可对明文进行加密，但只有授权用户（知道d）才可对密文解密
+
+#### 实例
+
+随机生成或者在线获取秘钥对：http://web.chacuo.net/netrsakeypair
+
+```
+-----BEGIN PUBLIC KEY-----
+MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCzcZWZ22Wo2J11tbsbGGr8ZY3S
+geMEa0MyyML/MQQ9R2bgxVuP6mdDgoy5rtLbEJmASHK1eu+/NyI6QAeZeQW0SxjP
+jdvlNAQiPKAbJGoA82gDpcm1h0WDryE/zRlt/jzCR9sGbkQ3oArLaZhtMlUb4zsj
+MKnRUnbxb7UpfpJlEQIDAQAB
+-----END PUBLIC KEY-----
+```
+
+
+```
+-----BEGIN PRIVATE KEY-----
+MIICdwIBADANBgkqhkiG9w0BAQEFAASCAmEwggJdAgEAAoGBALNxlZnbZajYnXW1
+uxsYavxljdKB4wRrQzLIwv8xBD1HZuDFW4/qZ0OCjLmu0tsQmYBIcrV67783IjpA
+B5l5BbRLGM9dpDY+pwM7AmdnT9WTMC4PYpYYm8nDKqrljET/11eCk3G4aPaVsZpg
+SUhcm5q4xfEwqdFSdvFvtSl+kmURAgMBAAECgYEAlKHklIhR8EVcR3+793mGRIGp
+s0+6xpJCGvKH8fCb3lYiNNPEP7SczCJ6heL07FcXjlZ0DTZDF1OHmlAm+0xvF760
+MeyXaPUKw8/YwFnbFPoLnHtr6EAhKLsmSaZh/IrJVwXE8WaqWpdIUTwblwIiDNIg
+hzrxx1LV5aMsfiVbPHECQQDs5f2Sw5h2a0FGAUBSEYnTF+Lt6t3gpFrsMH/7JHwe
+KHBBDViy+9XT7rYFDRcxkSJPT5qBoPGbr5x8WKDtRqHjAkEAwemgC4k7bKa2Cq0h
+8JMrX/ZiJimzXtaMpJ2ZdD6cNWRFEdFK5hhBBmlhjZjzBdYqhc7g8ExqDs9dlc5Z
+49F/ewJBALWGPlm5exgyc1/bEZhRTBTu1rqMH9xE1E7rkwW0HU9WmT2fpnnvsxek
+cOFJ+J3Ioku3qaLu2nP7iqNVnmpylxUCQByn/tvVku+Sj3JydYKM7SsISSbkoLpS
+MISfOa9BFWqaf86LRGtOiEV/S0hWowtow+30Ta+VS1MW9/iMfyI4soMCQHpY2Xgt
+XXQ2PqcDOwJnZ0/VkzAuD2KWGJvJwyqq5YxE/9dXgpNxuGj2lbGaYElIXJuauMax
+Y3opGNCbp1MxUYg=
+-----END PRIVATE KEY-----
+```
+
+调用
+
+```
+    /**
+     * RSA最大加密明文大小
+     */
+    private static final int MAX_ENCRYPT_BLOCK = 117;
+
+    /**
+     * RSA最大解密密文大小
+     */
+    private static final int MAX_DECRYPT_BLOCK = 128;
+
+    public static final String KEY_ALGORITHM = "RSA";
+    private static KeyFactory keyFactory = null;
+
+    static {
+        try {
+            keyFactory = KeyFactory.getInstance(KEY_ALGORITHM);
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 解密方法
+     * @param dataStr 要解密的数据
+     * @return 解密后的原数据
+     * @throws Exception
+     */
+    public static String decrypt(String dataStr,String PrivateKey) throws Exception{
+        //对私钥解密
+        Key decodePrivateKey = getPrivateKeyFromBase64KeyEncodeStr(PrivateKey);
+        //Log.i("机密",""+decodePrivateKey);
+        Cipher cipher = Cipher.getInstance(KEY_ALGORITHM);
+        cipher.init(Cipher.DECRYPT_MODE, decodePrivateKey);
+        byte[] encodedData = Base64Utils.decodeFromString(dataStr);
+        byte[] decodedData = cipher.doFinal(encodedData);
+        String decodedDataStr = new String(decodedData,"utf-8");
+        return decodedDataStr;
+    }
+
+    public  static Key getPrivateKeyFromBase64KeyEncodeStr(String keyStr) {
+        byte[] keyBytes = Base64Utils.decodeFromString(keyStr);
+        // 取得私钥
+        PKCS8EncodedKeySpec pkcs8KeySpec = new PKCS8EncodedKeySpec(keyBytes);
+        Key privateKey=null;
+        try {
+            privateKey = keyFactory.generatePrivate(pkcs8KeySpec);
+        } catch (InvalidKeySpecException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return privateKey;
+    }
+
+    /**
+     * 获取base64加密后的字符串的原始公钥
+     * @param keyStr
+     * @return
+     */
+    public static Key getPublicKeyFromBase64KeyEncodeStr(String keyStr) {
+        byte[] keyBytes = Base64Utils.decodeFromString(keyStr);
+        X509EncodedKeySpec x509KeySpec = new X509EncodedKeySpec(keyBytes);
+        Key publicKey = null;
+        try {
+            publicKey = keyFactory.generatePublic(x509KeySpec);
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return publicKey;
+    }
+
+    /**
+     * 公钥加密方法
+     * @param dataStr 要加密的数据
+     * @param dataStr 公钥base64字符串
+     * @return 加密后的base64字符串
+     * @throws Exception
+     */
+    public static String encryptPublicKey(String dataStr,String publicKey) throws Exception{
+        //要加密的数据
+        System.out.println("要加密的数据:"+dataStr);
+        byte[] data = dataStr.getBytes();
+        // 对公钥解密
+        Key decodePublicKey = getPublicKeyFromBase64KeyEncodeStr(publicKey);
+        // 对数据加密
+        Cipher cipher = Cipher.getInstance(KEY_ALGORITHM);
+        cipher.init(Cipher.ENCRYPT_MODE, decodePublicKey);
+        byte[] encodedData = cipher.doFinal(data);
+        String encodedDataStr = new String(Base64Utils.encode(encodedData));
+        System.out.println("公钥加密后的数据:"+encodedDataStr);
+        return encodedDataStr;
+    }
+
+    /**
+     * 使用公钥进行分段加密
+     * @param dataStr 要加密的数据
+     * @return 公钥base64字符串
+     * @throws Exception
+     */
+    public static String encryptByPublicKey(String dataStr,String publicKey)
+            throws Exception {
+        //要加密的数据
+        byte[] data = dataStr.getBytes();
+        // 对公钥解密
+        Key decodePublicKey = getPublicKeyFromBase64KeyEncodeStr(publicKey);
+
+        KeyFactory keyFactory = KeyFactory.getInstance(KEY_ALGORITHM);
+        // 对数据加密
+        Cipher cipher = Cipher.getInstance(keyFactory.getAlgorithm());
+        cipher.init(Cipher.ENCRYPT_MODE, decodePublicKey);
+        int inputLen = data.length;
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        int offSet = 0;
+        byte[] cache;
+        int i = 0;
+        // 对数据分段加密
+        while (inputLen - offSet > 0) {
+            if (inputLen - offSet > MAX_ENCRYPT_BLOCK) {
+                cache = cipher.doFinal(data, offSet, MAX_ENCRYPT_BLOCK);
+            } else {
+                cache = cipher.doFinal(data, offSet, inputLen - offSet);
+            }
+            out.write(cache, 0, cache.length);
+            i++;
+            offSet = i * MAX_ENCRYPT_BLOCK;
+        }
+        byte[] encryptedData = out.toByteArray();
+        out.close();
+        String encodedDataStr = new String(Base64Utils.encode(encryptedData));
+        return encodedDataStr;
+    }
+
+    /**
+     * 使用私钥进行分段解密
+     * @param dataStr 使用base64处理过的密文
+     * @return 解密后的数据
+     * @throws Exception
+     */
+    public static String decryptByPrivateKey(String dataStr,String PrivateKey)
+            throws Exception {
+
+        byte[] encryptedData = Base64Utils.decodeFromString(dataStr);
+
+        KeyFactory keyFactory = KeyFactory.getInstance(KEY_ALGORITHM);
+        Key decodePrivateKey = getPrivateKeyFromBase64KeyEncodeStr(PrivateKey);
+
+        Cipher cipher = Cipher.getInstance(keyFactory.getAlgorithm());
+        cipher.init(Cipher.DECRYPT_MODE, decodePrivateKey);
+        int inputLen = encryptedData.length;
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        int offSet = 0;
+        byte[] cache;
+        int i = 0;
+        // 对数据分段解密
+        while (inputLen - offSet > 0) {
+            if (inputLen - offSet > MAX_DECRYPT_BLOCK) {
+                cache = cipher.doFinal(encryptedData, offSet, MAX_DECRYPT_BLOCK);
+            } else {
+                cache = cipher.doFinal(encryptedData, offSet, inputLen - offSet);
+            }
+            out.write(cache, 0, cache.length);
+            i++;
+            offSet = i * MAX_DECRYPT_BLOCK;
+        }
+        byte[] decryptedData = out.toByteArray();
+        out.close();
+        String decodedDataStr = new String(decryptedData,"utf-8");
+        return decodedDataStr;
+    }
+
+    // RSAUtils.decryptByPrivateKey(d,pr);
+
+    // RSAUtils.encryptByPublicKey(d,pu);
+```

@@ -1,0 +1,121 @@
+I"=<h4 id="并查集">并查集</h4>
+
+<p>并查集，在一些有N个元素的集合应用问题中，我们通常是在开始时让每个元素构成一个单元素的集合，然后按一定顺序将属于同一组的元素所在的集合合并，其间要反复查找一个元素在哪个集合中。这一类问题近几年来反复出现在信息学的国际国内赛题中，其特点是看似并不复杂，但数据量极大，若用正常的数据结构来描述的话，往往在空间上过大，计算机无法承受；即使在空间上勉强通过，运行的时间复杂度也极高，根本就不可能在比赛规定的运行时间（1～3秒）内计算出试题需要的结果，只能用并查集来描述。
+并查集是一种树型的数据结构，用于处理一些不相交集合（Disjoint Sets）的合并及查询问题。常常在使用中以森林来表示。</p>
+
+<p>主要用于解决连接问题，它支持两种操作</p>
+
+<ul>
+  <li>union(p,q)</li>
+  <li>isConnected(p,q)</li>
+</ul>
+
+<h4 id="实现">实现</h4>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">/*</span>
+<span class="p">@</span><span class="n">date</span> <span class="p">:</span> <span class="m">2019</span><span class="p">/</span><span class="m">09</span><span class="p">/</span><span class="m">16</span>
+<span class="p">@</span><span class="n">author</span> <span class="p">:</span> <span class="n">YaPi</span>
+<span class="p">@</span><span class="n">desc</span> <span class="p">:</span> <span class="err">并查集</span>
+<span class="p">*/</span>
+<span class="k">package</span> <span class="n">unionFind</span>
+
+
+<span class="p">//</span> <span class="err">将每一个元素，看作是一个节点，由孩子节点指向根节点</span>
+<span class="n">type</span> <span class="n">UF</span> <span class="n">struct</span> <span class="p">{</span>
+	<span class="p">//</span> <span class="err">代表一系列根节点的数据</span>
+	<span class="n">parent</span> 		<span class="p">[]</span><span class="n">int</span>
+	<span class="p">//</span> <span class="err">代表每一个根节点代表的树的节点总数</span>
+	<span class="n">sz</span> 			<span class="p">[]</span><span class="n">int</span>
+	<span class="p">//</span> <span class="err">代表每一个根节点代表的树的高度</span>
+	<span class="n">rank</span> 		<span class="p">[]</span><span class="n">int</span>
+<span class="p">}</span>
+
+<span class="p">//</span> <span class="err">初始化数据，每一个节点都是指向自身的一颗树</span>
+<span class="n">func</span> <span class="n">NewUF</span><span class="p">(</span><span class="n">size</span> <span class="n">int</span><span class="p">)</span> <span class="p">*</span><span class="n">UF</span> <span class="p">{</span>
+	<span class="n">ids</span> <span class="p">:=</span> <span class="n">make</span><span class="p">([]</span><span class="n">int</span><span class="p">,</span><span class="n">size</span><span class="p">)</span>
+	<span class="n">szs</span> <span class="p">:=</span> <span class="n">make</span><span class="p">([]</span><span class="n">int</span><span class="p">,</span><span class="n">size</span><span class="p">)</span>
+	<span class="n">rank</span> <span class="p">:=</span> <span class="n">make</span><span class="p">([]</span><span class="n">int</span><span class="p">,</span><span class="n">size</span><span class="p">)</span>
+
+	<span class="n">for</span> <span class="n">i</span><span class="p">:=</span><span class="m">0</span><span class="p">;</span><span class="n">i</span><span class="p">&lt;</span><span class="n">size</span><span class="p">;</span><span class="n">i</span><span class="p">++{</span>
+		<span class="n">ids</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="p">=</span> <span class="n">i</span>
+		<span class="n">szs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="p">=</span> <span class="m">1</span>
+	<span class="p">}</span>
+	<span class="n">return</span> <span class="p">&amp;</span><span class="n">UF</span><span class="p">{</span><span class="n">parent</span><span class="p">:</span> <span class="n">ids</span><span class="p">,</span><span class="n">sz</span><span class="p">:</span><span class="n">szs</span><span class="p">,</span><span class="n">rank</span><span class="p">:</span><span class="n">rank</span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="p">//</span> <span class="err">查找父亲节点</span>
+<span class="n">func</span> <span class="p">(</span><span class="n">u</span> <span class="p">*</span><span class="n">UF</span><span class="p">)</span><span class="n">find</span><span class="p">(</span><span class="n">p</span> <span class="n">int</span><span class="p">)</span><span class="n">int</span><span class="p">{</span>
+	<span class="k">if</span> <span class="n">p</span> <span class="p">&lt;</span> <span class="m">0</span> <span class="p">||</span> <span class="n">p</span> <span class="p">&gt;=</span> <span class="n">len</span><span class="p">(</span><span class="n">u</span><span class="p">.</span><span class="n">parent</span><span class="p">){</span>
+		<span class="n">panic</span><span class="p">(</span><span class="s2">"p is out of bound"</span><span class="p">)</span>
+	<span class="p">}</span>
+
+	<span class="p">//</span> <span class="err">找到这个数据所处的根节点</span>
+	<span class="n">for</span> <span class="n">p</span> <span class="c1">!= u.parent[p]{
+</span>		<span class="p">//</span> <span class="err">路径压缩</span>
+		<span class="n">u</span><span class="p">.</span><span class="n">parent</span><span class="p">[</span><span class="n">p</span><span class="p">]</span> <span class="p">=</span> <span class="n">u</span><span class="p">.</span><span class="n">parent</span><span class="p">[</span><span class="n">u</span><span class="p">.</span><span class="n">parent</span><span class="p">[</span><span class="n">p</span><span class="p">]]</span>
+		<span class="p">//</span> <span class="err">添加了路径压缩过后，</span><span class="n">rank</span><span class="err">就不代表具体的高度了</span>
+		<span class="p">//</span> <span class="err">只是代表每一个节点的排名</span>
+		<span class="n">p</span> <span class="p">=</span> <span class="n">u</span><span class="p">.</span><span class="n">parent</span><span class="p">[</span><span class="n">p</span><span class="p">]</span>
+	<span class="p">}</span>
+	<span class="n">return</span> <span class="n">p</span>
+<span class="p">}</span>
+
+<span class="p">//</span> <span class="err">递归方式的路径压缩</span> <span class="err">会将所有节点直接指向根节点</span>
+<span class="p">//</span> <span class="err">递归方式的开销比循环遍历要差一点</span>
+<span class="n">func</span> <span class="p">(</span><span class="n">u</span> <span class="p">*</span><span class="n">UF</span><span class="p">)</span><span class="n">find2</span><span class="p">(</span><span class="n">p</span> <span class="n">int</span><span class="p">)</span><span class="n">int</span><span class="p">{</span>
+	<span class="k">if</span> <span class="n">p</span> <span class="p">&lt;</span> <span class="m">0</span> <span class="p">||</span> <span class="n">p</span> <span class="p">&gt;=</span> <span class="n">len</span><span class="p">(</span><span class="n">u</span><span class="p">.</span><span class="n">parent</span><span class="p">){</span>
+		<span class="n">panic</span><span class="p">(</span><span class="s2">"p is out of bound"</span><span class="p">)</span>
+	<span class="p">}</span>
+	<span class="k">if</span> <span class="n">p</span> <span class="c1">!= u.parent[p]{
+</span>		<span class="n">u</span><span class="p">.</span><span class="n">parent</span><span class="p">[</span><span class="n">p</span><span class="p">]</span> <span class="p">=</span> <span class="n">u</span><span class="p">.</span><span class="n">find2</span><span class="p">(</span><span class="n">u</span><span class="p">.</span><span class="n">parent</span><span class="p">[</span><span class="n">p</span><span class="p">])</span>
+	<span class="p">}</span>
+	<span class="n">return</span> <span class="n">u</span><span class="p">.</span><span class="n">parent</span><span class="p">[</span><span class="n">p</span><span class="p">]</span>
+<span class="p">}</span>
+
+
+<span class="p">//</span> <span class="err">判断是否是连通</span>
+<span class="n">func</span> <span class="p">(</span><span class="n">t</span> <span class="p">*</span><span class="n">UF</span><span class="p">)</span><span class="n">IsConnected</span><span class="p">(</span><span class="n">p</span><span class="p">,</span><span class="n">q</span> <span class="n">int</span><span class="p">)</span><span class="n">bool</span>  <span class="p">{</span>
+	<span class="n">return</span> <span class="n">t</span><span class="p">.</span><span class="n">find</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="p">==</span> <span class="n">t</span><span class="p">.</span><span class="n">find</span><span class="p">(</span><span class="n">q</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="p">//</span> <span class="err">合并</span>
+<span class="p">//</span> <span class="err">基于</span><span class="n">rank</span><span class="err">的优化</span>
+<span class="n">func</span> <span class="p">(</span><span class="n">t</span> <span class="p">*</span><span class="n">UF</span><span class="p">)</span><span class="n">UnionElements</span><span class="p">(</span><span class="n">p</span><span class="p">,</span><span class="n">q</span> <span class="n">int</span><span class="p">)</span>  <span class="p">{</span>
+	<span class="n">pRoot</span> <span class="p">:=</span> <span class="n">t</span><span class="p">.</span><span class="n">find</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+	<span class="n">qRoot</span> <span class="p">:=</span> <span class="n">t</span><span class="p">.</span><span class="n">find</span><span class="p">(</span><span class="n">q</span><span class="p">)</span>
+
+	<span class="k">if</span> <span class="n">pRoot</span> <span class="p">==</span> <span class="n">qRoot</span> <span class="p">{</span>
+		<span class="n">return</span>
+	<span class="p">}</span>
+
+	<span class="p">//</span> <span class="err">基于</span><span class="n">size</span><span class="err">的优化</span>
+	<span class="p">//</span> <span class="err">每次将树节点少的那一棵树，合并到树节点多的那一棵树</span>
+	<span class="p">//</span><span class="k">if</span> <span class="n">t</span><span class="p">.</span><span class="n">sz</span><span class="p">[</span><span class="n">pRoot</span><span class="p">]</span> <span class="p">&lt;</span> <span class="n">t</span><span class="p">.</span><span class="n">sz</span><span class="p">[</span><span class="n">qRoot</span><span class="p">]{</span>
+	<span class="p">//</span>	<span class="p">//</span> <span class="err">将</span> <span class="n">p</span> <span class="err">所在的根节点对应的</span><span class="n">id</span><span class="err">指向</span> <span class="n">q</span> <span class="err">所在的根节点</span>
+	<span class="p">//</span>	<span class="n">t</span><span class="p">.</span><span class="n">parent</span><span class="p">[</span><span class="n">pRoot</span><span class="p">]</span> <span class="p">=</span> <span class="n">qRoot</span>
+	<span class="p">//</span>	<span class="n">t</span><span class="p">.</span><span class="n">sz</span><span class="p">[</span><span class="n">qRoot</span><span class="p">]</span> <span class="p">+=</span> <span class="n">t</span><span class="p">.</span><span class="n">sz</span><span class="p">[</span><span class="n">pRoot</span><span class="p">]</span>
+	<span class="p">//}</span><span class="k">else</span> <span class="p">{</span>
+	<span class="p">//</span>	<span class="n">t</span><span class="p">.</span><span class="n">parent</span><span class="p">[</span><span class="n">qRoot</span><span class="p">]</span> <span class="p">=</span> <span class="n">pRoot</span>
+	<span class="p">//</span>	<span class="n">t</span><span class="p">.</span><span class="n">sz</span><span class="p">[</span><span class="n">pRoot</span><span class="p">]</span> <span class="p">+=</span> <span class="n">t</span><span class="p">.</span><span class="n">sz</span><span class="p">[</span><span class="n">pRoot</span><span class="p">]</span>
+	<span class="p">//}</span>
+
+	<span class="p">//</span> <span class="err">基于</span><span class="n">rank</span><span class="err">的优化</span>
+	<span class="k">if</span> <span class="n">t</span><span class="p">.</span><span class="n">rank</span><span class="p">[</span><span class="n">pRoot</span><span class="p">]</span> <span class="p">&lt;</span> <span class="n">t</span><span class="p">.</span><span class="n">rank</span><span class="p">[</span><span class="n">qRoot</span><span class="p">]{</span>
+		<span class="p">//</span> <span class="err">将</span> <span class="n">p</span> <span class="err">所在的根节点对应的</span><span class="n">id</span><span class="err">指向</span> <span class="n">q</span> <span class="err">所在的根节点</span>
+		<span class="p">//</span> <span class="n">qRoot</span><span class="err">所对应的根节点的高度比</span><span class="n">pRoot</span><span class="err">对应的大，合并了过后，此树</span>
+		<span class="p">//</span> <span class="err">的根节点还是</span><span class="n">qRoot</span><span class="err">，所以不需要改变</span><span class="n">qRoot</span><span class="err">或</span><span class="n">pRoot</span><span class="err">对应的树的高度值</span>
+		<span class="n">t</span><span class="p">.</span><span class="n">parent</span><span class="p">[</span><span class="n">pRoot</span><span class="p">]</span> <span class="p">=</span> <span class="n">qRoot</span>
+	<span class="p">}</span><span class="k">else</span> <span class="k">if</span> <span class="n">t</span><span class="p">.</span><span class="n">rank</span><span class="p">[</span><span class="n">qRoot</span><span class="p">]</span> <span class="p">&lt;</span> <span class="n">t</span><span class="p">.</span><span class="n">rank</span><span class="p">[</span><span class="n">pRoot</span><span class="p">]{</span>
+		<span class="p">//</span> <span class="err">原理同上</span>
+		<span class="n">t</span><span class="p">.</span><span class="n">parent</span><span class="p">[</span><span class="n">qRoot</span><span class="p">]</span> <span class="p">=</span> <span class="n">pRoot</span>
+	<span class="p">}</span><span class="k">else</span> <span class="p">{</span>
+		<span class="p">//</span> <span class="err">相等了随便指向一个都行，但是树的高度增加了</span><span class="m">1</span><span class="err">，需要重新维护树的高度</span>
+		<span class="n">t</span><span class="p">.</span><span class="n">parent</span><span class="p">[</span><span class="n">qRoot</span><span class="p">]</span> <span class="p">=</span> <span class="n">pRoot</span>
+		<span class="n">t</span><span class="p">.</span><span class="n">rank</span><span class="p">[</span><span class="n">pRoot</span><span class="p">]</span> <span class="p">+=</span> <span class="m">1</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+
+<span class="p">//</span> <span class="err">路径压缩</span> <span class="n">Path</span> <span class="n">Compression</span>
+
+</code></pre></div></div>
+:ET

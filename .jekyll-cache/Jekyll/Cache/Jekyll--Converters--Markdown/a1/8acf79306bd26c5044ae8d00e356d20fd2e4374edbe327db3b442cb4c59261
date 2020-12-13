@@ -1,0 +1,95 @@
+I"+	<h4 id="基础与定义">基础与定义</h4>
+
+<ul>
+  <li>允许一个对象在其内部状态改变时，改变它的行为</li>
+</ul>
+
+<h4 id="代码实例">代码实例</h4>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>// 状态抽象类
+public abstract class CourseVideoState {
+    protected CourseVideoContext courseVideoContext;
+
+    public void setCourseVideoContext(CourseVideoContext courseVideoContext) {
+        this.courseVideoContext = courseVideoContext;
+    }
+
+    public abstract void play();
+    public abstract void speed();
+}
+
+// 上下文
+public class CourseVideoContext {
+    private CourseVideoState state;
+
+    public final static PlayState PLAY_STATE = new PlayState();
+    public final static SpeedState SPEED_STATE = new SpeedState();
+
+    public CourseVideoState getState() {
+        return state;
+    }
+
+    public void setState(CourseVideoState state) {
+        this.state = state;
+        this.state.setCourseVideoContext(this);
+    }
+
+    public void play(){
+        this.state.play();
+    }
+
+    public void speed(){
+        this.state.speed();
+    }
+}
+
+// 播放状态
+public class PlayState extends CourseVideoState {
+    @Override
+    public void play() {
+        System.out.println("正常播放视频");
+    }
+
+    @Override
+    public void speed() {
+        super.courseVideoContext.setState(CourseVideoContext.SPEED_STATE);
+    }
+}
+
+// 加速播放状态
+public class SpeedState extends CourseVideoState {
+    @Override
+    public void play() {
+        super.courseVideoContext.setState(CourseVideoContext.PLAY_STATE);
+    }
+
+    @Override
+    public void speed() {
+        System.out.println("正在加速播放视频");
+    }
+}
+
+// 使用
+
+public class Test {
+    public static void main(String[] args){
+        CourseVideoContext context = new CourseVideoContext();
+        context.setState(new PlayState());
+
+        System.out.println("当前状态："+ context.getState().getClass().getSimpleName());
+        context.speed();
+        System.out.println("当前状态："+ context.getState().getClass().getSimpleName());
+        context.play();
+        System.out.println("当前状态："+ context.getState().getClass().getSimpleName());
+
+    }
+}
+
+
+// out put
+当前状态：PlayState
+当前状态：SpeedState
+当前状态：PlayState
+
+</code></pre></div></div>
+:ET

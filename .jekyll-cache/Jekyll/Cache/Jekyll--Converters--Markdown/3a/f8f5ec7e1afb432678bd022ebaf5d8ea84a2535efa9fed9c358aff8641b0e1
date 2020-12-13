@@ -1,0 +1,229 @@
+I"�T<h3 id="优先队列">优先队列</h3>
+
+<p>普通队列：先进先出、后进后出
+优先队列：出队顺序和入队顺序无关；和优先级有关</p>
+
+<p>操作系统中进行任务的调用就是优先队列，会动态的选择优先级最高的任务执行。</p>
+
+<h4 id="优先队列经典问题">优先队列经典问题</h4>
+
+<p>在N个元素中选出M个元素</p>
+
+<p>使用优先队列，维护当前看到的前M的元素</p>
+
+<p>使用最小堆，每次将根节点的那个最小的元素提出来</p>
+
+<p>java 中的PriorityQueue默认实现就是最小堆</p>
+
+<h3 id="堆">堆</h3>
+
+<h4 id="堆的基本结构">堆的基本结构</h4>
+
+<h5 id="最主流的实现方法-二叉堆">最主流的实现方法 二叉堆</h5>
+
+<p>满二叉树：除了根节点和叶子节点，每个节点都有两个孩子</p>
+
+<p>完全二叉树：不一定是满二叉树，但是缺少的那一部分一定在树的右下部分，同时，元素按照从左到右，一层一层的顺序的排列成树的形状</p>
+
+<p>二叉堆的特点</p>
+
+<ol>
+  <li>是一颗完全二叉树</li>
+  <li>堆中某个节点的值总是不大于其父节点的值(最大堆，相应的可以定义出最小堆)</li>
+</ol>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>将元素按顺序一层一层的排列，可以使用数组来表示这一结构
+
+                        62
+                41              30
+            28       16      22      13
+         19    17  15
+
+数组对应
+
+0   1   2   3   4   5   6   7   8   9   10
+-   62  41  30  28  16  22  13  19  17  15
+
+此时，每一个节点在数组中对应的下表i会存在如下规律：
+
+若从1 开始
+parent(i) = i/2  整数除法
+left child (i) = 2 * i
+right child (i) = 2 * i + 1
+
+若从0开始
+parent(i) = (i-1)/2  整数除法
+left child (i) = 2 * i + 1
+right child (i) = 2 * i + 2
+
+</code></pre></div></div>
+
+<h5 id="实现">实现</h5>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">/*</span>
+<span class="p">@</span><span class="n">date</span> <span class="p">:</span> <span class="m">2019</span><span class="p">/</span><span class="m">09</span><span class="p">/</span><span class="m">09</span>
+<span class="p">@</span><span class="n">author</span> <span class="p">:</span> <span class="n">YaPi</span>
+<span class="p">@</span><span class="n">desc</span> <span class="p">:</span>
+<span class="p">*/</span>
+<span class="k">package</span> <span class="n">heap</span>
+
+<span class="n">import</span> <span class="s2">"dtSt/common"</span>
+
+<span class="n">type</span> <span class="n">MaxHeap</span> <span class="n">struct</span> <span class="p">{</span>
+	<span class="n">data</span>		<span class="p">[]</span><span class="n">common</span><span class="p">.</span><span class="n">E</span>
+	<span class="n">size</span> 		<span class="n">int</span>
+<span class="p">}</span>
+
+<span class="n">func</span> <span class="n">NewMaxHeap</span><span class="p">()</span> <span class="p">*</span><span class="n">MaxHeap</span> <span class="p">{</span>
+	<span class="n">return</span> <span class="p">&amp;</span><span class="n">MaxHeap</span><span class="p">{</span><span class="n">data</span> <span class="p">:</span> <span class="n">make</span><span class="p">([]</span><span class="n">common</span><span class="p">.</span><span class="n">E</span><span class="p">,</span><span class="m">0</span><span class="p">)}</span>
+<span class="p">}</span>
+
+<span class="p">//</span> <span class="err">数组从</span><span class="m">0</span><span class="err">开始</span>
+<span class="p">//</span> <span class="err">父亲节点对应数组下标</span>
+<span class="n">func</span> <span class="n">parent</span><span class="p">(</span><span class="n">n</span> <span class="n">int</span><span class="p">)</span><span class="n">int</span>  <span class="p">{</span>
+	<span class="k">if</span> <span class="n">n</span> <span class="p">==</span> <span class="m">0</span><span class="p">{</span>
+		<span class="n">return</span> <span class="n">n</span>
+	<span class="p">}</span>
+	<span class="n">return</span> <span class="p">(</span><span class="n">n</span><span class="p">-</span><span class="m">1</span><span class="p">)/</span><span class="m">2</span>
+<span class="p">}</span>
+<span class="p">//</span> <span class="err">左孩子节点对应数组下标</span>
+<span class="n">func</span> <span class="n">leftChild</span><span class="p">(</span><span class="n">n</span> <span class="n">int</span><span class="p">)</span><span class="n">int</span><span class="p">{</span>
+	<span class="n">return</span> <span class="m">2</span> <span class="p">*</span> <span class="n">n</span> <span class="p">+</span><span class="m">1</span>
+<span class="p">}</span>
+<span class="p">//</span> <span class="err">右孩子节点对应数组下标</span>
+<span class="n">func</span> <span class="n">rightChild</span><span class="p">(</span><span class="n">n</span> <span class="n">int</span><span class="p">)</span><span class="n">int</span><span class="p">{</span>
+	<span class="n">return</span> <span class="m">2</span> <span class="p">*</span> <span class="n">n</span> <span class="p">+</span><span class="m">2</span>
+<span class="p">}</span>
+
+<span class="n">func</span> <span class="p">(</span><span class="n">m</span> <span class="p">*</span><span class="n">MaxHeap</span><span class="p">)</span><span class="n">get</span><span class="p">(</span><span class="n">i</span> <span class="n">int</span><span class="p">)</span> <span class="n">common</span><span class="p">.</span><span class="n">E</span> <span class="p">{</span>
+	<span class="k">if</span> <span class="n">i</span> <span class="p">&lt;</span> <span class="m">0</span> <span class="p">||</span> <span class="n">i</span> <span class="p">&gt;</span> <span class="n">len</span><span class="p">(</span><span class="n">m</span><span class="p">.</span><span class="n">data</span><span class="p">){</span>
+		<span class="n">return</span> <span class="n">nil</span>
+	<span class="p">}</span>
+	<span class="n">return</span> <span class="n">m</span><span class="p">.</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+<span class="p">}</span>
+
+<span class="n">func</span> <span class="p">(</span><span class="n">m</span> <span class="p">*</span><span class="n">MaxHeap</span><span class="p">)</span><span class="n">swap</span><span class="p">(</span><span class="n">i</span> <span class="p">,</span><span class="n">j</span> <span class="n">int</span><span class="p">){</span>
+	<span class="k">if</span> <span class="n">i</span> <span class="p">&lt;</span> <span class="m">0</span> <span class="p">||</span> <span class="n">j</span> <span class="p">&lt;</span> <span class="m">0</span> <span class="p">||</span> <span class="n">i</span> <span class="p">&gt;=</span> <span class="n">len</span><span class="p">(</span><span class="n">m</span><span class="p">.</span><span class="n">data</span><span class="p">)</span> <span class="p">||</span> <span class="n">j</span> <span class="p">&gt;=</span> <span class="n">len</span><span class="p">(</span><span class="n">m</span><span class="p">.</span><span class="n">data</span><span class="p">){</span>
+		<span class="n">return</span>
+	<span class="p">}</span>
+	<span class="n">m</span><span class="p">.</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">],</span><span class="n">m</span><span class="p">.</span><span class="n">data</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="p">=</span> <span class="n">m</span><span class="p">.</span><span class="n">data</span><span class="p">[</span><span class="n">j</span><span class="p">],</span><span class="n">m</span><span class="p">.</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+<span class="p">}</span>
+
+<span class="n">func</span> <span class="p">(</span><span class="n">m</span> <span class="p">*</span><span class="n">MaxHeap</span><span class="p">)</span><span class="n">Add</span><span class="p">(</span><span class="n">e</span> <span class="n">common</span><span class="p">.</span><span class="n">E</span><span class="p">)</span>  <span class="p">{</span>
+	<span class="p">//</span> <span class="err">添加元素到末尾</span>
+	<span class="n">m</span><span class="p">.</span><span class="n">data</span> <span class="p">=</span> <span class="n">append</span><span class="p">(</span><span class="n">m</span><span class="p">.</span><span class="n">data</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+	<span class="p">//</span> <span class="err">对数组进行</span><span class="n">shiftUp</span><span class="err">操作</span>
+	<span class="n">m</span><span class="p">.</span><span class="n">shiftUp</span><span class="p">(</span><span class="n">len</span><span class="p">(</span><span class="n">m</span><span class="p">.</span><span class="n">data</span><span class="p">)</span> <span class="p">-</span> <span class="m">1</span><span class="p">)</span>
+	<span class="n">m</span><span class="p">.</span><span class="n">size</span> <span class="p">++</span>
+<span class="p">}</span>
+
+<span class="p">//</span> <span class="err">向上重新组装二叉堆</span>
+<span class="n">func</span> <span class="p">(</span><span class="n">m</span> <span class="p">*</span><span class="n">MaxHeap</span><span class="p">)</span><span class="n">shiftUp</span><span class="p">(</span><span class="n">i</span> <span class="n">int</span><span class="p">)</span>  <span class="p">{</span>
+	<span class="n">for</span> <span class="n">i</span> <span class="p">&gt;</span><span class="m">0</span> <span class="p">&amp;&amp;</span> <span class="n">m</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="n">i</span><span class="p">).</span><span class="n">CompareTo</span><span class="p">(</span><span class="n">m</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="n">parent</span><span class="p">(</span><span class="n">i</span><span class="p">)))</span> <span class="p">==</span> <span class="m">1</span> <span class="p">{</span>
+		<span class="n">m</span><span class="p">.</span><span class="n">swap</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">parent</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
+		<span class="n">i</span> <span class="p">=</span> <span class="n">parent</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+
+<span class="n">func</span> <span class="p">(</span><span class="n">m</span> <span class="p">*</span><span class="n">MaxHeap</span><span class="p">)</span><span class="n">findMax</span><span class="p">()</span><span class="n">common</span><span class="p">.</span><span class="n">E</span>  <span class="p">{</span>
+	<span class="k">if</span> <span class="n">len</span><span class="p">(</span><span class="n">m</span><span class="p">.</span><span class="n">data</span><span class="p">)</span> <span class="p">==</span> <span class="m">0</span><span class="p">{</span>
+		<span class="n">return</span> <span class="n">nil</span>
+	<span class="p">}</span>
+	<span class="n">return</span> <span class="n">m</span><span class="p">.</span><span class="n">data</span><span class="p">[</span><span class="m">0</span><span class="p">]</span>
+<span class="p">}</span>
+
+<span class="n">func</span> <span class="p">(</span><span class="n">m</span> <span class="p">*</span> <span class="n">MaxHeap</span><span class="p">)</span><span class="n">ExtractMax</span><span class="p">()</span><span class="n">common</span><span class="p">.</span><span class="n">E</span><span class="p">{</span>
+	<span class="n">e</span> <span class="p">:=</span> <span class="n">m</span><span class="p">.</span><span class="n">findMax</span><span class="p">()</span>
+	<span class="k">if</span> <span class="n">e</span> <span class="p">==</span> <span class="n">nil</span> <span class="p">{</span>
+		<span class="n">return</span> <span class="n">e</span>
+	<span class="p">}</span>
+	<span class="p">//</span> <span class="err">将最后一个元素的值设置到最大值的位置</span>
+	<span class="n">m</span><span class="p">.</span><span class="n">swap</span><span class="p">(</span><span class="m">0</span><span class="p">,</span><span class="n">len</span><span class="p">(</span><span class="n">m</span><span class="p">.</span><span class="n">data</span><span class="p">)-</span><span class="m">1</span><span class="p">)</span>
+	<span class="p">//</span> <span class="err">将最大值删除</span>
+	<span class="n">m</span><span class="p">.</span><span class="n">data</span> <span class="p">=</span> <span class="n">m</span><span class="p">.</span><span class="n">data</span><span class="p">[:</span><span class="n">len</span><span class="p">(</span><span class="n">m</span><span class="p">.</span><span class="n">data</span><span class="p">)-</span><span class="m">1</span><span class="p">]</span>
+	<span class="p">//</span> <span class="err">从根节点执行</span><span class="n">down</span><span class="err">操作</span>
+	<span class="n">m</span><span class="p">.</span><span class="n">shiftDown</span><span class="p">(</span><span class="m">0</span><span class="p">)</span>
+	<span class="n">m</span><span class="p">.</span><span class="n">size</span> <span class="p">--</span>
+	<span class="n">return</span> <span class="n">e</span>
+<span class="p">}</span>
+
+<span class="n">func</span> <span class="p">(</span><span class="n">m</span> <span class="p">*</span><span class="n">MaxHeap</span><span class="p">)</span><span class="n">shiftDown</span><span class="p">(</span><span class="n">k</span> <span class="n">int</span><span class="p">)</span>  <span class="p">{</span>
+	<span class="n">for</span> <span class="n">leftChild</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="p">&lt;</span> <span class="n">len</span><span class="p">(</span><span class="n">m</span><span class="p">.</span><span class="n">data</span><span class="p">){</span>
+		<span class="p">//</span> <span class="err">设置</span><span class="n">j</span><span class="err">的值为左孩子对应的数组下标值</span>
+		<span class="n">j</span> <span class="p">:=</span> <span class="n">leftChild</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+		<span class="p">//</span> <span class="n">j</span> <span class="p">+</span> <span class="m">1</span> <span class="err">是右孩子的数组中的下标</span>
+		<span class="p">//</span> <span class="err">如果右孩子对应的值大于左孩子对应的值，设置</span><span class="n">j</span><span class="err">的值为右孩子的下标</span>
+		<span class="k">if</span> <span class="n">j</span> <span class="p">+</span> <span class="m">1</span> <span class="p">&lt;</span> <span class="n">len</span><span class="p">(</span><span class="n">m</span><span class="p">.</span><span class="n">data</span><span class="p">)</span> <span class="p">&amp;&amp;</span> <span class="n">m</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="n">j</span> <span class="p">+</span> <span class="m">1</span><span class="p">).</span><span class="n">CompareTo</span><span class="p">(</span><span class="n">m</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="n">j</span><span class="p">))</span> <span class="p">==</span> <span class="m">1</span><span class="p">{</span>
+				<span class="n">j</span> <span class="p">++</span>
+		<span class="p">}</span>
+		<span class="p">//</span> <span class="err">判断当前节点的值是不是比</span><span class="n">j</span><span class="err">对应的孩子节点大，如果大于或等于，就跳过，否则就替换</span>
+		<span class="k">if</span> <span class="n">m</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="n">k</span><span class="p">).</span><span class="n">CompareTo</span><span class="p">(</span><span class="n">m</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="n">j</span><span class="p">))</span> <span class="p">&gt;=</span> <span class="m">0</span><span class="p">{</span>
+			<span class="k">break</span>
+		<span class="p">}</span>
+
+		<span class="n">m</span><span class="p">.</span><span class="n">swap</span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="n">j</span><span class="p">)</span>
+		<span class="n">k</span> <span class="p">=</span> <span class="n">j</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Test</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">/*</span>
+<span class="p">@</span><span class="n">date</span> <span class="p">:</span> <span class="m">2019</span><span class="p">/</span><span class="m">09</span><span class="p">/</span><span class="m">10</span>
+<span class="p">@</span><span class="n">author</span> <span class="p">:</span> <span class="n">YaPi</span>
+<span class="p">@</span><span class="n">desc</span> <span class="p">:</span>
+<span class="p">*/</span>
+<span class="k">package</span> <span class="n">heap</span>
+
+<span class="n">import</span> <span class="p">(</span>
+	<span class="s2">"dtSt/common"</span>
+	<span class="s2">"fmt"</span>
+	<span class="s2">"math/rand"</span>
+	<span class="s2">"testing"</span>
+<span class="p">)</span>
+
+<span class="n">func</span> <span class="n">TestMaxHeap</span><span class="p">(</span><span class="n">t</span> <span class="p">*</span><span class="n">testing</span><span class="p">.</span><span class="n">T</span><span class="p">)</span> <span class="p">{</span>
+	<span class="n">maxHeap</span> <span class="p">:=</span> <span class="n">NewMaxHeap</span><span class="p">()</span>
+
+	<span class="n">for</span> <span class="n">i</span><span class="p">:=</span><span class="m">0</span><span class="p">;</span><span class="n">i</span><span class="p">&lt;</span><span class="m">10</span><span class="p">;</span><span class="n">i</span><span class="p">++{</span>
+		<span class="n">t</span> <span class="p">:=</span> <span class="n">rand</span><span class="p">.</span><span class="n">Intn</span><span class="p">(</span><span class="m">1000</span><span class="p">)</span>
+		<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+		<span class="n">maxHeap</span><span class="p">.</span><span class="n">Add</span><span class="p">(</span><span class="n">common</span><span class="p">.</span><span class="n">NewInt</span><span class="p">(</span><span class="n">t</span><span class="p">))</span>
+	<span class="p">}</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">()</span>
+	<span class="n">test</span> <span class="p">:=</span> <span class="n">make</span><span class="p">([]</span><span class="n">common</span><span class="p">.</span><span class="n">E</span><span class="p">,</span><span class="m">0</span><span class="p">)</span>
+	<span class="n">for</span> <span class="n">i</span><span class="p">:=</span><span class="m">0</span><span class="p">;</span><span class="n">i</span><span class="p">&lt;</span><span class="m">10</span><span class="p">;</span><span class="n">i</span><span class="p">++{</span>
+		<span class="n">test</span> <span class="p">=</span> <span class="n">append</span><span class="p">(</span><span class="n">test</span><span class="p">,</span> <span class="n">maxHeap</span><span class="p">.</span><span class="n">ExtractMax</span><span class="p">())</span>
+	<span class="p">}</span>
+
+	<span class="n">for</span> <span class="n">_</span><span class="p">,</span><span class="n">v</span> <span class="p">:=</span> <span class="k">range</span> <span class="n">test</span><span class="p">{</span>
+		<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+	<span class="p">}</span>
+	<span class="p">//</span> <span class="n">output</span>
+	<span class="p">//</span>		<span class="m">81</span>
+	<span class="p">//</span>		<span class="m">887</span>
+	<span class="p">//</span>		<span class="m">847</span>
+	<span class="p">//</span>		<span class="m">59</span>
+	<span class="p">//</span>		<span class="m">81</span>
+	<span class="p">//</span>		<span class="m">318</span>
+	<span class="p">//</span>		<span class="m">425</span>
+	<span class="p">//</span>		<span class="m">540</span>
+	<span class="p">//</span>		<span class="m">456</span>
+	<span class="p">//</span>		<span class="m">300</span>
+	<span class="p">//</span>
+	<span class="p">//</span>		<span class="m">887</span>
+	<span class="p">//</span>		<span class="m">847</span>
+	<span class="p">//</span>		<span class="m">540</span>
+	<span class="p">//</span>		<span class="m">456</span>
+	<span class="p">//</span>		<span class="m">425</span>
+	<span class="p">//</span>		<span class="m">318</span>
+	<span class="p">//</span>		<span class="m">300</span>
+	<span class="p">//</span>		<span class="m">81</span>
+	<span class="p">//</span>		<span class="m">81</span>
+	<span class="p">//</span>		<span class="m">59</span>
+
+<span class="p">}</span>
+
+</code></pre></div></div>
+:ET

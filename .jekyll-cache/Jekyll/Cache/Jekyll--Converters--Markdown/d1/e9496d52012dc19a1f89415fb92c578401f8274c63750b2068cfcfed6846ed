@@ -1,0 +1,419 @@
+I"!�<h4 id="二叉树">二叉树</h4>
+
+<ul>
+  <li>二叉树具有唯一跟节点</li>
+  <li>二叉树中每个节点最多有两个孩子</li>
+  <li>没有孩子的节点称为叶子节点</li>
+  <li>二叉树中每个节点只能有一个父亲节点</li>
+</ul>
+
+<p>二叉树不一定是满的</p>
+
+<p>一个节点也是二叉树</p>
+
+<p>NULL 空也是二叉树</p>
+
+<h4 id="二分搜索树">二分搜索树</h4>
+
+<ul>
+  <li>二分搜索树是二叉树</li>
+  <li>二分搜索树的每个节点的值都大于其左子树的所有节点的值</li>
+  <li>二分搜索树的每个节点的值都小于其右子树的所有节点的值</li>
+  <li>每一棵子树也是二分搜索树</li>
+  <li>存储的元素必须有可比较性</li>
+  <li>二分搜索树是不能用来存放相同数据的数据结构，比较好用来实现Set集合</li>
+  <li>二分搜索树的增、查、删的时间复杂度是O(h) h是树的高度</li>
+  <li>同一组数据可以用创建出不同的二叉树，它有可能会退化成一个链表(在近乎有序的情况下，顺序添加)，解决这个问题–&gt;创建平衡二叉树</li>
+</ul>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>已满二叉树为基础：
+
+
+将树的根看作第0层，那么第0层1个节点，第1层2个节点，第三层8个节点...由此可得，第h-1层，有 2^(h-1)个节点
+
+若有h层的话，它的节点个数就为 2^h - 1个
+
+若将节点个数和数的高度建立关系的话
+
+2^h - 1 = n
+
+h = log2^(n+1)=O(log2^n) = O(logn)
+
+</code></pre></div></div>
+
+<table>
+  <thead>
+    <tr>
+      <th>n</th>
+      <th>logn</th>
+      <th>n</th>
+      <th>比较</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>n = 16</td>
+      <td>4</td>
+      <td>16</td>
+      <td>相差4倍</td>
+    </tr>
+    <tr>
+      <td>n = 1024</td>
+      <td>10</td>
+      <td>1024</td>
+      <td>相差100倍</td>
+    </tr>
+    <tr>
+      <td>n = 100万</td>
+      <td>20</td>
+      <td>100万</td>
+      <td>相差5万倍</td>
+    </tr>
+  </tbody>
+</table>
+
+<h5 id="二分搜索树的遍历">二分搜索树的遍历</h5>
+
+<p>以当前节点的遍历顺序为基准,确定是哪一种遍历方式</p>
+
+<ul>
+  <li>前序遍历(DLR) 当前节点–&gt;左子树–&gt;右子树</li>
+  <li>中序遍历(LDR) 左子树–&gt;当前节点–&gt;–&gt;右子树</li>
+  <li>前序遍历(LRD) 左子树–&gt;右子树–&gt;当前节点</li>
+</ul>
+
+<p>二分搜索树的中序遍历结果是顺序的，所以也叫排序树
+前序遍历的第一个元素为根节点，后续遍历最后一个节点是根节点。</p>
+
+<p>后续遍历的一个应用: 为二分搜索树释放内存(c++)。</p>
+
+<p>以上的遍历都是广度优先遍历，每一次都会先走到树最深处的位置，然后再返回</p>
+
+<h5 id="广度优先遍历">广度优先遍历</h5>
+
+<p>需要借助队列实现，每次一层一层的遍历。即，一个节点出队的时候，先将其左右两个孩子入队，再出队。广度优先的优势在于你能更快的找到你需要的元素，因为深度优先遍历会先走到最深的地方。常用于算法设计中(无权图的最短路径)</p>
+
+<h4 id="基础实现">基础实现</h4>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">/*</span>
+<span class="p">@</span><span class="n">date</span> <span class="p">:</span> <span class="m">2019</span><span class="p">/</span><span class="m">09</span><span class="p">/</span><span class="m">05</span>
+<span class="p">@</span><span class="n">author</span> <span class="p">:</span> <span class="n">YaPi</span>
+<span class="p">@</span><span class="n">desc</span> <span class="p">:</span> <span class="err">二分搜索树</span>
+<span class="p">*/</span>
+<span class="k">package</span> <span class="n">tree</span>
+
+<span class="n">import</span> <span class="p">(</span>
+	<span class="s2">"dtSt/common"</span>
+	<span class="s2">"dtSt/queue"</span>
+	<span class="s2">"fmt"</span>
+<span class="p">)</span>
+
+<span class="p">//</span> <span class="err">二分搜索树</span>
+<span class="n">type</span> <span class="n">Bst</span> <span class="n">struct</span> <span class="p">{</span>
+	<span class="n">node</span> 	<span class="p">*</span><span class="n">Node</span>
+	<span class="n">size</span> 	<span class="n">int</span>
+<span class="p">}</span>
+
+<span class="n">func</span> <span class="n">NewBst</span><span class="p">()</span> <span class="p">*</span><span class="n">Bst</span> <span class="p">{</span>
+	<span class="n">return</span> <span class="p">&amp;</span><span class="n">Bst</span><span class="p">{}</span>
+<span class="p">}</span>
+
+<span class="p">//</span> <span class="err">二分搜索树前序遍历</span>
+<span class="n">func</span> <span class="p">(</span><span class="n">b</span> <span class="p">*</span><span class="n">Bst</span><span class="p">)</span><span class="n">DLR</span><span class="p">(){</span>
+	<span class="p">//</span> <span class="err">先遍历当前节点</span>
+	<span class="p">//</span> <span class="err">再遍历左子树</span>
+	<span class="p">//</span> <span class="err">再遍历右子树</span>
+	<span class="n">dlr</span><span class="p">(</span><span class="n">b</span><span class="p">.</span><span class="n">node</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="n">func</span> <span class="n">dlr</span><span class="p">(</span><span class="n">node</span> <span class="p">*</span><span class="n">Node</span><span class="p">)</span>  <span class="p">{</span>
+	<span class="k">if</span> <span class="n">node</span> <span class="p">==</span> <span class="n">nil</span><span class="p">{</span>
+		<span class="n">return</span>
+	<span class="p">}</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">node</span><span class="p">.</span><span class="n">e</span><span class="p">)</span>
+	<span class="n">dlr</span><span class="p">(</span><span class="n">node</span><span class="p">.</span><span class="n">left</span><span class="p">)</span>
+	<span class="n">dlr</span><span class="p">(</span><span class="n">node</span><span class="p">.</span><span class="n">right</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="p">//</span> <span class="err">二分搜索树中序遍历</span>
+<span class="n">func</span> <span class="p">(</span><span class="n">b</span> <span class="p">*</span><span class="n">Bst</span><span class="p">)</span><span class="n">LDR</span><span class="p">(){</span>
+	<span class="p">//</span> <span class="err">先遍历当前节点</span>
+	<span class="p">//</span> <span class="err">再遍历左子树</span>
+	<span class="p">//</span> <span class="err">再遍历右子树</span>
+	<span class="n">ldr</span><span class="p">(</span><span class="n">b</span><span class="p">.</span><span class="n">node</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="n">func</span> <span class="n">ldr</span><span class="p">(</span><span class="n">node</span> <span class="p">*</span><span class="n">Node</span><span class="p">)</span>  <span class="p">{</span>
+	<span class="k">if</span> <span class="n">node</span> <span class="p">==</span> <span class="n">nil</span><span class="p">{</span>
+		<span class="n">return</span>
+	<span class="p">}</span>
+	<span class="n">ldr</span><span class="p">(</span><span class="n">node</span><span class="p">.</span><span class="n">left</span><span class="p">)</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">node</span><span class="p">.</span><span class="n">e</span><span class="p">)</span>
+	<span class="n">ldr</span><span class="p">(</span><span class="n">node</span><span class="p">.</span><span class="n">right</span><span class="p">)</span>
+<span class="p">}</span>
+
+
+<span class="p">//</span> <span class="err">二分搜索树后序遍历</span>
+<span class="n">func</span> <span class="p">(</span><span class="n">b</span> <span class="p">*</span><span class="n">Bst</span><span class="p">)</span><span class="n">LRD</span><span class="p">(){</span>
+	<span class="p">//</span> <span class="err">先遍历当前节点</span>
+	<span class="p">//</span> <span class="err">再遍历左子树</span>
+	<span class="p">//</span> <span class="err">再遍历右子树</span>
+	<span class="n">lrd</span><span class="p">(</span><span class="n">b</span><span class="p">.</span><span class="n">node</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="n">func</span> <span class="n">lrd</span><span class="p">(</span><span class="n">node</span> <span class="p">*</span><span class="n">Node</span><span class="p">)</span>  <span class="p">{</span>
+	<span class="k">if</span> <span class="n">node</span> <span class="p">==</span> <span class="n">nil</span><span class="p">{</span>
+		<span class="n">return</span>
+	<span class="p">}</span>
+	<span class="n">lrd</span><span class="p">(</span><span class="n">node</span><span class="p">.</span><span class="n">left</span><span class="p">)</span>
+	<span class="n">lrd</span><span class="p">(</span><span class="n">node</span><span class="p">.</span><span class="n">right</span><span class="p">)</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">node</span><span class="p">.</span><span class="n">e</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="n">func</span> <span class="n">contains</span><span class="p">(</span><span class="n">node</span> <span class="p">*</span><span class="n">Node</span><span class="p">,</span> <span class="n">d</span> <span class="n">common</span><span class="p">.</span><span class="n">E</span><span class="p">)</span><span class="n">bool</span><span class="p">{</span>
+	<span class="k">if</span> <span class="n">node</span> <span class="p">==</span> <span class="n">nil</span> <span class="p">{</span>
+		<span class="n">return</span> <span class="nb">false</span>
+	<span class="p">}</span>
+	<span class="n">r</span> <span class="p">:=</span> <span class="n">node</span><span class="p">.</span><span class="n">e</span><span class="p">.</span><span class="n">CompareTo</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+	<span class="k">if</span> <span class="n">r</span> <span class="p">==</span> <span class="p">-</span><span class="m">1</span><span class="p">{</span>
+		<span class="n">return</span> <span class="n">contains</span><span class="p">(</span><span class="n">node</span><span class="p">.</span><span class="n">right</span><span class="p">,</span><span class="n">d</span><span class="p">)</span>
+	<span class="p">}</span><span class="k">else</span> <span class="k">if</span> <span class="n">r</span> <span class="p">==</span> <span class="m">1</span><span class="p">{</span>
+		<span class="p">//</span> <span class="err">当前节点的值比它大，那么需要在左子树中去查</span>
+		<span class="n">return</span> <span class="n">contains</span><span class="p">(</span><span class="n">node</span><span class="p">.</span><span class="n">left</span><span class="p">,</span><span class="n">d</span><span class="p">)</span>
+	<span class="p">}</span><span class="k">else</span><span class="p">{</span>
+		<span class="n">return</span> <span class="nb">true</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+
+<span class="n">func</span> <span class="n">add</span><span class="p">(</span><span class="n">b</span> <span class="p">*</span><span class="n">Node</span><span class="p">,</span><span class="n">d</span> <span class="n">common</span><span class="p">.</span><span class="n">E</span><span class="p">)(*</span><span class="n">Node</span><span class="p">,</span><span class="n">bool</span><span class="p">){</span>
+	<span class="n">isAdd</span> <span class="p">:=</span> <span class="nb">false</span>
+	<span class="p">//</span> <span class="err">将</span><span class="n">nil</span><span class="err">当作一个为</span><span class="n">NULL</span><span class="err">的子节点</span><span class="p">,</span><span class="err">那么</span><span class="p">,</span><span class="err">判断当程序找到下一个节点是</span>
+	<span class="p">//</span> <span class="n">NULL</span><span class="err">的时候，则代表需要新加一个节点</span>
+	<span class="k">if</span> <span class="n">b</span> <span class="p">==</span> <span class="n">nil</span> <span class="p">{</span>
+		<span class="n">return</span> <span class="n">newNode</span><span class="p">(</span><span class="n">d</span><span class="p">),</span><span class="nb">true</span>
+	<span class="p">}</span>
+	<span class="p">//</span> <span class="err">若</span><span class="n">b</span><span class="err">不为空的时候，则继续向下判断</span>
+	<span class="p">//</span> <span class="err">说明当前节点大于需要新增的节点</span>
+	<span class="n">res</span> <span class="p">:=</span> <span class="n">b</span><span class="p">.</span><span class="n">e</span><span class="p">.</span><span class="n">CompareTo</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+	<span class="k">if</span> <span class="n">res</span> <span class="p">==</span> <span class="m">1</span><span class="p">{</span>
+		<span class="n">b</span><span class="p">.</span><span class="n">left</span><span class="p">,</span><span class="n">isAdd</span> <span class="p">=</span> <span class="n">add</span><span class="p">(</span><span class="n">b</span><span class="p">.</span><span class="n">left</span><span class="p">,</span><span class="n">d</span><span class="p">)</span>
+	<span class="p">}</span><span class="k">else</span> <span class="k">if</span> <span class="n">res</span> <span class="p">==</span> <span class="p">-</span><span class="m">1</span><span class="p">{</span>
+		<span class="n">b</span><span class="p">.</span><span class="n">right</span><span class="p">,</span><span class="n">isAdd</span> <span class="p">=</span> <span class="n">add</span><span class="p">(</span><span class="n">b</span><span class="p">.</span><span class="n">right</span><span class="p">,</span><span class="n">d</span><span class="p">)</span>
+	<span class="p">}</span><span class="k">else</span><span class="p">{</span>
+		<span class="p">//</span> <span class="err">相等</span> <span class="err">不做操作</span>
+	<span class="p">}</span>
+	<span class="n">return</span> <span class="n">b</span><span class="p">,</span><span class="n">isAdd</span>
+<span class="p">}</span>
+
+<span class="n">func</span> <span class="n">removeMind</span><span class="p">(</span><span class="n">node</span> <span class="p">*</span><span class="n">Node</span><span class="p">)*</span><span class="n">Node</span><span class="p">{</span>
+	<span class="k">if</span> <span class="n">node</span><span class="p">.</span><span class="n">left</span> <span class="p">==</span> <span class="n">nil</span> <span class="p">{</span>
+		<span class="n">rNode</span> <span class="p">:=</span> <span class="n">node</span><span class="p">.</span><span class="n">right</span>
+		<span class="n">node</span><span class="p">.</span><span class="n">right</span> <span class="p">=</span> <span class="n">nil</span>
+		<span class="n">return</span> <span class="n">rNode</span>
+	<span class="p">}</span>
+	<span class="n">node</span><span class="p">.</span><span class="n">left</span> <span class="p">=</span> <span class="n">removeMind</span><span class="p">(</span><span class="n">node</span><span class="p">.</span><span class="n">left</span><span class="p">)</span>
+	<span class="n">return</span> <span class="n">node</span>
+<span class="p">}</span>
+
+<span class="n">func</span> <span class="n">removeMax</span><span class="p">(</span><span class="n">node</span> <span class="p">*</span><span class="n">Node</span><span class="p">)*</span><span class="n">Node</span><span class="p">{</span>
+	<span class="p">//</span> <span class="err">若右孩子为空，则当前节点为最大节点</span>
+	<span class="k">if</span> <span class="n">node</span><span class="p">.</span><span class="n">right</span> <span class="p">==</span> <span class="n">nil</span> <span class="p">{</span>
+		<span class="p">//</span> <span class="err">找到最大节点，找到其左孩子，左孩子为删除掉当前节点后的最大节点</span>
+		<span class="n">lNode</span> <span class="p">:=</span> <span class="n">node</span><span class="p">.</span><span class="n">left</span>
+		<span class="n">node</span><span class="p">.</span><span class="n">left</span> <span class="p">=</span> <span class="n">nil</span>
+		<span class="n">return</span> <span class="n">lNode</span>
+	<span class="p">}</span>
+	<span class="n">node</span><span class="p">.</span><span class="n">right</span> <span class="p">=</span> <span class="n">removeMax</span><span class="p">(</span><span class="n">node</span><span class="p">.</span><span class="n">right</span><span class="p">)</span>
+	<span class="n">return</span> <span class="n">node</span>
+<span class="p">}</span>
+
+
+<span class="p">//</span> <span class="err">找二分搜索树的最小节点</span>
+<span class="n">func</span> <span class="n">mind</span><span class="p">(</span><span class="n">n</span> <span class="p">*</span><span class="n">Node</span><span class="p">)*</span><span class="n">Node</span><span class="p">{</span>
+	<span class="k">if</span> <span class="n">n</span><span class="p">.</span><span class="n">left</span> <span class="p">==</span> <span class="n">nil</span><span class="p">{</span>
+		<span class="n">return</span> <span class="n">n</span>
+	<span class="p">}</span>
+	<span class="p">//</span> <span class="err">获取节点的最右节点</span>
+	<span class="p">//</span><span class="n">lNode</span> <span class="p">:=</span> <span class="n">mind</span><span class="p">(</span><span class="n">n</span><span class="p">.</span><span class="n">left</span><span class="p">)</span>
+	<span class="p">//</span><span class="k">if</span> <span class="n">lNode</span> <span class="c1">!= nil{
+</span>	<span class="p">//</span>	<span class="n">return</span> <span class="n">lNode</span>
+	<span class="p">//}</span><span class="k">else</span> <span class="p">{</span>
+	<span class="p">//</span>	<span class="n">return</span> <span class="n">n</span>
+	<span class="p">//}</span>
+	<span class="n">return</span> <span class="n">mind</span><span class="p">(</span><span class="n">n</span><span class="p">.</span><span class="n">left</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="p">//</span> <span class="err">找二分搜索树的最大节点</span>
+<span class="n">func</span> <span class="k">max</span><span class="p">(</span><span class="n">n</span> <span class="p">*</span><span class="n">Node</span><span class="p">)*</span><span class="n">Node</span>  <span class="p">{</span>
+	<span class="p">//</span> <span class="err">若当前节点为空</span> <span class="err">返回</span><span class="n">nil</span>
+	<span class="k">if</span> <span class="n">n</span><span class="p">.</span><span class="n">right</span> <span class="p">==</span> <span class="n">nil</span><span class="p">{</span>
+		<span class="n">return</span> <span class="n">n</span>
+	<span class="p">}</span>
+	<span class="p">//</span> <span class="err">获取节点的最右节点</span>
+	<span class="n">return</span> <span class="k">max</span><span class="p">(</span><span class="n">n</span><span class="p">.</span><span class="n">right</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="p">//</span> <span class="err">删除任意节点</span>
+<span class="n">func</span> <span class="n">removeElement</span><span class="p">(</span><span class="n">node</span> <span class="p">*</span><span class="n">Node</span><span class="p">,</span><span class="n">e</span> <span class="n">common</span><span class="p">.</span><span class="n">E</span><span class="p">)*</span><span class="n">Node</span><span class="p">{</span>
+	<span class="p">//</span> <span class="err">非空判断</span>
+	<span class="k">if</span> <span class="n">node</span> <span class="p">==</span> <span class="n">nil</span><span class="p">{</span>
+		<span class="n">return</span> <span class="n">nil</span>
+	<span class="p">}</span>
+	<span class="p">//</span> <span class="err">和当前节点的值进行比较</span>
+	<span class="n">switch</span> <span class="n">node</span><span class="p">.</span><span class="n">CompareTo</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="p">{</span>
+	<span class="k">case</span> <span class="m">1</span><span class="p">:</span>
+		<span class="p">//</span> <span class="err">当前节点的值比需要删除的值大</span>
+		<span class="p">//</span> <span class="err">需要在当前节点的左孩子进行查找</span>
+		<span class="n">node</span><span class="p">.</span><span class="n">left</span> <span class="p">=</span> <span class="n">removeElement</span><span class="p">(</span><span class="n">node</span><span class="p">.</span><span class="n">left</span><span class="p">,</span><span class="n">e</span><span class="p">)</span>
+	<span class="k">case</span> <span class="p">-</span><span class="m">1</span><span class="p">:</span>
+		<span class="p">//</span> <span class="err">当前节点的值比需要删除的值小</span>
+		<span class="p">//</span> <span class="err">需要在当前节点的右孩子进行查找</span>
+		<span class="n">node</span><span class="p">.</span><span class="n">right</span> <span class="p">=</span> <span class="n">removeElement</span><span class="p">(</span><span class="n">node</span><span class="p">.</span><span class="n">right</span><span class="p">,</span><span class="n">e</span><span class="p">)</span>
+	<span class="k">case</span> <span class="m">0</span><span class="p">:</span>
+		<span class="p">//</span> <span class="err">需要删除的值就是当前值</span>
+		<span class="p">//</span> <span class="err">若当前节点没有左孩子和右孩子</span>
+		<span class="k">if</span> <span class="n">node</span><span class="p">.</span><span class="n">left</span> <span class="p">==</span> <span class="n">nil</span> <span class="p">&amp;&amp;</span> <span class="n">node</span><span class="p">.</span><span class="n">right</span> <span class="p">==</span> <span class="n">nil</span><span class="p">{</span>
+			<span class="n">node</span> <span class="p">=</span> <span class="n">nil</span>
+		<span class="p">}</span><span class="k">else</span> <span class="k">if</span> <span class="n">node</span><span class="p">.</span><span class="n">right</span> <span class="c1">!= nil &amp;&amp; node.left == nil {
+</span>			<span class="p">//</span> <span class="err">若当前节点只有右孩子</span> <span class="err">没有左孩子</span>
+			<span class="p">//</span> <span class="err">需要找到右子树当中最小的元素</span> <span class="err">用最小的元素当作当前节点的值</span>
+			<span class="n">n</span> <span class="p">:=</span> <span class="n">mind</span><span class="p">(</span><span class="n">node</span><span class="p">.</span><span class="n">right</span><span class="p">)</span>
+			<span class="p">//</span> <span class="err">删除最小的元素</span> <span class="err">并返回删除过后的树</span>
+			<span class="n">rNode</span> <span class="p">:=</span> <span class="n">removeMind</span><span class="p">(</span><span class="n">node</span><span class="p">.</span><span class="n">right</span><span class="p">)</span>
+			<span class="n">n</span><span class="p">.</span><span class="n">right</span> <span class="p">=</span> <span class="n">rNode</span>
+			<span class="n">node</span> <span class="p">=</span> <span class="n">n</span>
+		<span class="p">}</span><span class="k">else</span> <span class="k">if</span> <span class="n">node</span><span class="p">.</span><span class="n">left</span> <span class="c1">!=nil &amp;&amp; node.right == nil {
+</span>			<span class="p">//</span> <span class="err">若当前节点只有左孩子</span> <span class="err">没有右孩子</span>
+			<span class="p">//</span> <span class="err">找到左子树当中最大的元素</span> <span class="err">用最大的元素当作当前节点值</span>
+			<span class="n">n</span> <span class="p">:=</span> <span class="k">max</span><span class="p">(</span><span class="n">node</span><span class="p">.</span><span class="n">left</span><span class="p">)</span>
+			<span class="n">lNode</span> <span class="p">:=</span> <span class="n">removeMax</span><span class="p">(</span><span class="n">node</span><span class="p">.</span><span class="n">left</span><span class="p">)</span>
+			<span class="n">n</span><span class="p">.</span><span class="n">left</span> <span class="p">=</span> <span class="n">lNode</span>
+			<span class="n">node</span> <span class="p">=</span> <span class="n">n</span>
+		<span class="p">}</span><span class="k">else</span> <span class="k">if</span> <span class="n">node</span><span class="p">.</span><span class="n">left</span> <span class="c1">!= nil &amp;&amp; node.right != nil {
+</span>			<span class="p">//</span> <span class="err">当前节点既有左孩子</span> <span class="err">也有右孩子</span>
+			<span class="p">//</span> <span class="err">找到左子树最小的值</span> <span class="err">作为当前节点的值</span>
+			<span class="n">n</span> <span class="p">:=</span> <span class="n">mind</span><span class="p">(</span><span class="n">node</span><span class="p">.</span><span class="n">right</span><span class="p">)</span>
+			<span class="n">rNode</span> <span class="p">:=</span> <span class="n">removeMind</span><span class="p">(</span><span class="n">node</span><span class="p">.</span><span class="n">right</span><span class="p">)</span>
+			<span class="n">n</span><span class="p">.</span><span class="n">left</span> <span class="p">=</span> <span class="n">node</span><span class="p">.</span><span class="n">left</span>
+			<span class="n">n</span><span class="p">.</span><span class="n">right</span> <span class="p">=</span> <span class="n">rNode</span>
+			<span class="n">node</span> <span class="p">=</span> <span class="n">n</span>
+		<span class="p">}</span>
+	<span class="n">default</span><span class="p">:</span>
+	<span class="p">}</span>
+	<span class="n">return</span> <span class="n">node</span>
+<span class="p">}</span>
+
+<span class="n">func</span> <span class="p">(</span><span class="n">b</span> <span class="p">*</span><span class="n">Bst</span><span class="p">)</span><span class="n">RemoveElement</span><span class="p">(</span><span class="n">e</span> <span class="n">common</span><span class="p">.</span><span class="n">E</span><span class="p">)</span>  <span class="p">{</span>
+	<span class="n">removeElement</span><span class="p">(</span><span class="n">b</span><span class="p">.</span><span class="n">node</span><span class="p">,</span><span class="n">e</span><span class="p">)</span>
+<span class="p">}</span>
+
+
+<span class="n">func</span> <span class="p">(</span><span class="n">b</span> <span class="p">*</span><span class="n">Bst</span><span class="p">)</span><span class="n">RemoveMind</span><span class="p">()</span>  <span class="p">{</span>
+	<span class="n">b</span><span class="p">.</span><span class="n">node</span> <span class="p">=</span> <span class="n">removeMind</span><span class="p">(</span><span class="n">b</span><span class="p">.</span><span class="n">node</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="n">func</span> <span class="p">(</span><span class="n">b</span> <span class="p">*</span><span class="n">Bst</span><span class="p">)</span><span class="n">RemoveMax</span><span class="p">()</span>  <span class="p">{</span>
+	<span class="n">b</span><span class="p">.</span><span class="n">node</span> <span class="p">=</span> <span class="n">removeMax</span><span class="p">(</span><span class="n">b</span><span class="p">.</span><span class="n">node</span><span class="p">)</span>
+<span class="p">}</span>
+
+
+<span class="n">func</span> <span class="p">(</span><span class="n">b</span> <span class="p">*</span><span class="n">Bst</span><span class="p">)</span><span class="k">Max</span><span class="p">()*</span><span class="n">Node</span>  <span class="p">{</span>
+	<span class="n">return</span> <span class="k">max</span><span class="p">(</span><span class="n">b</span><span class="p">.</span><span class="n">node</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="n">func</span> <span class="p">(</span><span class="n">b</span> <span class="p">*</span><span class="n">Bst</span><span class="p">)</span><span class="n">Mind</span><span class="p">()*</span><span class="n">Node</span>  <span class="p">{</span>
+	<span class="n">return</span> <span class="n">mind</span><span class="p">(</span><span class="n">b</span><span class="p">.</span><span class="n">node</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="p">//</span> <span class="err">层序遍历</span><span class="p">(</span><span class="err">又叫广度优先遍历</span><span class="p">)</span> <span class="err">借助队列</span>
+<span class="n">func</span> <span class="p">(</span><span class="n">b</span> <span class="p">*</span><span class="n">Bst</span><span class="p">)</span><span class="n">LevelOrder</span><span class="p">()(</span><span class="n">l</span> <span class="p">[]</span><span class="n">Node</span><span class="p">){</span>
+	<span class="p">//</span> <span class="err">借助队列实现</span>
+	<span class="n">q</span> <span class="p">:=</span> <span class="n">queue</span><span class="p">.</span><span class="n">NewArrayQueue</span><span class="p">()</span>
+	<span class="n">node</span> <span class="p">:=</span> <span class="n">b</span><span class="p">.</span><span class="n">node</span>
+	<span class="n">q</span><span class="p">.</span><span class="n">Enqueue</span><span class="p">(</span><span class="n">b</span><span class="p">.</span><span class="n">node</span><span class="p">)</span>
+	<span class="n">for</span> <span class="c1">!q.IsEmpty() {
+</span>		<span class="n">node</span> <span class="p">=</span> <span class="n">q</span><span class="p">.</span><span class="n">Dequeue</span><span class="p">().(*</span><span class="n">Node</span><span class="p">)</span>
+		<span class="p">//</span> <span class="err">将节点添加到数组里面返回</span>
+		<span class="n">l</span><span class="p">=</span> <span class="n">append</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="p">*</span><span class="n">node</span><span class="p">)</span>
+		<span class="k">if</span> <span class="n">node</span><span class="p">.</span><span class="n">left</span> <span class="c1">!= nil {
+</span>			<span class="n">q</span><span class="p">.</span><span class="n">Enqueue</span><span class="p">(</span><span class="n">node</span><span class="p">.</span><span class="n">left</span><span class="p">)</span>
+		<span class="p">}</span>
+		<span class="k">if</span> <span class="n">node</span><span class="p">.</span><span class="n">right</span> <span class="c1">!= nil{
+</span>			<span class="n">q</span><span class="p">.</span><span class="n">Enqueue</span><span class="p">(</span><span class="n">node</span><span class="p">.</span><span class="n">right</span><span class="p">)</span>
+		<span class="p">}</span>
+	<span class="p">}</span>
+	<span class="n">return</span>
+<span class="p">}</span>
+
+
+<span class="n">func</span> <span class="p">(</span><span class="n">b</span> <span class="p">*</span><span class="n">Bst</span><span class="p">)</span> <span class="n">Add</span><span class="p">(</span><span class="n">d</span> <span class="n">common</span><span class="p">.</span><span class="n">E</span><span class="p">)</span> <span class="p">{</span>
+	<span class="n">rNode</span><span class="p">,</span><span class="n">ok</span> <span class="p">:=</span> <span class="n">add</span><span class="p">(</span><span class="n">b</span><span class="p">.</span><span class="n">node</span><span class="p">,</span><span class="n">d</span><span class="p">)</span>
+	<span class="n">b</span><span class="p">.</span><span class="n">node</span> <span class="p">=</span> <span class="n">rNode</span>
+	<span class="k">if</span> <span class="n">ok</span> <span class="p">{</span>
+		<span class="n">b</span><span class="p">.</span><span class="n">size</span> <span class="p">++</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+
+<span class="n">func</span> <span class="p">(</span><span class="n">b</span> <span class="p">*</span><span class="n">Bst</span><span class="p">)</span> <span class="n">Size</span><span class="p">()</span> <span class="n">int</span> <span class="p">{</span>
+	<span class="n">return</span> <span class="n">b</span><span class="p">.</span><span class="n">size</span>
+<span class="p">}</span>
+
+<span class="n">func</span> <span class="p">(</span><span class="n">b</span> <span class="p">*</span><span class="n">Bst</span><span class="p">)</span> <span class="n">IsEmpty</span><span class="p">()</span> <span class="n">bool</span> <span class="p">{</span>
+	<span class="n">return</span> <span class="n">b</span><span class="p">.</span><span class="n">size</span> <span class="p">==</span> <span class="m">0</span>
+<span class="p">}</span>
+
+<span class="n">func</span> <span class="p">(</span><span class="n">b</span> <span class="p">*</span><span class="n">Bst</span><span class="p">)</span> <span class="n">Remove</span><span class="p">(</span><span class="n">d</span> <span class="n">common</span><span class="p">.</span><span class="n">E</span><span class="p">)</span> <span class="p">{</span>
+	<span class="n">panic</span><span class="p">(</span><span class="s2">"implement me"</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="n">func</span> <span class="p">(</span><span class="n">b</span> <span class="p">*</span><span class="n">Bst</span><span class="p">)</span> <span class="n">Contains</span><span class="p">(</span><span class="n">d</span> <span class="n">common</span><span class="p">.</span><span class="n">E</span><span class="p">)</span> <span class="n">bool</span> <span class="p">{</span>
+	<span class="n">return</span> <span class="n">contains</span><span class="p">(</span><span class="n">b</span><span class="p">.</span><span class="n">node</span><span class="p">,</span><span class="n">d</span><span class="p">)</span>
+<span class="p">}</span>
+<span class="p">//</span> <span class="err">版本</span><span class="m">1</span>
+<span class="p">//</span><span class="n">func</span> <span class="p">(</span><span class="n">b</span> <span class="p">*</span><span class="n">Bst</span><span class="p">)</span> <span class="n">Add</span><span class="p">(</span><span class="n">d</span> <span class="n">int</span><span class="p">)</span> <span class="p">{</span>
+<span class="p">//</span>	<span class="k">if</span> <span class="n">b</span><span class="p">.</span><span class="n">node</span> <span class="p">==</span> <span class="n">nil</span> <span class="p">{</span>
+<span class="p">//</span>		<span class="n">b</span><span class="p">.</span><span class="n">node</span> <span class="p">=</span> <span class="n">newNode</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+<span class="p">//</span>		<span class="n">b</span><span class="p">.</span><span class="n">size</span><span class="p">++</span>
+<span class="p">//</span>		<span class="n">return</span>
+<span class="p">//</span>	<span class="p">}</span><span class="k">else</span> <span class="p">{</span>
+<span class="p">//</span>		<span class="n">add</span><span class="p">(</span><span class="n">b</span><span class="p">.</span><span class="n">node</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>
+<span class="p">//</span>	<span class="p">}</span>
+<span class="p">//}</span>
+<span class="p">//</span><span class="n">func</span> <span class="n">add</span><span class="p">(</span><span class="n">b</span> <span class="p">*</span><span class="n">Node</span><span class="p">,</span><span class="n">d</span> <span class="n">int</span><span class="p">){</span>
+<span class="p">//</span>	<span class="p">//</span> <span class="err">判断当前节点和此根节点是否相等</span>
+<span class="p">//</span>	<span class="p">//</span> <span class="err">若相等则不做操作</span> <span class="err">退出</span>
+<span class="p">//</span>	<span class="k">if</span> <span class="n">b</span><span class="p">.</span><span class="n">IsEqual</span><span class="p">(</span><span class="n">d</span><span class="p">){</span>
+<span class="p">//</span>		<span class="n">return</span>
+<span class="p">//</span>	<span class="p">}</span>
+<span class="p">//</span>	<span class="p">//</span> <span class="err">判断当前值和传入值的比较</span>
+<span class="p">//</span>	<span class="n">switch</span> <span class="n">b</span><span class="p">.</span><span class="n">Compare</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="p">{</span>
+<span class="p">//</span>	<span class="k">case</span> <span class="m">0</span><span class="p">:</span>
+<span class="p">//</span>		<span class="p">//</span> <span class="err">相等就不做处理</span>
+<span class="p">//</span>		<span class="n">return</span>
+<span class="p">//</span>	<span class="k">case</span> <span class="m">1</span><span class="p">:</span>
+<span class="p">//</span>		<span class="p">//</span> <span class="err">这个值比当前值小</span>
+<span class="p">//</span>		<span class="p">//</span> <span class="err">应该插入左子树</span>
+<span class="p">//</span>		<span class="p">//</span> <span class="err">判断左子树是否存在</span>
+<span class="p">//</span>		<span class="k">if</span> <span class="n">b</span><span class="p">.</span><span class="n">left</span> <span class="c1">!= nil {
+</span><span class="p">//</span>			<span class="n">add</span><span class="p">(</span><span class="n">b</span><span class="p">.</span><span class="n">left</span><span class="p">,</span><span class="n">d</span><span class="p">)</span>
+<span class="p">//</span>		<span class="p">}</span><span class="k">else</span> <span class="p">{</span>
+<span class="p">//</span>			<span class="p">//</span> <span class="err">不存在左子树</span>
+<span class="p">//</span>			<span class="p">//</span> <span class="err">新建一个</span> <span class="err">并将当前左子树节点加入</span>
+<span class="p">//</span>			<span class="n">b</span><span class="p">.</span><span class="n">left</span> <span class="p">=</span> <span class="n">newNode</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+<span class="p">//</span>		<span class="p">}</span>
+<span class="p">//</span>	<span class="k">case</span> <span class="p">-</span><span class="m">1</span><span class="p">:</span>
+<span class="p">//</span>		<span class="p">//</span> <span class="err">这个值比当前值大</span>
+<span class="p">//</span>		<span class="p">//</span> <span class="err">应该插入右子树</span>
+<span class="p">//</span>		<span class="k">if</span> <span class="n">b</span><span class="p">.</span><span class="n">right</span> <span class="c1">!= nil {
+</span><span class="p">//</span>			<span class="n">add</span><span class="p">(</span><span class="n">b</span><span class="p">.</span><span class="n">right</span><span class="p">,</span><span class="n">d</span><span class="p">)</span>
+<span class="p">//</span>		<span class="p">}</span><span class="k">else</span> <span class="p">{</span>
+<span class="p">//</span>			<span class="p">//</span> <span class="err">不存在左子树</span>
+<span class="p">//</span>			<span class="p">//</span> <span class="err">新建一个</span> <span class="err">并将当前左子树节点加入</span>
+<span class="p">//</span>			<span class="n">b</span><span class="p">.</span><span class="n">right</span> <span class="p">=</span> <span class="n">newNode</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+<span class="p">//</span>		<span class="p">}</span>
+<span class="p">//</span>	<span class="n">default</span><span class="p">:</span>
+<span class="p">//</span>		<span class="n">return</span>
+<span class="p">//</span>	<span class="p">}</span>
+<span class="p">//}</span>
+</code></pre></div></div>
+
+:ET

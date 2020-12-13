@@ -1,0 +1,239 @@
+I"�?<h3 id="api安全">API安全</h3>
+
+<h4 id="基础知识点">基础知识点</h4>
+<ul>
+  <li>请求未被授权，则应该返回403状态码</li>
+  <li>请求验证需要认证，但未认证，则应返回401状态码。比如：没有携带认证信息，或者携带的信息错误</li>
+  <li>请求数过多，返回429</li>
+</ul>
+
+<p>实现访问控制有两种方法</p>
+<ol>
+  <li>ACL: Access Control Lists
+    <ol>
+      <li>简单易用，实现容易，但不易管理。比如：linux的用户管理，需要对每个用户设置它能干什么，读啊，写啊的权限</li>
+    </ol>
+  </li>
+  <li>RBAC: Role Based Access Control
+    <ol>
+      <li>引入角色概念，简化管理。但开发较为复杂</li>
+    </ol>
+  </li>
+</ol>
+
+<h5 id="sql注入攻击">SQL注入攻击</h5>
+<p>mybatis 有两种参数的赋值方法。#{} 和 ${},其中#{}会将参数转换为字符串传递，而${}是原样输入，容易造成SQL注入攻击</p>
+
+<h5 id="过滤器拦截器">过滤器、拦截器</h5>
+<p>过滤器、拦截器及spring mvc 的分发器servlet的执行顺序</p>
+
+<p><img src="http://blog-1257627424.cos.ap-chengdu.myqcloud.com/springCloud%E5%AE%89%E5%85%A8/%E8%BF%87%E6%BB%A4%E5%99%A8%E6%8B%A6%E6%88%AA%E5%99%A8.png" alt="avatar" /></p>
+
+<p><img src="http://blog-1257627424.cos.ap-chengdu.myqcloud.com/springCloud%E5%AE%89%E5%85%A8/%E8%BF%87%E6%BB%A4%E5%99%A8%E6%8B%A6%E6%88%AA%E5%99%A802.png" alt="avatar" /></p>
+
+<p><img src="http://blog-1257627424.cos.ap-chengdu.myqcloud.com/springCloud%E5%AE%89%E5%85%A8/%E8%BF%87%E6%BB%A4%E5%99%A8%E6%8B%A6%E6%88%AA%E5%99%A803.png" alt="avatar" /></p>
+
+<h4 id="请求认证基础流程">请求认证基础流程</h4>
+<p><img src="http://blog-1257627424.cos.ap-chengdu.myqcloud.com/springCloud%E5%AE%89%E5%85%A8/%E6%B5%81%E7%A8%8B%E5%9B%BE.png" alt="avatar" /></p>
+
+<ul>
+  <li>流控 : 流量控制,保证系统可用。整个安全机制最前面</li>
+  <li>认证 : 校验用户是否存在</li>
+  <li>审计 : 统计请求信息,谁在什么时候干了什么事儿</li>
+  <li>授权 : 给登录的用户授权</li>
+</ul>
+
+<h5 id="常用验证">常用验证</h5>
+
+<p>Token验证</p>
+
+<p><img src="http://blog-1257627424.cos.ap-chengdu.myqcloud.com/springCloud%E5%AE%89%E5%85%A8/token%E7%99%BB%E5%BD%95.png" alt="avatar" /></p>
+
+<p>Cookie-Session验证</p>
+
+<p><img src="http://blog-1257627424.cos.ap-chengdu.myqcloud.com/springCloud%E5%AE%89%E5%85%A8/cookie-session%E7%99%BB%E5%BD%95.png" alt="avatar" /></p>
+
+<p>Session攻击
+<img src="http://blog-1257627424.cos.ap-chengdu.myqcloud.com/springCloud%E5%AE%89%E5%85%A8/session%E6%94%BB%E5%87%BB.png" alt="avatar" /></p>
+
+<p>Session攻击解决方法</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>// 每次登录的时候，都将对应Session设置为失效
+// 然后重新生成SessoinId，存储对应信息
+UserInfo info = userService.login(user);
+HttpSession session = request.getSession(false);
+if(session != null) {
+	session.invalidate();
+}
+request.getSession(true).setAttribute("user", info);
+</code></pre></div></div>
+
+<h5 id="流控---限流过滤器实现">流控 - 限流过滤器实现</h5>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">package</span> <span class="n">com</span><span class="p">.</span><span class="n">imooc</span><span class="p">.</span><span class="n">security</span><span class="p">.</span><span class="n">filter</span><span class="p">;</span>
+
+<span class="n">import</span> <span class="n">java</span><span class="p">.</span><span class="n">io</span><span class="p">.</span><span class="n">IOException</span><span class="p">;</span>
+
+<span class="n">import</span> <span class="n">javax</span><span class="p">.</span><span class="n">servlet</span><span class="p">.</span><span class="n">FilterChain</span><span class="p">;</span>
+<span class="n">import</span> <span class="n">javax</span><span class="p">.</span><span class="n">servlet</span><span class="p">.</span><span class="n">ServletException</span><span class="p">;</span>
+<span class="n">import</span> <span class="n">javax</span><span class="p">.</span><span class="n">servlet</span><span class="p">.</span><span class="n">http</span><span class="p">.</span><span class="n">HttpServletRequest</span><span class="p">;</span>
+<span class="n">import</span> <span class="n">javax</span><span class="p">.</span><span class="n">servlet</span><span class="p">.</span><span class="n">http</span><span class="p">.</span><span class="n">HttpServletResponse</span><span class="p">;</span>
+
+<span class="n">import</span> <span class="n">org</span><span class="p">.</span><span class="n">springframework</span><span class="p">.</span><span class="n">core</span><span class="p">.</span><span class="n">annotation</span><span class="p">.</span><span class="n">Order</span><span class="p">;</span>
+<span class="n">import</span> <span class="n">org</span><span class="p">.</span><span class="n">springframework</span><span class="p">.</span><span class="n">http</span><span class="p">.</span><span class="n">HttpStatus</span><span class="p">;</span>
+<span class="n">import</span> <span class="n">org</span><span class="p">.</span><span class="n">springframework</span><span class="p">.</span><span class="n">stereotype</span><span class="p">.</span><span class="n">Component</span><span class="p">;</span>
+<span class="n">import</span> <span class="n">org</span><span class="p">.</span><span class="n">springframework</span><span class="p">.</span><span class="n">web</span><span class="p">.</span><span class="n">filter</span><span class="p">.</span><span class="n">OncePerRequestFilter</span><span class="p">;</span>
+
+<span class="n">import</span> <span class="n">com</span><span class="p">.</span><span class="n">google</span><span class="p">.</span><span class="n">common</span><span class="p">.</span><span class="n">util</span><span class="p">.</span><span class="n">concurrent</span><span class="p">.</span><span class="n">RateLimiter</span><span class="p">;</span>
+
+<span class="p">@</span><span class="n">Component</span>
+<span class="p">//</span> <span class="err">注解</span><span class="p">@</span><span class="n">Order</span><span class="err">或者接口</span><span class="n">Ordered</span><span class="err">的作用是定义</span>
+<span class="p">//</span> <span class="n">Spring</span> <span class="n">IOC</span><span class="err">容器中</span><span class="n">Bean</span><span class="err">的执行顺序的优先级，而不是定义</span><span class="n">Bean</span><span class="err">的加载顺序，</span>
+<span class="p">//</span> <span class="n">Bean</span><span class="err">的加载顺序不受</span><span class="p">@</span><span class="n">Order</span><span class="err">或</span><span class="n">Ordered</span><span class="err">接口的影响</span>
+<span class="p">@</span><span class="n">Order</span><span class="p">(</span><span class="m">1</span><span class="p">)</span>
+<span class="p">//</span> <span class="n">OncePerRequestFilter</span>
+<span class="p">//</span> <span class="err">它能够确保在一次请求中只通过一次</span><span class="n">filter</span><span class="err">，而不需要重复执行</span>
+<span class="p">//</span> <span class="err">比如：</span>
+<span class="p">//</span> <span class="err">在</span><span class="n">servlet</span><span class="p">-</span><span class="m">2.3</span><span class="err">中，</span><span class="n">Filter</span><span class="err">会过滤一切请求，包括服务器内部使用</span><span class="n">forward</span><span class="err">转发请求</span>
+<span class="p">//</span> <span class="err">和</span><span class="p">&lt;%@</span> <span class="k">include</span> <span class="n">file</span><span class="p">=</span><span class="s2">"/index.jsp"</span><span class="p">%&gt;</span><span class="err">的情况。</span>
+<span class="p">//</span>
+<span class="p">//</span> <span class="err">到了</span><span class="n">servlet</span><span class="p">-</span><span class="m">2.4</span><span class="err">中</span><span class="n">Filter</span><span class="err">默认下只拦截外部提交的请求，</span><span class="n">forward</span><span class="err">和</span><span class="k">include</span>
+<span class="p">//</span> <span class="err">这些内部转发都不会被过滤，但是有时候我们需要</span> <span class="n">forward</span><span class="err">的时候也用到</span><span class="n">Filter</span>
+<span class="k">public</span> <span class="n">class</span> <span class="n">RateLimitFilter</span> <span class="n">extends</span> <span class="n">OncePerRequestFilter</span> <span class="p">{</span>
+
+	<span class="p">//</span> <span class="n">Google</span><span class="err">开源工具包</span><span class="n">Guava</span><span class="err">提供了限流工具类</span><span class="n">RateLimiter</span>
+	<span class="p">//</span> <span class="err">该类基于令牌桶算法</span><span class="p">(</span><span class="n">Token</span> <span class="n">Bucket</span><span class="p">)</span><span class="err">来完成限流</span>
+
+	<span class="p">//</span> <span class="err">参考</span>
+	<span class="p">//</span> <span class="n">https</span><span class="p">://</span><span class="n">www</span><span class="p">.</span><span class="n">jianshu</span><span class="p">.</span><span class="n">com</span><span class="p">/</span><span class="n">p</span><span class="p">/</span><span class="m">693031015940</span>
+	<span class="n">private</span> <span class="n">RateLimiter</span> <span class="n">rateLimiter</span> <span class="p">=</span> <span class="n">RateLimiter</span><span class="p">.</span><span class="nb">create</span><span class="p">(</span><span class="m">1</span><span class="p">);</span>
+
+	<span class="p">/*</span> <span class="p">(</span><span class="n">non</span><span class="p">-</span><span class="n">Javadoc</span><span class="p">)</span>
+	 <span class="p">*</span> <span class="p">@</span><span class="n">see</span> <span class="n">org</span><span class="p">.</span><span class="n">springframework</span><span class="p">.</span><span class="n">web</span><span class="p">.</span><span class="n">filter</span><span class="p">.</span><span class="n">OncePerRequestFilter</span><span class="p">#</span><span class="n">doFilterInternal</span><span class="p">(</span><span class="n">javax</span><span class="p">.</span><span class="n">servlet</span><span class="p">.</span><span class="n">http</span><span class="p">.</span><span class="n">HttpServletRequest</span><span class="p">,</span> <span class="n">javax</span><span class="p">.</span><span class="n">servlet</span><span class="p">.</span><span class="n">http</span><span class="p">.</span><span class="n">HttpServletResponse</span><span class="p">,</span> <span class="n">javax</span><span class="p">.</span><span class="n">servlet</span><span class="p">.</span><span class="n">FilterChain</span><span class="p">)</span>
+	 <span class="p">*/</span>
+	<span class="p">@</span><span class="n">Override</span>
+	<span class="n">protected</span> <span class="n">void</span> <span class="n">doFilterInternal</span><span class="p">(</span><span class="n">HttpServletRequest</span> <span class="n">request</span><span class="p">,</span> <span class="n">HttpServletResponse</span> <span class="n">response</span><span class="p">,</span> <span class="n">FilterChain</span> <span class="n">filterChain</span><span class="p">)</span>
+			<span class="n">throws</span> <span class="n">ServletException</span><span class="p">,</span> <span class="n">IOException</span> <span class="p">{</span>
+
+		<span class="nf">System</span><span class="p">.</span><span class="n">out</span><span class="p">.</span><span class="n">println</span><span class="p">(</span><span class="m">1</span><span class="p">);</span>
+
+		<span class="k">if</span><span class="p">(</span><span class="n">rateLimiter</span><span class="p">.</span><span class="n">tryAcquire</span><span class="p">())</span> <span class="p">{</span>
+			<span class="n">filterChain</span><span class="p">.</span><span class="n">doFilter</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">response</span><span class="p">);</span>
+		<span class="p">}</span><span class="k">else</span> <span class="p">{</span>
+			<span class="n">response</span><span class="p">.</span><span class="n">setStatus</span><span class="p">(</span><span class="n">HttpStatus</span><span class="p">.</span><span class="n">TOO_MANY_REQUESTS</span><span class="p">.</span><span class="n">value</span><span class="p">());</span>
+			<span class="n">response</span><span class="p">.</span><span class="n">getWriter</span><span class="p">().</span><span class="nb">write</span><span class="p">(</span><span class="s2">"too many request!!!"</span><span class="p">);</span>
+			<span class="n">response</span><span class="p">.</span><span class="n">getWriter</span><span class="p">().</span><span class="n">flush</span><span class="p">();</span>
+			<span class="n">return</span><span class="p">;</span>
+		<span class="p">}</span>
+
+	<span class="p">}</span>
+
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h5 id="拦截器实现">拦截器实现</h5>
+
+<p>继承HandlerInterceptorAdapter类，实现preHandle方法</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>// 不用复写postHandle,这个方法是在请求结束的时候执行的
+@Component
+public class AclInterceptor extends HandlerInterceptorAdapter {
+
+	private String[] permitUrls = new String[] {"/users/login"};
+
+	@Override
+	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
+			throws Exception {
+
+		System.out.println(4);
+
+		boolean result = true;
+
+		if(!ArrayUtils.contains(permitUrls, request.getRequestURI())) {
+
+			UserInfo user = (UserInfo) request.getSession().getAttribute("user");
+
+			if(user == null) {
+				response.setContentType("text/plain");
+				response.getWriter().write("need authentication");
+				response.setStatus(HttpStatus.UNAUTHORIZED.value());
+				result = false;
+			}else {
+
+				String method = request.getMethod();
+
+				if(!user.hasPermission(method)) {
+					response.setContentType("text/plain");
+					response.getWriter().write("forbidden");
+					response.setStatus(HttpStatus.FORBIDDEN.value());
+					result = false;
+				}
+			}
+		}
+		return result;
+	}
+}
+</code></pre></div></div>
+
+<p>若有多个拦截器，需要配置拦截器的顺序</p>
+
+<ol>
+  <li>实现WebMvcConfigurer类</li>
+  <li>复写addInterceptors方法</li>
+</ol>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@Configuration
+// 审计功能使用
+@EnableJpaAuditing
+public class SecurityConfig implements WebMvcConfigurer {
+
+	@Autowired
+	private AuditLogInterceptor auditLogInterceptor;
+
+	@Autowired
+	private AclInterceptor aclInterceptor;
+
+	@Override
+	public void addInterceptors(InterceptorRegistry registry) {
+		registry.addInterceptor(auditLogInterceptor);
+		registry.addInterceptor(aclInterceptor);
+	}
+
+	// 审计功能使用
+	@Bean
+	public AuditorAware&lt;String&gt; auditorAware() {
+		return new AuditorAware&lt;String&gt;() {
+			@Override
+			public Optional&lt;String&gt; getCurrentAuditor() {
+				ServletRequestAttributes servletRequestAttributes = (ServletRequestAttributes)RequestContextHolder.getRequestAttributes();
+				UserInfo info = (UserInfo)servletRequestAttributes.getRequest().getSession().getAttribute("user");
+				String username = null;
+				if(info != null) {
+					username = info.getUsername();
+				}
+				return Optional.ofNullable(username);
+			}};
+	}
+
+}
+</code></pre></div></div>
+
+<p>全局异常检验</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@RestControllerAdvice
+@Slf4j
+public class ErrorHandler {
+
+	// 抛出异常的时候指定校验返回码为500
+	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+	@ExceptionHandler(Exception.class)
+	public Map&lt;String, Object&gt; handle(Exception ex){
+		log.error("system error", ex);
+		Map&lt;String, Object&gt; info = new HashMap&lt;&gt;();
+		info.put("message", ex.getMessage());
+		info.put("time", new Date().getTime());
+		return info;
+	}
+
+
+}
+</code></pre></div></div>
+:ET

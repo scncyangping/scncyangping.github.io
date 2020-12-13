@@ -1,0 +1,197 @@
+I"e<h3 id="线段树">线段树</h3>
+
+<h6 id="平衡树">平衡树</h6>
+
+<p>平衡树，即平衡二叉树（Balanced Binary Tree），具有以下性质：它是一棵空树或它的左右两个子树的高度差的绝对值不超过1，并且左右两个子树都是一棵平衡二叉树。
+平衡二叉树的常用算法有红黑树、AVL、Treap、伸展树、SBT等</p>
+
+<p>线段树不是一个完全二叉树，但是是一颗平衡二叉树，如果把最下层空节点看成空的节点，那么它也是一颗满二叉树。</p>
+
+<p>对于一颗满二叉树来说有以下特点</p>
+<ul>
+  <li>h层，一共有2^h - 1个节点(大约是2^h)</li>
+  <li>最后一层 h-1层，有2^(h-1)个节点</li>
+  <li>最后一层的节点数大致等于前面所有层节点之和</li>
+</ul>
+
+<p>若我们想用一个数组去存储线段数，如果区间有n个元素，那么，如果线段树的节点数量n是2的整数倍，因为最后一层的节点数等于最后一层节点数减1，所以，就需要2n的数组空间才能存储下来，在最坏的情况下，如果n的数量为基数，那么就需要新加一层才能存储下来，所以需要4n的空间。</p>
+
+<p>我们的线段树不考虑添加元素，即区间固定，使用4n的静态空间即可。会存在浪费</p>
+
+<p>对于给定的区间支持相应的两种操作</p>
+
+<ul>
+  <li>更新: 更新区间种的一个元素或者一个区间的值</li>
+  <li>查询一个区间[i,j]的最大值，最小值或者区间数字和</li>
+</ul>
+
+<p>不考虑添加元素和删除元素</p>
+
+<h4 id="实现">实现</h4>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">/*</span>
+<span class="p">@</span><span class="n">date</span> <span class="p">:</span> <span class="m">2019</span><span class="p">/</span><span class="m">09</span><span class="p">/</span><span class="m">11</span>
+<span class="p">@</span><span class="n">author</span> <span class="p">:</span> <span class="n">YaPi</span>
+<span class="p">@</span><span class="n">desc</span> <span class="p">:</span>
+<span class="p">*/</span>
+<span class="k">package</span> <span class="n">tree</span>
+
+<span class="n">import</span> <span class="s2">"dtSt/common"</span>
+
+<span class="n">type</span> <span class="n">Segment</span> <span class="n">interface</span> <span class="p">{</span>
+	<span class="p">//</span> <span class="err">输入两个节点</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="err">，根据业务需求返回合适的节点，如：</span>
+	<span class="p">//</span> <span class="err">若线段树是用于存储一段区间的最大值，那么就应该返回阿</span><span class="n">a</span> <span class="err">和</span> <span class="n">b</span><span class="err">中的最大值</span>
+	<span class="p">//</span> <span class="err">若线段树是用于存储一段区间的最小值，那么就应该返回阿</span><span class="n">a</span> <span class="err">和</span> <span class="n">b</span><span class="err">中的最小值</span>
+	<span class="p">//</span> <span class="err">根据具体的结果返回</span>
+	<span class="n">Merge</span><span class="p">(</span><span class="n">b</span> <span class="n">Segment</span><span class="p">)</span><span class="n">Segment</span>
+	<span class="k">String</span><span class="p">()</span><span class="k">string</span>
+<span class="p">}</span>
+
+
+<span class="n">type</span> <span class="n">SegmentTree</span> <span class="n">struct</span> <span class="p">{</span>
+	<span class="n">data</span>		<span class="p">[]</span><span class="n">common</span><span class="p">.</span><span class="n">Segment</span>
+	<span class="n">tree</span> 		<span class="p">[]</span><span class="n">common</span><span class="p">.</span><span class="n">Segment</span>
+<span class="p">}</span>
+
+<span class="n">func</span> <span class="p">(</span><span class="n">s</span> <span class="p">*</span><span class="n">SegmentTree</span><span class="p">)</span> <span class="k">String</span><span class="p">()</span> <span class="k">string</span> <span class="p">{</span>
+	<span class="n">ss</span> <span class="p">:=</span> <span class="s2">"[ "</span>
+	<span class="n">for</span> <span class="n">_</span><span class="p">,</span><span class="n">v</span> <span class="p">:=</span> <span class="k">range</span> <span class="n">s</span><span class="p">.</span><span class="n">tree</span><span class="p">{</span>
+		<span class="k">if</span> <span class="n">v</span> <span class="c1">!= nil {
+</span>			<span class="n">ss</span> <span class="p">+=</span> <span class="s2">" "</span><span class="p">+</span> <span class="n">v</span><span class="p">.</span><span class="k">String</span><span class="p">()</span>
+		<span class="p">}</span>
+	<span class="p">}</span>
+	<span class="n">ss</span> <span class="p">+=</span> <span class="s2">" ]"</span>
+	<span class="n">return</span> <span class="n">ss</span>
+<span class="p">}</span>
+
+<span class="n">func</span> <span class="n">NewSegmentTree</span><span class="p">(</span><span class="n">d</span> <span class="p">[]</span><span class="n">common</span><span class="p">.</span><span class="n">Segment</span><span class="p">)</span> <span class="p">*</span><span class="n">SegmentTree</span> <span class="p">{</span>
+	<span class="p">//</span> <span class="err">需要</span> <span class="m">4</span><span class="n">n</span><span class="err">的元素才能存储完长度为</span><span class="n">len</span><span class="err">的数组所生成的线段树</span>
+	<span class="n">tre</span> <span class="p">:=</span> <span class="p">&amp;</span><span class="n">SegmentTree</span><span class="p">{</span>
+		<span class="n">data</span><span class="p">:</span> <span class="n">d</span><span class="p">,</span>
+		<span class="n">tree</span><span class="p">:</span> <span class="n">make</span><span class="p">([]</span><span class="n">common</span><span class="p">.</span><span class="n">Segment</span><span class="p">,</span><span class="n">len</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="p">*</span> <span class="m">4</span><span class="p">)}</span>
+
+	<span class="n">tre</span><span class="p">.</span><span class="n">buildSegmentTree</span><span class="p">(</span><span class="m">0</span><span class="p">,</span><span class="m">0</span><span class="p">,</span><span class="n">len</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="p">-</span> <span class="m">1</span><span class="p">)</span>
+	<span class="n">return</span> <span class="n">tre</span>
+<span class="p">}</span>
+
+<span class="n">func</span> <span class="p">(</span><span class="n">s</span> <span class="p">*</span><span class="n">SegmentTree</span><span class="p">)</span><span class="n">IsEmpty</span><span class="p">()</span><span class="n">bool</span><span class="p">{</span>
+	<span class="n">return</span> <span class="n">len</span><span class="p">(</span><span class="n">s</span><span class="p">.</span><span class="n">data</span><span class="p">)</span> <span class="p">==</span> <span class="m">0</span>
+<span class="p">}</span>
+
+<span class="n">func</span> <span class="p">(</span><span class="n">s</span> <span class="p">*</span><span class="n">SegmentTree</span><span class="p">)</span><span class="nf">GetSize</span><span class="p">()</span><span class="n">int</span><span class="p">{</span>
+	<span class="n">return</span> <span class="n">len</span><span class="p">(</span><span class="n">s</span><span class="p">.</span><span class="n">data</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="n">func</span> <span class="p">(</span><span class="n">s</span> <span class="p">*</span><span class="n">SegmentTree</span><span class="p">)</span><span class="n">Get</span><span class="p">(</span><span class="n">index</span> <span class="n">int</span><span class="p">)</span><span class="n">common</span><span class="p">.</span><span class="n">Segment</span><span class="p">{</span>
+	<span class="k">if</span> <span class="n">index</span> <span class="p">&lt;</span> <span class="m">0</span> <span class="p">||</span> <span class="n">index</span> <span class="p">&gt;=</span> <span class="n">len</span><span class="p">(</span><span class="n">s</span><span class="p">.</span><span class="n">data</span><span class="p">){</span>
+		<span class="n">return</span> <span class="n">nil</span>
+	<span class="p">}</span>
+	<span class="n">return</span> <span class="n">s</span><span class="p">.</span><span class="n">data</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+<span class="p">}</span>
+
+<span class="p">//</span> <span class="err">数组从</span><span class="m">0</span><span class="err">开始</span>
+<span class="p">//</span> <span class="err">父亲节点对应数组下标</span>
+<span class="n">func</span> <span class="n">parent</span><span class="p">(</span><span class="n">n</span> <span class="n">int</span><span class="p">)</span><span class="n">int</span>  <span class="p">{</span>
+	<span class="k">if</span> <span class="n">n</span> <span class="p">==</span> <span class="m">0</span><span class="p">{</span>
+		<span class="n">return</span> <span class="n">n</span>
+	<span class="p">}</span>
+	<span class="n">return</span> <span class="p">(</span><span class="n">n</span><span class="p">-</span><span class="m">1</span><span class="p">)/</span><span class="m">2</span>
+<span class="p">}</span>
+<span class="p">//</span> <span class="err">左孩子节点对应数组下标</span>
+<span class="n">func</span> <span class="n">leftChild</span><span class="p">(</span><span class="n">n</span> <span class="n">int</span><span class="p">)</span><span class="n">int</span><span class="p">{</span>
+	<span class="n">return</span> <span class="m">2</span> <span class="p">*</span> <span class="n">n</span> <span class="p">+</span><span class="m">1</span>
+<span class="p">}</span>
+<span class="p">//</span> <span class="err">右孩子节点对应数组下标</span>
+<span class="n">func</span> <span class="n">rightChild</span><span class="p">(</span><span class="n">n</span> <span class="n">int</span><span class="p">)</span><span class="n">int</span><span class="p">{</span>
+	<span class="n">return</span> <span class="m">2</span> <span class="p">*</span> <span class="n">n</span> <span class="p">+</span><span class="m">2</span>
+<span class="p">}</span>
+
+<span class="p">//</span> <span class="err">构建线段树</span>
+<span class="p">//</span> <span class="err">在位置为</span><span class="n">i</span><span class="err">的地方构建区间为</span><span class="p">[</span><span class="n">l</span><span class="p">,</span><span class="n">r</span><span class="p">]</span><span class="err">的线段树</span>
+<span class="n">func</span> <span class="p">(</span><span class="n">s</span> <span class="p">*</span><span class="n">SegmentTree</span><span class="p">)</span><span class="n">buildSegmentTree</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">l</span><span class="p">,</span><span class="n">r</span> <span class="n">int</span><span class="p">)</span>  <span class="p">{</span>
+	<span class="p">//</span> <span class="err">说明已经不能再分了，就是一个单元素了</span>
+	<span class="k">if</span> <span class="n">l</span> <span class="p">==</span> <span class="n">r</span><span class="p">{</span>
+		<span class="n">s</span><span class="p">.</span><span class="n">tree</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="p">=</span> <span class="n">s</span><span class="p">.</span><span class="n">data</span><span class="p">[</span><span class="n">l</span><span class="p">]</span>
+		<span class="n">return</span>
+	<span class="p">}</span>
+	<span class="n">leftTressIndex</span> <span class="p">:=</span> <span class="n">leftChild</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+	<span class="n">rightTreeIndex</span> <span class="p">:=</span> <span class="n">rightChild</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+	<span class="p">//</span> <span class="err">不使用</span> <span class="p">(</span><span class="n">l</span> <span class="p">+</span> <span class="n">r</span><span class="p">)</span> <span class="p">/</span><span class="m">2</span> <span class="err">避免越界</span>
+	<span class="n">mid</span> <span class="p">:=</span> <span class="n">l</span> <span class="p">+</span> <span class="p">(</span><span class="n">r</span><span class="p">-</span><span class="n">l</span><span class="p">)</span> <span class="p">/</span> <span class="m">2</span>
+	<span class="n">s</span><span class="p">.</span><span class="n">buildSegmentTree</span><span class="p">(</span><span class="n">leftTressIndex</span><span class="p">,</span><span class="n">l</span><span class="p">,</span><span class="n">mid</span><span class="p">)</span>
+	<span class="n">s</span><span class="p">.</span><span class="n">buildSegmentTree</span><span class="p">(</span><span class="n">rightTreeIndex</span><span class="p">,</span><span class="n">mid</span><span class="p">+</span><span class="m">1</span><span class="p">,</span><span class="n">r</span><span class="p">)</span>
+
+	<span class="n">s</span><span class="p">.</span><span class="n">tree</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="p">=</span> <span class="n">s</span><span class="p">.</span><span class="n">tree</span><span class="p">[</span><span class="n">leftTressIndex</span><span class="p">].</span><span class="n">Merge</span><span class="p">(</span><span class="n">s</span><span class="p">.</span><span class="n">tree</span><span class="p">[</span><span class="n">rightTreeIndex</span><span class="p">])</span>
+<span class="p">}</span>
+
+<span class="n">func</span> <span class="p">(</span><span class="n">s</span> <span class="p">*</span><span class="n">SegmentTree</span><span class="p">)</span><span class="n">query</span><span class="p">(</span><span class="n">queryL</span><span class="p">,</span><span class="n">queryR</span> <span class="n">int</span><span class="p">)</span><span class="n">common</span><span class="p">.</span><span class="n">Segment</span>  <span class="p">{</span>
+	<span class="k">if</span> <span class="n">queryL</span> <span class="p">&lt;</span> <span class="m">0</span> <span class="p">||</span> <span class="n">queryR</span> <span class="p">&lt;</span> <span class="m">0</span> <span class="p">||</span> <span class="n">queryL</span> <span class="p">&gt;=</span><span class="n">len</span><span class="p">(</span><span class="n">s</span><span class="p">.</span><span class="n">data</span><span class="p">)</span> <span class="p">||</span> <span class="n">queryR</span> <span class="p">&gt;=</span> <span class="n">len</span><span class="p">(</span><span class="n">s</span><span class="p">.</span><span class="n">data</span><span class="p">){</span>
+		<span class="n">return</span> <span class="n">nil</span>
+	<span class="p">}</span>
+
+	<span class="n">return</span> <span class="n">s</span><span class="p">.</span><span class="n">queryInTree</span><span class="p">(</span><span class="m">0</span><span class="p">,</span><span class="m">0</span><span class="p">,</span><span class="n">len</span><span class="p">(</span><span class="n">s</span><span class="p">.</span><span class="n">data</span><span class="p">)-</span><span class="m">1</span><span class="p">,</span><span class="n">queryL</span><span class="p">,</span><span class="n">queryR</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="p">//</span> <span class="err">在以</span><span class="n">treeIndex</span><span class="err">为根的，范围为</span><span class="n">l</span><span class="err">到</span><span class="n">r</span><span class="err">的线段树中查找区间为</span><span class="n">queryL</span><span class="p">,</span><span class="err">到</span><span class="n">queryR</span><span class="err">的数据</span>
+<span class="n">func</span> <span class="p">(</span><span class="n">s</span> <span class="p">*</span><span class="n">SegmentTree</span><span class="p">)</span><span class="n">queryInTree</span><span class="p">(</span><span class="n">treeIndex</span><span class="p">,</span><span class="n">l</span><span class="p">,</span><span class="n">r</span><span class="p">,</span><span class="n">queryL</span><span class="p">,</span><span class="n">queryR</span> <span class="n">int</span><span class="p">)</span><span class="n">common</span><span class="p">.</span><span class="n">Segment</span>  <span class="p">{</span>
+	<span class="k">if</span> <span class="n">l</span> <span class="p">==</span> <span class="n">queryL</span> <span class="p">&amp;&amp;</span> <span class="n">r</span> <span class="p">==</span> <span class="n">queryR</span><span class="p">{</span>
+		<span class="n">return</span> <span class="n">s</span><span class="p">.</span><span class="n">tree</span><span class="p">[</span><span class="n">treeIndex</span><span class="p">]</span>
+	<span class="p">}</span>
+	<span class="n">mid</span> <span class="p">:=</span> <span class="n">l</span> <span class="p">+</span> <span class="p">(</span><span class="n">r</span> <span class="p">-</span><span class="n">l</span><span class="p">)/</span><span class="m">2</span>
+	<span class="n">leftTressIndex</span> <span class="p">:=</span> <span class="n">leftChild</span><span class="p">(</span><span class="n">treeIndex</span><span class="p">)</span>
+	<span class="n">rightTreeIndex</span> <span class="p">:=</span> <span class="n">rightChild</span><span class="p">(</span><span class="n">treeIndex</span><span class="p">)</span>
+
+	<span class="p">//</span> <span class="err">需要查找的和左子树没关系</span>
+	<span class="k">if</span> <span class="n">queryL</span> <span class="p">&gt;=</span> <span class="n">mid</span> <span class="p">+</span><span class="m">1</span> <span class="p">{</span>
+		<span class="n">return</span> <span class="n">s</span><span class="p">.</span><span class="n">queryInTree</span><span class="p">(</span><span class="n">rightTreeIndex</span><span class="p">,</span><span class="n">mid</span> <span class="p">+</span> <span class="m">1</span><span class="p">,</span><span class="n">r</span><span class="p">,</span><span class="n">queryL</span><span class="p">,</span><span class="n">queryR</span><span class="p">)</span>
+	<span class="p">}</span><span class="k">else</span> <span class="k">if</span> <span class="n">queryR</span> <span class="p">&lt;=</span> <span class="n">mid</span> <span class="p">{</span>
+		<span class="p">//</span> <span class="err">右子树没关系</span> <span class="err">在左孩子中查找</span>
+		<span class="n">return</span> <span class="n">s</span><span class="p">.</span><span class="n">queryInTree</span><span class="p">(</span><span class="n">leftTressIndex</span><span class="p">,</span><span class="n">l</span><span class="p">,</span><span class="n">mid</span><span class="p">,</span><span class="n">queryL</span><span class="p">,</span><span class="n">queryR</span><span class="p">)</span>
+	<span class="p">}</span><span class="k">else</span> <span class="p">{</span>
+		<span class="p">//</span> <span class="err">意味着所关注的区间一部分在左孩子，一部分在右孩子</span>
+
+		<span class="n">leftResult</span> <span class="p">:=</span> <span class="n">s</span><span class="p">.</span><span class="n">queryInTree</span><span class="p">(</span><span class="n">leftTressIndex</span><span class="p">,</span><span class="n">l</span><span class="p">,</span><span class="n">mid</span><span class="p">,</span><span class="n">queryL</span><span class="p">,</span><span class="n">mid</span><span class="p">)</span>
+
+		<span class="n">rightResult</span> <span class="p">:=</span> <span class="n">s</span><span class="p">.</span><span class="n">queryInTree</span><span class="p">(</span><span class="n">rightTreeIndex</span><span class="p">,</span><span class="n">mid</span><span class="p">+</span><span class="m">1</span><span class="p">,</span><span class="n">r</span><span class="p">,</span><span class="n">mid</span><span class="p">+</span><span class="m">1</span><span class="p">,</span><span class="n">queryR</span><span class="p">)</span>
+
+		<span class="n">return</span> <span class="n">leftResult</span><span class="p">.</span><span class="n">Merge</span><span class="p">(</span><span class="n">rightResult</span><span class="p">)</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+
+<span class="n">func</span> <span class="p">(</span><span class="n">s</span> <span class="p">*</span><span class="n">SegmentTree</span><span class="p">)</span><span class="k">Set</span><span class="p">(</span><span class="n">index</span> <span class="n">int</span><span class="p">,</span><span class="n">e</span> <span class="n">common</span><span class="p">.</span><span class="n">Segment</span><span class="p">)</span>  <span class="p">{</span>
+
+	<span class="k">if</span> <span class="n">index</span> <span class="p">&lt;</span><span class="m">0</span> <span class="p">||</span> <span class="n">index</span> <span class="p">&gt;=</span> <span class="n">len</span><span class="p">(</span><span class="n">s</span><span class="p">.</span><span class="n">data</span><span class="p">){</span>
+		<span class="n">return</span>
+	<span class="p">}</span>
+	<span class="n">s</span><span class="p">.</span><span class="k">set</span><span class="p">(</span><span class="m">0</span><span class="p">,</span><span class="m">0</span><span class="p">,</span> <span class="n">len</span><span class="p">(</span><span class="n">s</span><span class="p">.</span><span class="n">data</span><span class="p">)-</span><span class="m">1</span><span class="p">,</span><span class="n">index</span><span class="p">,</span><span class="n">e</span><span class="p">)</span>
+<span class="p">}</span>
+
+
+<span class="n">func</span> <span class="p">(</span><span class="n">s</span> <span class="p">*</span><span class="n">SegmentTree</span><span class="p">)</span><span class="k">set</span><span class="p">(</span><span class="n">treeIndex</span><span class="p">,</span><span class="n">l</span><span class="p">,</span><span class="n">r</span><span class="p">,</span><span class="n">index</span> <span class="n">int</span><span class="p">,</span><span class="n">e</span> <span class="n">common</span><span class="p">.</span><span class="n">Segment</span><span class="p">)</span> <span class="p">{</span>
+	<span class="k">if</span> <span class="n">l</span> <span class="p">==</span> <span class="n">r</span> <span class="p">{</span>
+		<span class="n">s</span><span class="p">.</span><span class="n">tree</span><span class="p">[</span><span class="n">treeIndex</span><span class="p">]</span> <span class="p">=</span> <span class="n">e</span>
+		<span class="n">return</span>
+	<span class="p">}</span>
+	<span class="n">mid</span> <span class="p">:=</span> <span class="n">l</span> <span class="p">+</span> <span class="p">(</span><span class="n">r</span> <span class="p">-</span><span class="n">l</span><span class="p">)/</span><span class="m">2</span>
+
+	<span class="n">leftTreeIndex</span> <span class="p">:=</span> <span class="n">leftChild</span><span class="p">(</span><span class="n">treeIndex</span><span class="p">)</span>
+	<span class="n">rightTreeIndex</span> <span class="p">:=</span> <span class="n">rightChild</span><span class="p">(</span><span class="n">treeIndex</span><span class="p">)</span>
+	<span class="k">if</span> <span class="n">index</span> <span class="p">&gt;=</span> <span class="n">mid</span> <span class="p">+</span><span class="m">1</span> <span class="p">{</span>
+		<span class="n">s</span><span class="p">.</span><span class="k">set</span><span class="p">(</span><span class="n">rightTreeIndex</span><span class="p">,</span><span class="n">mid</span> <span class="p">+</span> <span class="m">1</span><span class="p">,</span><span class="n">r</span><span class="p">,</span><span class="n">index</span><span class="p">,</span><span class="n">e</span><span class="p">)</span>
+	<span class="p">}</span><span class="k">else</span> <span class="p">{</span>
+		<span class="n">s</span><span class="p">.</span><span class="k">set</span><span class="p">(</span><span class="n">leftTreeIndex</span><span class="p">,</span><span class="n">l</span><span class="p">,</span><span class="n">mid</span><span class="p">,</span><span class="n">index</span><span class="p">,</span><span class="n">e</span><span class="p">)</span>
+	<span class="p">}</span>
+	<span class="n">s</span><span class="p">.</span><span class="n">tree</span><span class="p">[</span><span class="n">treeIndex</span><span class="p">]</span> <span class="p">=</span> <span class="n">s</span><span class="p">.</span><span class="n">tree</span><span class="p">[</span><span class="n">leftTreeIndex</span><span class="p">].</span><span class="n">Merge</span><span class="p">(</span><span class="n">s</span><span class="p">.</span><span class="n">tree</span><span class="p">[</span><span class="n">rightTreeIndex</span><span class="p">])</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+<h5 id="经典题目-区间染色">经典题目 区间染色</h5>
+
+<p>有一面墙，长度为n，每次选择一段儿墙进行染色，每一次染色过后，可以覆盖染色，在m次操作过后，我们可以看见多少种颜色？m次操作过后，我们可以在[i,j]这段种有多少种颜色</p>
+
+<p>若使用数组，在某一段之间染色，将对应数组设置为对应颜色，那么染色，和查询的时间复杂度都是O(n)</p>
+
+<h5 id="经典题目-区间查询">经典题目 区间查询</h5>
+
+<p>查询一个区间[i,j]的最大值、最小值、和等。</p>
+:ET

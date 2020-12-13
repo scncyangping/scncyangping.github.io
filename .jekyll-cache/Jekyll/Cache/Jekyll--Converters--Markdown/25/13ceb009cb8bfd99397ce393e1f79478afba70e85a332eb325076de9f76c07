@@ -1,0 +1,61 @@
+I"�<h3 id="oauth协议4中授权模型">OAuth协议4中授权模型</h3>
+
+<h4 id="resource-owner-password">Resource owner password</h4>
+
+<ol>
+  <li>用户提供用户名和密码给客户端应用</li>
+  <li>客户端应用使用用户提供的用户名密码和自己应用的ClientId和ClientSecreet来请求令牌</li>
+  <li>授权服务器校验用户身份和客户端应用省份，并返回令牌和刷新令牌</li>
+  <li>客户端应用运用令牌获取用户信息</li>
+</ol>
+
+<p>这种方式适用的场景，比如APP,这种方式app是比较安全的，app是自己的，所以比较安全。但是不适合在Web下运用。</p>
+
+<p>这种方式的话，用户的密码可能会在客户端应用暴露。</p>
+
+<h4 id="authorization-code-grant-授权码">Authorization code grant 授权码</h4>
+
+<p>一般来说，客户端应用有两个部分。一个是浏览器，一个是前端服务器。前端服务器一般用来放客户端应用的ClientId和ClientSecret。这是最安全的一种模式</p>
+
+<ol>
+  <li>用户在浏览器发起访问</li>
+  <li>客户端应用引导用户去授权服务器进行认证</li>
+  <li>用户在授权服务器填写用户名密码</li>
+  <li>验证成功，授权服务器发送授权码给客户端应用</li>
+  <li>客户端应用运用授权码和自身ClientId等信息获取令牌</li>
+  <li>授权服务返回令牌和刷新令牌</li>
+</ol>
+
+<h4 id="implicit">implicit</h4>
+<p>有的客户端应用是没有服务器的，就只有浏览器。这种方式的话，和上述方式比起来就没有根据授权码获取令牌的过程了，但是这种方式一般都不用，不安全</p>
+
+<h4 id="client-credentials">Client credentials</h4>
+<p>客户端应用直接用clientId和clientSecret去授权服务器授权，这种方式没有用户信息，一般没用。</p>
+
+<h3 id="授权流程">授权流程</h3>
+
+<h4 id="引导授权">引导授权</h4>
+<p>用户在客户端应用进行登录，客户端应用引导用户到授权服务进行登录验证(点击微信登录，跳转到认证页面)</p>
+
+<p>http://xxxx/oauth/authorize?client_id=admin&amp;redirect_uri=’跳转地址’+reponse_type=code&amp;state=原样返回</p>
+
+<h4 id="应用服务器">应用服务器</h4>
+<p>认证服务器根据跳转地址，跳转到对应应用服务器。应用服务器获取到code过后，加上自己的clientId和clientSecret调用认证服务器获取token的接口，获得token及refresh_token。Spring OAuth 中认证服务器会将token放在自己得session和数据库里。</p>
+
+<p>这里，对于token的处理，可以将token存放在应用服务器的服务端上，通过session，或者cookie，再前端浏览器调用相关接口的时候，带上token访问网关，从而访问指定应用。也可以直接返回到前端，前端访问网关的时候带上相关的token。这里不同的方式有其优点与缺点。</p>
+
+<ul>
+  <li>基于session</li>
+</ul>
+
+<ol>
+  <li>安全，可控，跨域</li>
+  <li>复杂度高，性能低，占用服务器资源</li>
+  <li>适用于百万用户以下和内部管理系统</li>
+</ol>
+
+<h4 id="集群session控制">集群Session控制</h4>
+
+<p>使用Spring session 进行改造，将多个认证服务器中的session进行共享。
+Spring Session提供了多种方式，包含jdbc和redis等。</p>
+:ET

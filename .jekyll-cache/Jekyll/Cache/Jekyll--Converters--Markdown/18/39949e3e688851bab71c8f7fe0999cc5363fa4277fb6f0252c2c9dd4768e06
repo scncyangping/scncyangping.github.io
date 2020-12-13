@@ -1,0 +1,548 @@
+I"X_<h3 id="栈">栈</h3>
+
+<h4 id="基础特点">基础特点</h4>
+
+<ul>
+  <li>栈也是一种线性结构</li>
+  <li>相比数组，栈对应的操作是数组的子集</li>
+  <li>只能从一段添加元素，也只能从一段取出元素</li>
+  <li>添加(入栈)或取出(出栈)的那一段称之为栈顶</li>
+</ul>
+
+<p>后进先出 (Last In First Out) LIFO</p>
+
+<h4 id="栈的应用">栈的应用</h4>
+
+<ul>
+  <li>无处不在的Undo操作(撤销操作)</li>
+</ul>
+
+<p>操作系统或程序会将你的操作放进一个栈中。点击撤销的时候，将最后添加的操作出栈。</p>
+
+<ul>
+  <li>程序调用的系统栈</li>
+</ul>
+
+<p>在程序的运行过程中，去调用另外的程序。若有三个函数A、B、C。在A中运行B，B中运行C。执行过程开始，运行A，当运行到执行B的代码时,将A中此位置进行入栈。开始运行B，在B中运行到执行C的代码，将B中此位置进行入栈。开始运行C，当C运行完了过后，通过栈的数据结构，将B中运行C的位置的元素进行出栈，那么又回到了B，同理，继续向下执行，而后，又回到了A。这样，通过栈，就能让函数运行过后，跳转到上级调用函数。</p>
+
+<ul>
+  <li>括号匹配</li>
+</ul>
+
+<h3 id="队列-queue">队列 (Queue)</h3>
+
+<h4 id="特点">特点</h4>
+
+<ul>
+  <li>队列也是一种线性结构</li>
+  <li>相比数组，队列对应的操作是数组的子集</li>
+  <li>只能从一端(队尾)添加元素，只能从另一端(对首)取出元素</li>
+</ul>
+
+<p>先进先出(First In First Out) FIFO</p>
+
+<h4 id="实现方式">实现方式</h4>
+
+<h5 id="数组队列">数组队列</h5>
+
+<p>缺点: 出队的时间复杂度是O(n)的，这是因为删除队首，会将所有其他的元素都向前移动一个单位。</p>
+
+<h5 id="循环队列">循环队列</h5>
+
+<p>同样可以使用数组结构构成，但是需要维护两个变量，front和tail，分别代表对首和队尾的指针。并且，指针的位置是可以循环使用的，就比如这样一种情况:</p>
+
+<p>一个长度为8的数组，首先新建生成的时候，队首和队尾的指针都指向0,此时，front == tail,队列为空。当后续继续添加元素后，tail指向7，即此时数组的最后一个元素，此时，若队列已出队两次，则位置为 0 、1的空间是可以继续被使用的，那么，tail的指针就应该指向0</p>
+
+<p>这样就有两个特殊点：</p>
+
+<ul>
+  <li>front == tail 队列为空</li>
+  <li>(tail + 1) % c == front队列已满</li>
+</ul>
+
+<p>针对队列已满的情况，当循环到tail + 1等于front的时候，说明数组已经在循环使用了，此时，队列已满。第二种情况，当队首是0，队尾是末尾，此时队列还是已满，所有不是tail + 1等于front,而是 (tail + 1) % c == front代表队列已满。当满足(tail + 1) % c == front这种情况时，数组就需要扩容了。</p>
+
+<h4 id="队列实现-使用自定义数组">队列实现-使用自定义数组</h4>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">/*</span>
+<span class="p">@</span><span class="n">date</span> <span class="p">:</span> <span class="m">2019</span><span class="p">/</span><span class="m">09</span><span class="p">/</span><span class="m">06</span>
+<span class="p">@</span><span class="n">author</span> <span class="p">:</span> <span class="n">YaPi</span>
+<span class="p">@</span><span class="n">desc</span> <span class="p">:</span> <span class="err">使用自定义数组实现队列</span>
+<span class="p">*/</span>
+<span class="k">package</span> <span class="n">queue</span>
+
+<span class="n">import</span> <span class="s2">"dtSt/array"</span>
+
+<span class="n">type</span> <span class="n">arrayQueue</span> <span class="n">struct</span> <span class="p">{</span>
+	<span class="k">array</span> <span class="p">*</span><span class="k">array</span><span class="p">.</span><span class="n">SArray</span>
+<span class="p">}</span>
+
+<span class="n">func</span> <span class="p">(</span><span class="n">s</span> <span class="p">*</span><span class="n">arrayQueue</span><span class="p">)</span> <span class="k">String</span><span class="p">()</span> <span class="k">string</span> <span class="p">{</span>
+	<span class="n">return</span> <span class="n">s</span><span class="p">.</span><span class="k">array</span><span class="p">.</span><span class="k">String</span><span class="p">()</span>
+<span class="p">}</span>
+
+<span class="n">func</span> <span class="n">NewArrayQueue</span><span class="p">()</span> <span class="p">*</span><span class="n">arrayQueue</span> <span class="p">{</span>
+	<span class="n">return</span> <span class="p">&amp;</span><span class="n">arrayQueue</span><span class="p">{</span><span class="k">array</span><span class="p">:</span> <span class="k">array</span><span class="p">.</span><span class="n">NewSArray</span><span class="p">()}</span>
+<span class="p">}</span>
+
+<span class="n">func</span> <span class="p">(</span><span class="n">s</span> <span class="p">*</span><span class="n">arrayQueue</span><span class="p">)</span> <span class="n">Size</span><span class="p">()</span> <span class="n">int</span> <span class="p">{</span>
+	<span class="n">return</span> <span class="n">s</span><span class="p">.</span><span class="k">array</span><span class="p">.</span><span class="n">Size</span><span class="p">()</span>
+<span class="p">}</span>
+
+<span class="n">func</span> <span class="p">(</span><span class="n">s</span> <span class="p">*</span><span class="n">arrayQueue</span><span class="p">)</span> <span class="n">IsEmpty</span><span class="p">()</span> <span class="n">bool</span> <span class="p">{</span>
+	<span class="n">return</span> <span class="n">s</span><span class="p">.</span><span class="k">array</span><span class="p">.</span><span class="n">Size</span><span class="p">()</span> <span class="p">==</span> <span class="m">0</span>
+<span class="p">}</span>
+
+<span class="n">func</span> <span class="p">(</span><span class="n">s</span> <span class="p">*</span><span class="n">arrayQueue</span><span class="p">)</span> <span class="n">Enqueue</span><span class="p">(</span><span class="n">q</span> <span class="k">array</span><span class="p">.</span><span class="n">E</span><span class="p">)</span> <span class="p">{</span>
+	<span class="n">s</span><span class="p">.</span><span class="k">array</span><span class="p">.</span><span class="n">AddLast</span><span class="p">(</span><span class="n">q</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="n">func</span> <span class="p">(</span><span class="n">s</span> <span class="p">*</span><span class="n">arrayQueue</span><span class="p">)</span> <span class="n">Dequeue</span><span class="p">()</span> <span class="k">array</span><span class="p">.</span><span class="n">E</span> <span class="p">{</span>
+	<span class="n">return</span> <span class="n">s</span><span class="p">.</span><span class="k">array</span><span class="p">.</span><span class="n">RemoveFirst</span><span class="p">()</span>
+<span class="p">}</span>
+
+<span class="n">func</span> <span class="p">(</span><span class="n">s</span> <span class="p">*</span><span class="n">arrayQueue</span><span class="p">)</span> <span class="n">GetFront</span><span class="p">()</span><span class="k">array</span><span class="p">.</span><span class="n">E</span> <span class="p">{</span>
+	<span class="n">return</span> <span class="n">s</span><span class="p">.</span><span class="k">array</span><span class="p">.</span><span class="n">Get</span><span class="p">(</span><span class="m">0</span><span class="p">)</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+
+<p>测试</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">/*</span>
+<span class="p">@</span><span class="n">date</span> <span class="p">:</span> <span class="m">2019</span><span class="p">/</span><span class="m">09</span><span class="p">/</span><span class="m">06</span>
+<span class="p">@</span><span class="n">author</span> <span class="p">:</span> <span class="n">YaPi</span>
+<span class="p">@</span><span class="n">desc</span> <span class="p">:</span>
+<span class="p">*/</span>
+<span class="k">package</span> <span class="n">queue</span>
+
+<span class="n">import</span> <span class="p">(</span>
+	<span class="s2">"dtSt/array"</span>
+	<span class="s2">"fmt"</span>
+	<span class="s2">"math/rand"</span>
+	<span class="s2">"strconv"</span>
+	<span class="s2">"testing"</span>
+<span class="p">)</span>
+
+<span class="n">type</span> <span class="n">NewInt</span> <span class="n">int</span>
+
+<span class="n">func</span> <span class="p">(</span><span class="n">ee</span> <span class="n">NewInt</span><span class="p">)</span> <span class="k">String</span><span class="p">()</span> <span class="k">string</span> <span class="p">{</span>
+	<span class="n">return</span> <span class="n">strconv</span><span class="p">.</span><span class="n">Itoa</span><span class="p">(</span><span class="n">int</span><span class="p">(</span><span class="n">ee</span><span class="p">))</span>
+<span class="p">}</span>
+
+<span class="n">func</span> <span class="p">(</span><span class="n">ee</span> <span class="n">NewInt</span><span class="p">)</span> <span class="n">CompareTo</span><span class="p">(</span><span class="n">e</span> <span class="k">array</span><span class="p">.</span><span class="n">E</span><span class="p">)</span> <span class="n">int</span> <span class="p">{</span>
+
+	<span class="n">eeInt</span> <span class="p">:=</span> <span class="n">int</span><span class="p">(</span><span class="n">ee</span><span class="p">)</span>
+
+	<span class="n">eInt</span> <span class="p">:=</span> <span class="n">int</span><span class="p">(</span><span class="n">e</span><span class="p">.(</span><span class="n">NewInt</span><span class="p">))</span>
+
+	<span class="k">if</span> <span class="n">eeInt</span> <span class="p">&gt;</span> <span class="n">eInt</span> <span class="p">{</span>
+		<span class="n">return</span> <span class="m">1</span>
+	<span class="p">}</span><span class="k">else</span> <span class="k">if</span> <span class="n">eeInt</span> <span class="p">==</span> <span class="n">eInt</span><span class="p">{</span>
+		<span class="n">return</span> <span class="m">0</span>
+	<span class="p">}</span><span class="k">else</span> <span class="p">{</span>
+		<span class="n">return</span> <span class="p">-</span><span class="m">1</span>
+	<span class="p">}</span>
+	<span class="n">return</span> <span class="m">0</span>
+<span class="p">}</span>
+
+
+<span class="n">var</span> <span class="n">q</span> <span class="n">arrayQueue</span>
+
+<span class="n">func</span> <span class="n">init</span><span class="p">()</span>  <span class="p">{</span>
+	<span class="n">a</span> <span class="p">:=</span> <span class="k">array</span><span class="p">.</span><span class="n">NewSArray</span><span class="p">()</span>
+	<span class="n">for</span> <span class="n">i</span><span class="p">:=</span><span class="m">0</span><span class="p">;</span><span class="n">i</span><span class="p">&lt;</span><span class="m">5</span><span class="p">;</span><span class="n">i</span><span class="p">++{</span>
+		<span class="n">newInt</span> <span class="p">:=</span> <span class="n">NewInt</span><span class="p">(</span><span class="n">rand</span><span class="p">.</span><span class="n">Intn</span><span class="p">(</span><span class="m">100</span><span class="p">))</span>
+		<span class="n">a</span><span class="p">.</span><span class="n">Add</span><span class="p">(</span><span class="n">newInt</span><span class="p">)</span>
+	<span class="p">}</span>
+	<span class="n">q</span> <span class="p">:=</span> <span class="n">NewArrayQueue</span><span class="p">()</span>
+	<span class="n">q</span><span class="p">.</span><span class="k">array</span> <span class="p">=</span> <span class="n">a</span>
+<span class="p">}</span>
+
+<span class="n">func</span> <span class="n">TestArrayQueue</span><span class="p">(</span><span class="n">t</span> <span class="p">*</span><span class="n">testing</span><span class="p">.</span><span class="n">T</span><span class="p">)</span> <span class="p">{</span>
+	<span class="n">qq</span> <span class="p">:=</span> <span class="n">NewArrayQueue</span><span class="p">()</span>
+	<span class="n">qq</span><span class="p">.</span><span class="n">Enqueue</span><span class="p">(</span><span class="n">NewInt</span><span class="p">(</span><span class="m">1</span><span class="p">))</span>
+	<span class="n">qq</span><span class="p">.</span><span class="n">Enqueue</span><span class="p">(</span><span class="n">NewInt</span><span class="p">(</span><span class="m">2</span><span class="p">))</span>
+	<span class="n">qq</span><span class="p">.</span><span class="n">Enqueue</span><span class="p">(</span><span class="n">NewInt</span><span class="p">(</span><span class="m">3</span><span class="p">))</span>
+	<span class="n">qq</span><span class="p">.</span><span class="n">Enqueue</span><span class="p">(</span><span class="n">NewInt</span><span class="p">(</span><span class="m">4</span><span class="p">))</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">qq</span><span class="p">)</span>
+	<span class="n">qq</span><span class="p">.</span><span class="n">Dequeue</span><span class="p">()</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">qq</span><span class="p">)</span>
+	<span class="n">qq</span><span class="p">.</span><span class="n">Dequeue</span><span class="p">()</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">qq</span><span class="p">)</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">qq</span><span class="p">.</span><span class="n">Size</span><span class="p">())</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">qq</span><span class="p">.</span><span class="n">IsEmpty</span><span class="p">())</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">qq</span><span class="p">.</span><span class="n">GetFront</span><span class="p">())</span>
+<span class="p">}</span>
+
+
+<span class="err">输出：</span>
+<span class="err">数组长度</span> <span class="p">:</span> <span class="m">4</span> <span class="err">【</span> <span class="m">1</span>  <span class="m">2</span>  <span class="m">3</span>  <span class="m">4</span>   <span class="err">】</span>
+<span class="err">数组长度</span> <span class="p">:</span> <span class="m">3</span> <span class="err">【</span> <span class="m">2</span>  <span class="m">3</span>  <span class="m">4</span>   <span class="err">】</span>
+<span class="err">数组长度</span> <span class="p">:</span> <span class="m">2</span> <span class="err">【</span> <span class="m">3</span>  <span class="m">4</span>   <span class="err">】</span>
+<span class="m">2</span>
+<span class="nb">false</span>
+<span class="m">3</span>
+</code></pre></div></div>
+
+<h4 id="数组队列实现java">数组队列实现(JAVA)</h4>
+
+<h6 id="定义通用队列结构">定义通用队列结构</h6>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>public interface Queue&lt;E&gt; {
+
+    int getSize();
+    boolean isEmpty();
+    void enqueue(E e);
+    E dequeue();
+    E getFront();
+}
+</code></pre></div></div>
+
+<h6 id="定义自定义动态数组实现">定义自定义动态数组实现</h6>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+public class Array&lt;E&gt; {
+
+    private E[] data;
+    private int size;
+
+    // 构造函数，传入数组的容量capacity构造Array
+    public Array(int capacity){
+        data = (E[])new Object[capacity];
+        size = 0;
+    }
+
+    // 无参数的构造函数，默认数组的容量capacity=10
+    public Array(){
+        this(10);
+    }
+
+    // 获取数组的容量
+    public int getCapacity(){
+        return data.length;
+    }
+
+    // 获取数组中的元素个数
+    public int getSize(){
+        return size;
+    }
+
+    // 返回数组是否为空
+    public boolean isEmpty(){
+        return size == 0;
+    }
+
+    // 在index索引的位置插入一个新元素e
+    public void add(int index, E e){
+
+        if(index &lt; 0 || index &gt; size)
+            throw new IllegalArgumentException("Add failed. Require index &gt;= 0 and index &lt;= size.");
+
+        if(size == data.length)
+            resize(2 * data.length);
+
+        for(int i = size - 1; i &gt;= index ; i --)
+            data[i + 1] = data[i];
+
+        data[index] = e;
+
+        size ++;
+    }
+
+    // 向所有元素后添加一个新元素
+    public void addLast(E e){
+        add(size, e);
+    }
+
+    // 在所有元素前添加一个新元素
+    public void addFirst(E e){
+        add(0, e);
+    }
+
+    // 获取index索引位置的元素
+    public E get(int index){
+        if(index &lt; 0 || index &gt;= size)
+            throw new IllegalArgumentException("Get failed. Index is illegal.");
+        return data[index];
+    }
+
+    public E getLast(){
+        return get(size - 1);
+    }
+
+    public E getFirst(){
+        return get(0);
+    }
+
+    // 修改index索引位置的元素为e
+    public void set(int index, E e){
+        if(index &lt; 0 || index &gt;= size)
+            throw new IllegalArgumentException("Set failed. Index is illegal.");
+        data[index] = e;
+    }
+
+    // 查找数组中是否有元素e
+    public boolean contains(E e){
+        for(int i = 0 ; i &lt; size ; i ++){
+            if(data[i].equals(e))
+                return true;
+        }
+        return false;
+    }
+
+    // 查找数组中元素e所在的索引，如果不存在元素e，则返回-1
+    public int find(E e){
+        for(int i = 0 ; i &lt; size ; i ++){
+            if(data[i].equals(e))
+                return i;
+        }
+        return -1;
+    }
+
+    // 从数组中删除index位置的元素, 返回删除的元素
+    public E remove(int index){
+        if(index &lt; 0 || index &gt;= size)
+            throw new IllegalArgumentException("Remove failed. Index is illegal.");
+
+        E ret = data[index];
+        for(int i = index + 1 ; i &lt; size ; i ++)
+            data[i - 1] = data[i];
+        size --;
+        data[size] = null; // loitering objects != memory leak
+
+        if(size == data.length / 4 &amp;&amp; data.length / 2 != 0)
+            resize(data.length / 2);
+        return ret;
+    }
+
+    // 从数组中删除第一个元素, 返回删除的元素
+    public E removeFirst(){
+        return remove(0);
+    }
+
+    // 从数组中删除最后一个元素, 返回删除的元素
+    public E removeLast(){
+        return remove(size - 1);
+    }
+
+    // 从数组中删除元素e
+    public void removeElement(E e){
+        int index = find(e);
+        if(index != -1)
+            remove(index);
+    }
+
+    @Override
+    public String toString(){
+
+        StringBuilder res = new StringBuilder();
+        res.append(String.format("Array: size = %d , capacity = %d\n", size, data.length));
+        res.append('[');
+        for(int i = 0 ; i &lt; size ; i ++){
+            res.append(data[i]);
+            if(i != size - 1)
+                res.append(", ");
+        }
+        res.append(']');
+        return res.toString();
+    }
+
+    // 将数组空间的容量变成newCapacity大小
+    private void resize(int newCapacity){
+
+        E[] newData = (E[])new Object[newCapacity];
+        for(int i = 0 ; i &lt; size ; i ++)
+            newData[i] = data[i];
+        data = newData;
+    }
+}
+
+</code></pre></div></div>
+
+<h6 id="自定义数组队列实现">自定义数组队列实现</h6>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>public class ArrayQueue&lt;E&gt; implements Queue&lt;E&gt; {
+
+    private Array&lt;E&gt; array;
+
+    public ArrayQueue(int capacity){
+        array = new Array&lt;&gt;(capacity);
+    }
+
+    public ArrayQueue(){
+        array = new Array&lt;&gt;();
+    }
+
+    @Override
+    public int getSize(){
+        return array.getSize();
+    }
+
+    @Override
+    public boolean isEmpty(){
+        return array.isEmpty();
+    }
+
+    public int getCapacity(){
+        return array.getCapacity();
+    }
+
+    @Override
+    public void enqueue(E e){
+        array.addLast(e);
+    }
+
+    @Override
+    public E dequeue(){
+        return array.removeFirst();
+    }
+
+    @Override
+    public E getFront(){
+        return array.getFirst();
+    }
+
+    @Override
+    public String toString(){
+
+        StringBuilder res = new StringBuilder();
+        res.append("Queue: ");
+        res.append("front [");
+        for(int i = 0 ; i &lt; array.getSize() ; i ++){
+            res.append(array.get(i));
+            if(i != array.getSize() - 1)
+                res.append(", ");
+        }
+        res.append("] tail");
+        return res.toString();
+    }
+
+    public static void main(String[] args){
+
+        ArrayQueue&lt;Integer&gt; queue = new ArrayQueue&lt;&gt;();
+        for(int i = 0 ; i &lt; 10 ; i ++){
+            queue.enqueue(i);
+            System.out.println(queue);
+
+            if(i % 3 == 2){
+                queue.dequeue();
+                System.out.println(queue);
+            }
+        }
+    }
+}
+</code></pre></div></div>
+
+<h5 id="循环实现">循环实现</h5>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>public class LoopQueue&lt;E&gt; implements Queue&lt;E&gt; {
+
+    private E[] data;
+    private int front, tail;
+    private int size;
+
+    public LoopQueue(int capacity){
+        // 当容量达到 tail + 1 等于front的时候就需要扩容了，所以需要浪费一个空间，所以这儿就加 1
+        data = (E[])new Object[capacity + 1];
+        front = 0;
+        tail = 0;
+        size = 0;
+    }
+
+    public LoopQueue(){
+        this(10);
+    }
+
+    public int getCapacity(){
+        // 当容量达到 tail + 1 等于front的时候就需要扩容了，所以需要浪费一个空间，所以这儿容积需要减1
+        return data.length - 1;
+    }
+
+    @Override
+    public boolean isEmpty(){
+        return front == tail;
+    }
+
+    @Override
+    public int getSize(){
+        return size;
+    }
+
+    @Override
+    public void enqueue(E e){
+
+        if((tail + 1) % data.length == front)
+            resize(getCapacity() * 2);
+
+        data[tail] = e;
+        tail = (tail + 1) % data.length;
+        size ++;
+    }
+
+    @Override
+    public E dequeue(){
+
+        if(isEmpty())
+            throw new IllegalArgumentException("Cannot dequeue from an empty queue.");
+
+        E ret = data[front];
+        data[front] = null;
+        front = (front + 1) % data.length;
+        size --;
+        if(size == getCapacity() / 4 &amp;&amp; getCapacity() / 2 != 0)
+            resize(getCapacity() / 2);
+        return ret;
+    }
+
+    @Override
+    public E getFront(){
+        if(isEmpty())
+            throw new IllegalArgumentException("Queue is empty.");
+        return data[front];
+    }
+
+    private void resize(int newCapacity){
+
+        E[] newData = (E[])new Object[newCapacity + 1];
+        for(int i = 0 ; i &lt; size ; i ++)
+            newData[i] = data[(i + front) % data.length];
+
+        data = newData;
+        front = 0;
+        tail = size;
+    }
+
+    @Override
+    public String toString(){
+
+        StringBuilder res = new StringBuilder();
+        res.append(String.format("Queue: size = %d , capacity = %d\n", size, getCapacity()));
+        res.append("front [");
+        for(int i = front ; i != tail ; i = (i + 1) % data.length){
+            res.append(data[i]);
+            if((i + 1) % data.length != tail)
+                res.append(", ");
+        }
+        res.append("] tail");
+        return res.toString();
+    }
+
+    public static void main(String[] args){
+
+        LoopQueue&lt;Integer&gt; queue = new LoopQueue&lt;&gt;();
+        for(int i = 0 ; i &lt; 10 ; i ++){
+            queue.enqueue(i);
+            System.out.println(queue);
+
+            if(i % 3 == 2){
+                queue.dequeue();
+                System.out.println(queue);
+            }
+        }
+    }
+}
+
+</code></pre></div></div>
+
+:ET

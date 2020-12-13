@@ -1,0 +1,77 @@
+I"�<h4 id="什么是vuejs">什么是Vue.js？</h4>
+<p>一款渐进式的javascript框架</p>
+
+<h4 id="优点">优点</h4>
+
+<ol>
+  <li>体积小，压缩后只有33k</li>
+  <li>更高的运行效率。基于虚拟dom,一种可以预先通过javaScript进行各种计算，把最终的DOM操作计算出来并优化的技术，由于这个DOM操作属于预处理操作，并没有真实的操作DOM，所以叫做虚拟DOM。</li>
+  <li>双向数据绑定</li>
+  <li>生态丰富，学习成本低</li>
+</ol>
+
+<h4 id="安装">安装</h4>
+
+<ol>
+  <li>下载Vue.js文件，并引入
+    <blockquote>
+      <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>	&lt;script src="vue.js" type="text/javascript" charset="utf-8"&gt;&lt;/script&gt;
+</code></pre></div>      </div>
+    </blockquote>
+  </li>
+  <li>使用cdn自动引入</li>
+</ol>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;!-- 开发环境版本，包含了有帮助的命令行警告 --&gt;
+&lt;script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"&gt;&lt;/script&gt;
+
+或者
+
+&lt;!-- 生产环境版本，优化了尺寸和速度 --&gt;
+&lt;script src="https://cdn.jsdelivr.net/npm/vue"&gt;&lt;/script&gt;
+</code></pre></div></div>
+
+<h4 id="简单的开始">简单的开始</h4>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">&lt;!DOCTYPE html&gt;</span>
+<span class="nt">&lt;html&gt;</span>
+<span class="nt">&lt;head&gt;</span>
+<span class="nt">&lt;meta</span> <span class="na">charset=</span><span class="s">"utf-8"</span><span class="nt">&gt;</span>
+<span class="nt">&lt;title&gt;&lt;/title&gt;</span>
+<span class="nt">&lt;script </span><span class="na">src=</span><span class="s">"vue.js"</span> <span class="na">type=</span><span class="s">"text/javascript"</span> <span class="na">charset=</span><span class="s">"utf-8"</span><span class="nt">&gt;&lt;/script&gt;</span>
+<span class="nt">&lt;/head&gt;</span>
+<span class="nt">&lt;body&gt;</span>
+	<span class="nt">&lt;div</span> <span class="na">id=</span><span class="s">"app"</span><span class="nt">&gt;</span>
+	<span class="c">&lt;!-- 用双 来指定参数 --&gt;</span>
+	   
+	<span class="nt">&lt;/div&gt;</span>
+
+	<span class="nt">&lt;div</span> <span class="na">id=</span><span class="s">"test"</span><span class="nt">&gt;</span>
+		
+	<span class="nt">&lt;/div&gt;</span>
+
+	<span class="nt">&lt;script </span><span class="na">type=</span><span class="s">"text/javascript"</span><span class="nt">&gt;</span>
+		<span class="c1">// 创建一个元素，来指定参数的值</span>
+	<span class="kd">var</span> <span class="nx">app</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Vue</span><span class="p">({</span>
+		<span class="na">el</span><span class="p">:</span> <span class="dl">'</span><span class="s1">#app</span><span class="dl">'</span><span class="p">,</span>
+		<span class="na">data</span><span class="p">:</span> <span class="p">{</span>
+			<span class="na">message</span><span class="p">:</span> <span class="dl">'</span><span class="s1">Hello Vue!</span><span class="dl">'</span>
+		<span class="p">}</span>
+	<span class="p">});</span>
+	<span class="kd">var</span> <span class="nx">app</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Vue</span><span class="p">({</span>
+		<span class="na">el</span><span class="p">:</span> <span class="dl">'</span><span class="s1">#test</span><span class="dl">'</span><span class="p">,</span>
+		<span class="na">data</span><span class="p">:</span> <span class="p">{</span>
+			<span class="na">test</span><span class="p">:</span> <span class="dl">'</span><span class="s1">Test Demo!</span><span class="dl">'</span>
+		<span class="p">}</span>
+	<span class="p">});</span>
+	<span class="nt">&lt;/script&gt;</span>
+
+<span class="nt">&lt;/body&gt;</span>
+<span class="nt">&lt;/html&gt;</span>
+
+
+输出：
+Hello Vue!
+Test Demo!
+</code></pre></div></div>
+:ET

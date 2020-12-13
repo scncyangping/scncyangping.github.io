@@ -1,0 +1,79 @@
+I"B<h4 id="redis-sentinel-哨兵">Redis Sentinel 哨兵</h4>
+
+<p>Redis Sentinel，即Redis哨兵，在Redis 2.8版本开始引入。哨兵的核心功能是主节点的自动故障转移
+它由两部分组成，哨兵节点和数据节点：</p>
+
+<ul>
+  <li>哨兵节点：哨兵系统由一个或多个哨兵节点组成，哨兵节点是特殊的redis节点，不存储数据。</li>
+  <li>数据节点：主节点和从节点都是数据节点。</li>
+</ul>
+
+<p>Redis的主从复制功能本身只是做数据同步，并不提供监控和自动failover能力，要通过主从复制功能来实现Redis的高可用，还需要引入一个组件：Redis Sentinel</p>
+
+<p>Redis Sentinel是Redis官方开发的监控组件，可以监控Redis实例的状态，通过Master节点自动发现Slave节点，并在监测到Master节点失效时选举出一个新的Master，并向所有Redis实例推送新的主从配置。</p>
+
+<p>Redis Sentinel 是一个分布式系统， 你可以在一个架构中运行多个 Sentinel 进程（progress）， 这些进程使用流言协议（gossip protocols)来接收关于主服务器是否下线的信息， 并使用投票协议（agreement protocols）来决定是否执行自动故障迁移， 以及选择哪个从服务器作为新的主服务器。</p>
+
+<p>单个sentinel进程来监控redis集群是不可靠的，当sentinel进程宕掉后(sentinel本身也有单点问题，single-point-of-failure)整个集群系统将无法按照预期的方式运行。所以有必要将sentinel集群
+Redis Sentinel需要至少部署3个实例才能形成选举关系</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>启用
+sentinel monitor mymaster 192.168.92.128 6379 2
+
+配置的含义是：该哨兵节点监控192.168.92.128:6379这个主节点，该主节点的名称是mymaster，最后的2的含义与主节点的故障判定有关：至少需要2个哨兵节点同意，才能判定主节点故障并进行故障转移
+
+哨兵节点的启动有两种方式，二者作用是完全相同的：
+
+- redis-sentinel sentinel-26379.conf
+- redis-server sentinel-26379.conf --sentinel
+
+</code></pre></div></div>
+
+<h5 id="哨兵基本原理">哨兵基本原理</h5>
+
+<h6 id="定时任务">定时任务</h6>
+<p>每个哨兵节点维护了3个定时任务。定时任务的功能分别如下：通过向主从节点发送info命令获取最新的主从结构；通过发布订阅功能获取其他哨兵节点的信息；通过向其他节点发送ping命令进行心跳检测，判断是否下线。</p>
+
+<h6 id="主观下线">主观下线</h6>
+<p>在心跳检测的定时任务中，如果其他节点超过一定时间没有回复，哨兵节点就会将其进行主观下线。顾名思义，主观下线的意思是一个哨兵节点“主观地”判断下线；与主观下线相对应的是客观下线</p>
+
+<h6 id="客观下线">客观下线</h6>
+<p>哨兵节点在对主节点进行主观下线后，会通过sentinel is-master-down-by-addr命令询问其他哨兵节点该主节点的状态；如果判断主节点下线的哨兵数量达到一定数值，则对该主节点进行客观下线</p>
+
+<p>客观下线是主节点才有的概念；如果从节点和哨兵节点发生故障，被哨兵主观下线后，不会再有后续的客观下线和故障转移操作</p>
+
+<h6 id="选举领导者哨兵节点">选举领导者哨兵节点</h6>
+<p>当主节点被判断客观下线以后，各个哨兵节点会进行协商，选举出一个领导者哨兵节点，并由该领导者节点对其进行故障转移操作</p>
+
+<p>监视该主节点的所有哨兵都有可能被选为领导者，选举使用的算法是Raft算法；Raft算法的基本思路是先到先得：即在一轮选举中，哨兵A向B发送成为领导者的申请，如果B没有同意过其他哨兵，则会同意A成为领导者。选举的具体过程这里不做详细描述，一般来说，哨兵选择的过程很快，谁先完成客观下线，一般就能成为领导者。</p>
+
+<h6 id="故障转移">故障转移</h6>
+
+<p>选举出的领导者哨兵，开始进行故障转移操作，该操作大体可以分为3个步骤</p>
+
+<ol>
+  <li>在从节点中选择新的主节点：选择的原则是，首先过滤掉不健康的从节点；然后选择优先级最高的从节点(由slave-priority指定)；如果优先级无法区分，则选择复制偏移量最大的从节点；如果仍无法区分，则选择runid最小的从节点</li>
+  <li>更新主从状态：通过slaveof no one命令，让选出来的从节点成为主节点；并通过slaveof命令让其他节点成为其从节点</li>
+  <li>将已经下线的主节点(即6379)设置为新的主节点的从节点，当6379重新上线后，它会成为新的主节点的从节点</li>
+</ol>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>sentinel monitor mymaster 127.0.0.1 6379 2  #Master实例的IP、端口，以及选举需要的赞成票数
+sentinel down-after-milliseconds mymaster 60000  #多长时间没有响应视为Master失效
+sentinel failover-timeout mymaster 180000  #两次failover尝试间的间隔时长
+sentinel parallel-syncs mymaster 1  #如果有多个Slave，可以通过此配置指定同时从新Master进行数据同步的Slave数，避免所有Slave同时进行数据同步导致查询服务也不可用
+</code></pre></div></div>
+
+<h5 id="总结">总结</h5>
+
+<ul>
+  <li>哨兵系统中的主从节点，与普通的主从节点并没有什么区别，故障发现和转移是由哨兵来控制和完成的。</li>
+  <li>哨兵节点本质上是redis节点</li>
+  <li>每个哨兵节点，只需要配置监控主节点，便可以自动发现其他的哨兵节点和从节点</li>
+  <li>在哨兵节点启动和故障转移阶段，各个节点的配置文件会被重写(config rewrite)。</li>
+  <li>一个哨兵可以监控多个主节点，通过配置多条sentinel monitor即可实现</li>
+</ul>
+
+<p>另外需要注意的是，Redis Sentinel实现的自动failover不是在同一个IP和端口上完成的，也就是说自动failover产生的新Master提供服务的IP和端口与之前的Master是不一样的，所以要实现HA，还要求客户端必须支持Sentinel，能够与Sentinel交互获得新Master的信息才行。</p>
+
+<p>参考 <a href="https://www.cnblogs.com/kismetv/p/9609938.html">https://www.cnblogs.com/kismetv/p/9609938.html</a></p>
+:ET

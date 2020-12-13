@@ -1,0 +1,55 @@
+I"�<h4 id="基础定义">基础定义</h4>
+
+<ul>
+  <li>定义一个封装一组对象如何交互的对象</li>
+  <li>通过使对象明确地相互引用来促进松散耦合，并允许独立地改变它们的交互</li>
+  <li>类型：行为型</li>
+</ul>
+
+<p>就是把各个对象的交互放在一个公共的场所，也可以理解为第三方。就好像是房屋中介和婚姻介绍所。最典型的例子就是MVC。</p>
+
+<h4 id="源码实例">源码实例</h4>
+<p>timer 中介者来协调各个timerTask</p>
+<h4 id="代码实例">代码实例</h4>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>public class User {
+    private String name;
+
+    public User(String name) {
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void sendMessage(String message){
+        StudyGroup.showMessage(this,message);
+    }
+}
+
+
+public class StudyGroup {
+    public static void showMessage(User user,String message){
+        System.out.println(new Date().toString()+user.getName()+
+               message );
+    }
+}
+
+// 使用
+
+public class Test {
+
+    public static void main(String[] args){
+        User user = new User("tome");
+        User user1 = new User("zhangsna");
+        user.sendMessage("caonima");
+        user1.sendMessage("wocaonima");
+    }
+}
+</code></pre></div></div>
+:ET

@@ -1,0 +1,411 @@
+I"=%<h3 id="基础">基础</h3>
+
+<h4 id="docker-platform">Docker Platform</h4>
+<p>Docker 提供了一个开发、打包、运行app的平台,把app和底层infrastructure隔离开来</p>
+
+<h4 id="docker-engine">Docker Engine</h4>
+
+<ul>
+  <li>后台进程</li>
+  <li>Rest API Server</li>
+  <li>CLI接口</li>
+</ul>
+
+<h4 id="docker-image-概述">Docker Image 概述</h4>
+
+<ul>
+  <li>文件和meta data 的集合</li>
+  <li>分层的，并且每一层都可以添加改变删除文件，成为一个新的image</li>
+  <li>不同image可以共享相同的layer</li>
+  <li>Image 本身是read-only</li>
+</ul>
+
+<p>查看所有images</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker image ls
+或
+docker images
+</code></pre></div></div>
+
+<h5 id="image-的获取">image 的获取</h5>
+
+<ol>
+  <li>Build from Dockerfile</li>
+  <li>Pull from Registry</li>
+</ol>
+
+<h4 id="docker-container">docker container</h4>
+
+<ul>
+  <li>通过image创建</li>
+  <li>在image layer之上建立一个container layer(可读可写 image只能读)</li>
+  <li>类比面向对象：类 和实例</li>
+  <li>image负责app的存储和分发，container负责运行app</li>
+</ul>
+
+<p>查看container</p>
+
+<blockquote>
+  <p>docker container ls 查看运行中的</p>
+</blockquote>
+
+<blockquote>
+  <p>docker container ls -a 查看所有的包括运行完成的</p>
+</blockquote>
+
+<p>类似 : docker ps 、 docker ps -a</p>
+
+<p>交互式运行</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker  run -it 相关image
+
+
+列举所有的container id
+docker container ls -aq
+
+
+docker container commit == docker commit
+
+docker image build == docker build
+
+</code></pre></div></div>
+
+<h4 id="docker-file">docker file</h4>
+<ul>
+  <li>FROM
+    <blockquote>
+      <p>FROM scratch # 制作base image</p>
+    </blockquote>
+  </li>
+</ul>
+
+<blockquote>
+  <p>FROM centos # 使用 base image</p>
+</blockquote>
+
+<ul>
+  <li>LABEL  （有点像注释）
+    <blockquote>
+      <p>LABEL maintainer=”yangping”</p>
+    </blockquote>
+  </li>
+</ul>
+
+<blockquote>
+  <p>LABEL version=”1.0”</p>
+</blockquote>
+
+<blockquote>
+  <p>LABEL description=”miaoshu”</p>
+</blockquote>
+
+<ul>
+  <li>RUN (执行命令)</li>
+</ul>
+
+<p>每run一次都会生成一层</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>RUN yum update &amp;&amp; yuum install -y vim\
+    python-dev  # 反斜杠换行
+</code></pre></div></div>
+
+<ul>
+  <li>WORKDIR (指定文件目录)</li>
+</ul>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>WORKDIR /test # 如果没有回自动创建test目录
+WORKDIR demo
+RUN pwd
+</code></pre></div></div>
+<blockquote>
+  <p>尽量使用WORKDIR 不要使用RUN cd 尽量使用绝对目录</p>
+</blockquote>
+
+<ul>
+  <li>ADD and COPY
+将当前目录添加到环境中去</li>
+</ul>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ADD test.tar.gz / # 添加到跟目录并解压
+
+ADD hello test/ # 添加hello文件到test下
+
+注:
+大部分情况下 COPY 优于 ADD
+ADD 除了COPY还有额外功能(解压)
+添加远程文件/目录使用 curl 或者wget
+
+
+</code></pre></div></div>
+
+<ul>
+  <li>ENV</li>
+</ul>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ENV MYSQL_VERSION 5.6 # 设置常量
+RUN apt-get install -y mysql-server = "${MYSQL_VERSION}" &amp;&amp; rm -rf /var/lib/apt/lists/* # 引用常量
+</code></pre></div></div>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Run :执行命令并且创建新的image layer
+
+cmd ：设置容器启动后默认执行的命令和参数
+
+EntryPoint : 设置容器启动时运行的命令
+最佳实践：写一个shell脚本作为entrypoint
+
+COPY docker-entrypotin.sh /usr/local/bin
+
+ENTRYPOINT ["docker-entrypoint.sh"]
+
+EXPOSE 27017
+CMD ["mongod"]
+
+</code></pre></div></div>
+
+<p>==docker build -t yangping/centos-entrypoint-shell .==</p>
+
+<ul>
+  <li>CMD</li>
+</ul>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>多个cmd 只有最后一个运行
+
+docker run 加上了 -it 等命令的时候cmd不会执行
+</code></pre></div></div>
+
+<h4 id="push-自己的image到docker-hup">push 自己的image到docker hup</h4>
+
+<ol>
+  <li>登陆 docker login</li>
+  <li>docker push image名称
+3.</li>
+</ol>
+
+<h4 id="docker-命令">docker 命令</h4>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>对运行总的容器执行某个命令
+
+docker exec 容器id 命令
+
+进入到容器
+
+docker exec -it 80ae7f46635a /bin/bash
+
+运行容器内部的python
+
+docker exec -it 80ae7f46635a python
+
+删除退出状态的容器
+
+docker rm $(docker ps -aq)
+
+指定容器名称(具有唯一性)
+
+docker run -d --name=demo yangping/flasktest
+
+docker stop demo
+
+docker start demo
+
+显示container 详细信息
+
+docker inspect 容器id
+
+显示日志信息
+
+docker logs 492cb216161e
+
+</code></pre></div></div>
+
+<h4 id="安装stress工具">安装stress工具</h4>
+
+<ol>
+  <li>sudo yum install -y epel-release</li>
+  <li>sudo yum install -y stress</li>
+</ol>
+
+<h4 id="可执行程序加上运行参数">可执行程序加上运行参数</h4>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>FROM centos
+RUN yum install -y epel-release &amp;&amp; yum install -y stress
+ENTRYPOINT ["/usr/bin/stress"]
+CMD []
+
+
+一个空的CMD 可以接受需要传入的参数
+
+</code></pre></div></div>
+
+<h4 id="对容器进行资源限制">对容器进行资源限制</h4>
+
+<p>docker run  -memory</p>
+
+<p>docker run –memory=200M yangping/centos-stress</p>
+
+<p>设置容器优先级  获取cpu的时候按照设置的权重进行获取</p>
+
+<p>docker run -cpu-shares=10 yangping/cento..</p>
+
+<h3 id="docker-compose">Docker Compose</h3>
+
+<h4 id="构建wordpress">构建wordpress</h4>
+
+<ol>
+  <li>
+    <p>docker run -d –name mysql -v mysql-data:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=root -e MYSQL_DATABASE=wordpress mysql</p>
+  </li>
+  <li>
+    <p>docker run -d -e WORDRESS_DB_HOST=mysql:3306 –link mysql -p 8080:80 wordpress</p>
+  </li>
+</ol>
+
+<h4 id="什么是docker-compose">什么是docker compose</h4>
+
+<ul>
+  <li>Docker Compose 是一个工具</li>
+  <li>这个工具通过一个yml文件定义多容器的docker应用</li>
+  <li>通过一条命令就可以根据yml文件的定义去创建或者管理这多个容器</li>
+</ul>
+
+<h4 id="docker-composeyml">docker-compose.yml</h4>
+
+<h5 id="三大概念">三大概念</h5>
+<ol>
+  <li>services</li>
+  <li>networks</li>
+  <li>volumes</li>
+</ol>
+
+<h5 id="service">service</h5>
+
+<p>一个service代表一个container</p>
+
+<p>service的启动类似docker run 指定network 和 volume</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>第一种 从dockerhub上拉取
+services:
+    db:
+      image:postgres:9.4
+      volumes:
+       - "db-data:/var/lib/postgresql/data"
+      networks:
+       - back-tier
+
+第二种 本地build
+services:
+    db:
+      build: ./worker
+      links:
+        - db
+        - redis
+      networks:
+       - back-tier
+</code></pre></div></div>
+
+<p>例子</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>version: '3'
+
+services:
+
+  wordpress:
+    image: wordpress
+    ports:
+      - 8080:80
+    environment:
+      WORDPRESS_DB_HOST: mysql
+      WORDPRESS_DB_PASSWORD: root
+    networks:
+      - my-bridge # 设置网络为下面自定义的网络
+
+  mysql:
+    image: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: wordpress
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - my-bridge
+
+volumes:
+  mysql-data:
+
+networks:
+  my-bridge:
+    driver: bridge
+</code></pre></div></div>
+
+<h4 id="docker-compose-安装">docker-compose 安装</h4>
+<ul>
+  <li>
+    <p>mac windows 安装docker的时候自动安装好了</p>
+  </li>
+  <li>
+    <p>linux</p>
+    <ol>
+      <li>sudo curl -L “https://github.com/docker/compose/releases/download/1.22.0/docker-compose-$(uname -s)-$(uname -m)” -o /usr/local/bin/docker-compose</li>
+      <li>sudo chmod +x /usr/local/bin/docker-compose</li>
+      <li>docker-compose –version</li>
+    </ol>
+  </li>
+</ul>
+
+<h4 id="docker-compose-命令">docker-compose 命令</h4>
+
+<p>指定启动的yml文件并启动</p>
+
+<p>docker-compose -f docker-test.yml up</p>
+
+<p>不加 -d 会打印log  加上-d 后台执行</p>
+
+<p>查看启动的service</p>
+
+<p>docker-compose ps</p>
+
+<p>停止docker-compose启动的容器
+docker-compose stop 关闭
+docker-compose start 启动</p>
+
+<p>docker-compose down 关闭并清除container和network</p>
+
+<p>docker-compose images 显示使用的images</p>
+
+<p>docker-compose exec service名字</p>
+<blockquote>
+  <p>docker-compose exec mysql bash</p>
+</blockquote>
+
+<p>同一个service启动多个服务
+docker-compose up –scale web=3</p>
+
+<p>将一个service启动多个，并且绑定的端口为80</p>
+
+<p>利用 haproxy 将80映射到外部8080</p>
+
+<p>后续访问这个服务的时候则会轮训访问每个服务</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>version: "3"
+
+services:
+
+  redis:
+    image: redis
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      REDIS_HOST: redis
+
+  lb:
+    image: dockercloud/haproxy
+    links:
+      - web
+    ports:
+      - 8080:80
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+</code></pre></div></div>
+:ET

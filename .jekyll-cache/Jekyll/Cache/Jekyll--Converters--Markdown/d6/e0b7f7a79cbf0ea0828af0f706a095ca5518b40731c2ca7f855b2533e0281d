@@ -1,0 +1,96 @@
+I"<h4 id="test---go包的动化单元测试">test - Go包的⾃动化单元测试</h4>
+
+<p>测试文件的文件名需要以_test.go结尾,测试用例需要以TestXxxx的样式存在</p>
+
+<ul>
+  <li>testing 基本用例测试</li>
+  <li>testing/iotest - io测试</li>
+  <li>testing/quick 进⾏⿊盒测试的辅助功能包</li>
+  <li>net/http/httptest 提供测试 HTTP 的⼯具</li>
+</ul>
+
+<h5 id="test">Test</h5>
+
+<ul>
+  <li>TestXxxx(t *testing.T) 基本测试用例</li>
+  <li>BenchmarkXxxx(b *testing.B) // 压⼒测试的测试⽤例</li>
+  <li>Example_Xxx() // 测试控制台输出的例⼦</li>
+  <li>TestMain(m *testing.M) // 测试Main函数</li>
+</ul>
+
+<h5 id="gotest变量">gotest变量</h5>
+
+<ul>
+  <li>test.short:⼀个快速测试的标记，在测试⽤例中可以使⽤testing.Short()来绕开⼀些测试</li>
+  <li>test.outputdir:输出⽬录</li>
+  <li>test.coverprofile:测试覆盖率参数，指定输出⽂件</li>
+  <li>test.run:指定正则来运⾏某个/某些测试⽤例</li>
+  <li>test.memprofile:内存分析参数，指定输出⽂件</li>
+  <li>test.memprofilerate:内存分析参数，内存分析的抽样率</li>
+  <li>test.cpuprofile:cpu分析输出参数，为空则不做cpu分析</li>
+  <li>test.blockprofile:阻塞事件的分析参数，指定输出⽂件</li>
+  <li>test.blockprofilerate:阻塞事件的分析参数，指定抽样频率</li>
+  <li>test.timeout:超时时间</li>
+  <li>test.cpu:指定cpu数量</li>
+  <li>test.parallel:指定运⾏测试⽤例的并</li>
+</ul>
+
+<h5 id="testing包内结构">testing包内结构</h5>
+
+<ul>
+  <li>B:压⼒测试</li>
+  <li>BenchmarkResult:压⼒测试结果</li>
+  <li>Cover:代码覆盖率相关结构体</li>
+  <li>CoverBlock:代码覆盖率相关结构体</li>
+  <li>InternalBenchmark:内部使⽤的结构</li>
+  <li>InternalExample:内部使⽤的结构</li>
+  <li>InternalTest:内部使⽤的结构</li>
+  <li>M:main测试使⽤的结构</li>
+  <li>PB:Parallelbenchmarks并⾏测试使⽤结果</li>
+  <li>T:普通测试⽤例</li>
+  <li>TB:测试⽤例的</li>
+</ul>
+
+<h5 id="testing包的通用方法">testing包的通用方法</h5>
+
+<p>T结构内部是继承⾃common结构，common结构提供集中⽅法</p>
+
+<p>当我们遇到⼀个断⾔错误的时候，我们就会判断这个测试⽤例失败，就会使⽤到</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Fail : case失败，测试⽤例继续
+FailedNow : case失败，测试⽤例中断
+</code></pre></div></div>
+<p>当我们遇到⼀个断⾔错误，只希望跳过这个错误，但是不希望标示测试⽤例失败,会使⽤到</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>SkipNow : case跳过，测试⽤例不继续
+</code></pre></div></div>
+
+<p>当我们只希望在⼀个地⽅打印出信息,我们会⽤到</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Log : 输出信息
+Logf : 输出有format的信息
+</code></pre></div></div>
+
+<p>当我们希望跳过这个⽤例,并且打印出信息</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Skip : Log + SkipNow
+Skipf : Logf + SkipNow
+</code></pre></div></div>
+
+<p>当我们希望断⾔失败的时候，测试⽤例失败，打印出必要的信息，但是测试⽤例继
+续</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Error : Log + Fail
+Errorf : Logf + Fail
+</code></pre></div></div>
+
+<p>当我们希望断⾔失败的时候，测试⽤例失败，打印出必要的信息，测试⽤例中断</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Fatal : Log + FailNow
+Fatalf : Logf + FailNow
+</code></pre></div></div>
+
+<blockquote>
+  <p>参考 go语言标准库</p>
+</blockquote>
+:ET

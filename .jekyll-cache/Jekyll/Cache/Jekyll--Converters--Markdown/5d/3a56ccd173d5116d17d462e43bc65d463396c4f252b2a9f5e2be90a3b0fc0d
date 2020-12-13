@@ -1,0 +1,104 @@
+I"�<h3 id="方法与绑定参数">方法与绑定参数</h3>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;script type="text/javascript"&gt;
+var data = { a : 1 };
+var vm = new Vue({
+	el   : "#app",
+	data : data
+});
+
+// 监听一个vue应用的参数值的改变
+vm.$watch('a', function(newVal, oldVal){
+	console.log(newVal, oldVal);
+})
+
+// 绑定参数方式1 用vue应用+$参数指定对应的值
+vm.$data.a = "test...."
+// 绑定参数方式2 直接改变原始对象值
+data.a = "test2"
+&lt;/script&gt;
+</code></pre></div></div>
+<h4 id="生命周期函数">生命周期函数</h4>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;script type="text/javascript"&gt;
+var vm = new Vue({
+	el : "#app",
+	data : {
+		msg : "hi vue",
+	},
+	//在实例初始化之后，数据观测 (data observer) 和 event/watcher 事件配置之前被调用。
+	beforeCreate:function(){
+		console.log('beforeCreate');
+	},
+	/* 在实例创建完成后被立即调用。
+	在这一步，实例已完成以下的配置：数据观测 (data observer)，属性和方法的运算，watch/event 事件回调。
+	然而，挂载阶段还没开始，$el 属性目前不可见。 */
+	created	:function(){
+		console.log('created');
+	},
+	//在挂载开始之前被调用：相关的渲染函数首次被调用
+	beforeMount : function(){
+		console.log('beforeMount');
+
+	},
+	//el 被新创建的 vm.$el 替换, 挂在成功
+	mounted : function(){
+		console.log('mounted');
+
+	},
+	//数据更新时调用
+	beforeUpdate : function(){
+		console.log('beforeUpdate');
+
+	},
+	//组件 DOM 已经更新, 组件更新完毕
+	updated : function(){
+		console.log('updated');
+
+	}
+});
+</code></pre></div></div>
+
+<h4 id="模版方法-插值">模版方法-插值</h4>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">&lt;!DOCTYPE html&gt;</span>
+<span class="nt">&lt;html&gt;</span>
+<span class="nt">&lt;head&gt;</span>
+<span class="nt">&lt;meta</span> <span class="na">charset=</span><span class="s">"utf-8"</span><span class="nt">&gt;</span>
+<span class="nt">&lt;title&gt;&lt;/title&gt;</span>
+<span class="nt">&lt;script </span><span class="na">src=</span><span class="s">"vue.js"</span> <span class="na">type=</span><span class="s">"text/javascript"</span> <span class="na">charset=</span><span class="s">"utf-8"</span><span class="nt">&gt;&lt;/script&gt;</span>
+<span class="nt">&lt;/head&gt;</span>
+<span class="nt">&lt;body&gt;</span>
+<span class="nt">&lt;div</span> <span class="na">id=</span><span class="s">"app"</span><span class="nt">&gt;</span>
+	
+	<span class="nt">&lt;p&gt;</span>Using mustaches: <span class="nt">&lt;/p&gt;</span>
+	<span class="nt">&lt;p</span> <span class="na">v-html=</span><span class="s">"rawHtml"</span><span class="nt">&gt;&lt;/p&gt;</span>
+	<span class="nt">&lt;div</span> <span class="na">v-bind:class=</span><span class="s">"color"</span><span class="nt">&gt;</span>test...<span class="nt">&lt;/div&gt;</span>
+	<span class="nt">&lt;p&gt;&lt;/p&gt;</span>
+	<span class="nt">&lt;p&gt;</span>1<span class="nt">&lt;/p&gt;</span>
+	<span class="nt">&lt;p&gt;&lt;/p&gt;</span>
+<span class="nt">&lt;/div&gt;</span>
+<span class="nt">&lt;script </span><span class="na">type=</span><span class="s">"text/javascript"</span><span class="nt">&gt;</span>
+<span class="kd">var</span> <span class="nx">vm</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Vue</span><span class="p">({</span>
+	<span class="na">el</span> <span class="p">:</span> <span class="dl">"</span><span class="s2">#app</span><span class="dl">"</span><span class="p">,</span>
+	<span class="na">data</span> <span class="p">:</span> <span class="p">{</span>
+		<span class="na">msg</span> <span class="p">:</span> <span class="dl">"</span><span class="s2">hi vue</span><span class="dl">"</span><span class="p">,</span>
+		<span class="na">rawHtml</span> <span class="p">:</span> <span class="dl">'</span><span class="s1">&lt;span style="color:red"&gt;this is should be red&lt;/span&gt;</span><span class="dl">'</span><span class="p">,</span>
+		<span class="na">color</span><span class="p">:</span><span class="dl">'</span><span class="s1">blue</span><span class="dl">'</span><span class="p">,</span>
+		<span class="na">number</span> <span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+		<span class="na">ok</span> <span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+		<span class="na">message</span> <span class="p">:</span> <span class="dl">"</span><span class="s2">vue</span><span class="dl">"</span>
+	<span class="p">}</span>
+<span class="p">});</span>
+<span class="nx">vm</span><span class="p">.</span><span class="nx">msg</span> <span class="o">=</span> <span class="dl">"</span><span class="s2">hi....</span><span class="dl">"</span><span class="p">;</span>
+<span class="nt">&lt;/script&gt;</span>
+<span class="nt">&lt;style </span><span class="na">type=</span><span class="s">"text/css"</span><span class="nt">&gt;</span>
+<span class="o">//</span> <span class="err">这个地方设置样式属性，以便上面</span><span class="nt">vue</span><span class="err">应用调用</span>
+<span class="nc">.red</span><span class="p">{</span><span class="nl">color</span><span class="p">:</span><span class="no">red</span><span class="p">;}</span>
+<span class="nc">.blue</span><span class="p">{</span><span class="nl">color</span><span class="p">:</span><span class="no">blue</span><span class="p">;</span> <span class="nl">font-size</span><span class="p">:</span><span class="m">100px</span><span class="p">;}</span>
+<span class="nt">&lt;/style&gt;</span>
+<span class="nt">&lt;/body&gt;</span>
+<span class="nt">&lt;/html&gt;</span>
+
+</code></pre></div></div>
+:ET

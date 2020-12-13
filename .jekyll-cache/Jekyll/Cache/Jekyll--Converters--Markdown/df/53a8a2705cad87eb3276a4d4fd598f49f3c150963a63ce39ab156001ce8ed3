@@ -1,0 +1,148 @@
+I"u<h4 id="基础与定义">基础与定义</h4>
+
+<ul>
+  <li>将对象组合成树形结构以表示 部分-整体的层次结构,使得用户对单个对象和组合对象的使用具有一致性</li>
+  <li>组合模式使客户端对单个对西那个和组合对象保持一致的方式处理</li>
+  <li>就是将多个对象组合成一个对象，简化对对象的访问</li>
+  <li>类型：结构型</li>
+</ul>
+
+<p>使用场景</p>
+<ol>
+  <li>处理一个树形结构</li>
+  <li>希望客户端可以忽略组合对象与单个对象的差异时</li>
+</ol>
+
+<p>优点：</p>
+<ol>
+  <li>清楚的定义层次的复杂对象</li>
+  <li>让客户端忽略来层次的差异</li>
+  <li>符合开闭原则</li>
+</ol>
+
+<p>缺点：</p>
+<ol>
+  <li>限制类型时较为复杂</li>
+  <li>设计更加抽象</li>
+</ol>
+
+<h5 id="源码实例">源码实例</h5>
+
+<ol>
+  <li>map 中的 putAll</li>
+  <li>arrayList 中的 addAll</li>
+</ol>
+
+<h5 id="代码实例">代码实例</h5>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>public abstract class CatelogComponet {
+    public void add(CatelogComponet catelogComponet){
+        throw new UnsupportedOperationException("不支持添加操作");
+    }
+
+    public void remove(CatelogComponet catelogComponet){
+        throw new UnsupportedOperationException("不支持删除操作");
+    }
+
+    public String getName(CatelogComponet catelogComponet){
+        throw new UnsupportedOperationException("不支持获取名称操作");
+    }
+
+    public double getPrice(CatelogComponet catelogComponet){
+        throw new UnsupportedOperationException("不支持获取价格添加操作");
+    }
+
+    public void print(){
+        throw new UnsupportedOperationException("不支持打印操作");
+    }
+}
+
+
+public class Course extends CatelogComponet {
+    private String name;
+    private double price;
+
+    public Course(String name, double price) {
+        this.name = name;
+        this.price = price;
+    }
+
+    @Override
+    public String getName(CatelogComponet catelogComponet) {
+        return this.name;
+    }
+
+    @Override
+    public double getPrice(CatelogComponet catelogComponet) {
+        return this.price;
+    }
+
+    @Override
+    public void print() {
+        System.out.println("Course Name :"+name+" price :"+price);
+    }
+}
+
+public class CourseCatelog extends CatelogComponet {
+    private List&lt;CatelogComponet&gt; items = new ArrayList&lt;&gt;();
+    private String name;
+
+    public CourseCatelog(String name) {
+        this.name = name;
+    }
+
+    @Override
+    public String getName(CatelogComponet catelogComponet) {
+        return name;
+    }
+
+    @Override
+    public void add(CatelogComponet catelogComponet) {
+        items.add(catelogComponet);
+    }
+
+    @Override
+    public void remove(CatelogComponet catelogComponet) {
+        items.remove(catelogComponet);
+    }
+
+    @Override
+    public void print() {
+        System.out.println(this.name);
+        for (CatelogComponet c : items){
+            System.out.print("  ");
+            c.print();
+        }
+    }
+}
+
+
+public class Test {
+    public static void main(String[] args){
+        CatelogComponet linuxCourse = new Course("linux",11);
+        CatelogComponet windowsCourse = new Course("windows",11);
+
+        CatelogComponet javaCatelog= new CourseCatelog("java");
+
+        CatelogComponet javaCatelog1 = new Course("java 1",11);
+        CatelogComponet javaCatelog2 = new Course("java 2",22);
+        CatelogComponet javaCatelog3 = new Course("java 3",44);
+
+        // 添加课程到课程目录
+        javaCatelog.add(javaCatelog1);
+        javaCatelog.add(javaCatelog2);
+        javaCatelog.add(javaCatelog3);
+
+        CatelogComponet immocMainCourse = new CourseCatelog("主目录");
+
+        immocMainCourse.add(linuxCourse);
+        immocMainCourse.add(windowsCourse);
+        immocMainCourse.add(javaCatelog);
+
+        immocMainCourse.print();
+
+    }
+}
+
+</code></pre></div></div>
+:ET

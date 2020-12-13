@@ -1,0 +1,732 @@
+I"�Y<h2 id="hbase">HBase</h2>
+
+<ol>
+  <li><a href="#hBase简介">HBase简介</a></li>
+  <li><a href="#hbase安装">HBase安装</a></li>
+  <li><a href="#hbase读写流程">HBase读写流程</a></li>
+  <li><a href="#hbase实战使用">HBase实战使用</a></li>
+</ol>
+
+<h4 id="hbase简介">HBase简介</h4>
+
+<blockquote>
+  <p>面向列、适合非结构化数据存储</p>
+</blockquote>
+
+<p>HBase是一个分布式的、面向列的开源数据库，该技术来源于 Fay Chang 所撰写的Google论文“Bigtable：一个结构化数据的分布式存储系统”。就像Bigtable利用了Google文件系统（File System）所提供的分布式数据存储一样，HBase在Hadoop之上提供了类似于Bigtable的能力。HBase是Apache的Hadoop项目的子项目。HBase不同于一般的关系数据库，它是一个适合于非结构化数据存储的数据库。另一个不同的是HBase基于列的而不是基于行的模式</p>
+
+<h5 id="在生态圈所处地位">在生态圈所处地位:</h5>
+
+<ul>
+  <li>HBase是Apache基金会顶级项目</li>
+  <li>HBase基于Hadoop的核心HDFS系统进行数据存储</li>
+  <li>HBase可以存储超大数据并使用用来进行大数据的==实时查询==</li>
+</ul>
+
+<h5 id="hbase--hdfs">HBase &amp; HDFS</h5>
+
+<ul>
+  <li>HBase建立在Hadoop文件系统之上,利用了Hadoop文件系统的容错能力</li>
+  <li>HBase提供对数据的随机实时读写/访问的能力</li>
+  <li>HBase内部使用哈希表，并存储索引，可将HDFS文件中数据进行快速查找</li>
+</ul>
+
+<h5 id="hbase--常用关系型数据库">HBase &amp; 常用关系型数据库</h5>
+
+<blockquote>
+  <p>事物支持 只支持单个Row级别，索引只支持Row-key</p>
+</blockquote>
+
+<ul>
+  <li>NameSpace: 可以把NameSpace理解为RDBMS的数据库</li>
+  <li>Table: 表名必须是能用在文件路径里的合法名字</li>
+  <li>Row: 在表里面，每一行代表着一个数据对象，每一行都是以一个行键(Row Key)来进行唯一标识的，行键并没有什么特定的数据类型，以二进制的字节来存储</li>
+  <li>Column: HBase的列由Column family和Column qualifier组成，由冒号(:)进行间隔。比如famiy:qualifier</li>
+  <li>RowKey: 可以唯一标识一行记录，不可被改变</li>
+  <li>Column Family: 在定义HBase表的时候需要提前设置好列族，表中所有列都需要组织在列族里面</li>
+  <li>Column Qualifier: 列族中的数据通过列标识来进行映射，可以理解为一个键值对，Column Qualifier就是key</li>
+  <li>Cell: 每一个行键，列族和列标识共同组成一个单元</li>
+  <li>Timestamp: 每一个值都会有一个timestamp，作为该值特定版本的标识符，由HBase管理,默认保存3个保本</li>
+</ul>
+
+<p>关系型数据库存储方式:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>File Name</th>
+      <th>File Size</th>
+      <th>creator</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1</td>
+      <td>a.txt</td>
+      <td>20</td>
+      <td>张三</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>b.txt</td>
+      <td>30</td>
+      <td>李四</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>HBase存储:</p>
+
+<p>将File Name和File Size抽象成一个列族,将creator抽象成一个列族</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>RowKey</th>
+      <th>FileInfo</th>
+      <th>SaveInfo</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1</td>
+      <td>name:a.txt size:20</td>
+      <td>creator:张三</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>name:b.txt size:30</td>
+      <td>creator:李四</td>
+    </tr>
+  </tbody>
+</table>
+
+<h5 id="使用场景">使用场景</h5>
+
+<ul>
+  <li>瞬间写入量很大,常用数据不好支撑或需要很高成本</li>
+  <li>数据需要长久保存，且量会持久增长到比较大的场景</li>
+  <li>HBase不适用于有join，多级索引，表关系复制的数据模型</li>
+</ul>
+
+<h3 id="hbase安装">HBase安装</h3>
+
+<ol>
+  <li>下载对应安装包,找到对应Hadoop版本下载,并解压</li>
+  <li>复制 Hadoop内 core.site.xml和hdfs-site.xml文件到HBase的conf目录内</li>
+  <li>修改hbase-env.sh
+    <ol>
+      <li>export JAVA_HOME=/home/hadoop/app/jdk8</li>
+      <li>找到  Configure PermSize. Only needed in JDK7 … 注释掉下面的两行(HBASE_MASTER_OPTS 、HBASE_REGIONSERVER_OPTS)</li>
+    </ol>
+  </li>
+  <li>修改 hbase-site.xml</li>
+</ol>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;configuration&gt;
+    &lt;property&gt;
+        &lt;name&gt;hbase.rootdir&lt;/name&gt;
+        # 和hadoop启动的端口一致
+        &lt;value&gt;hdfs://hadoop000:8020/hbase&lt;/value&gt;
+    &lt;/property&gt;
+    &lt;property&gt;
+        # 新建存储目录
+        &lt;name&gt;hbase.zookeeper.property.dataDir&lt;/name&gt;
+        &lt;value&gt;/home/hadoop/app/hbasetmp&lt;/value&gt;
+    &lt;/property&gt;
+    &lt;property&gt;
+        &lt;name&gt;hbase.cluster.distributed&lt;/name&gt;
+        &lt;value&gt;true&lt;/value&gt;
+    &lt;/property&gt;
+&lt;/configuration&gt;
+</code></pre></div></div>
+
+<h3 id="hbase读写流程">HBASE读写流程</h3>
+
+<h4 id="hbase-写流程">HBASE 写流程</h4>
+
+<ul>
+  <li>Client会先访问zookeeper,得到对应的RegionServer地址</li>
+  <li>Client对RegionServer发起写请求，RegionServer接受数据写入内存</li>
+  <li>当MemStrore的大小达到一定的值后,flush到StoreFile并存储到HDFS</li>
+</ul>
+
+<p>名次释意:</p>
+
+<ol>
+  <li>RegionServer : 管理多个 Region, 每一个RegionServer对应一个HLog</li>
+  <li>Region : 包含多个Store,每一个Store 包含 MemStore 和 StoreFile，写入数据的时候,先写入到MemStore中，当MemStore满了,
+再写入到 StoreFile</li>
+  <li>StoreFile : 对应HDFS中的HFile,是其一层封装</li>
+  <li>WAL : Write-Ahead Logging, 预写日志系统
+数据库中一种高效的日志算法，对于非内存数据库而言，磁盘I/O操作是数据库效率的一大瓶颈。在相同的数据量下，采用WAL日志的数据库系统在事务提交时，磁盘写操作只有传统的回滚日志的一半左右，大大提高了数据库磁盘I/O操作的效率，从而提高了数据库的性能。
+一般的WAL的实现方式是先写入日志,再写入内存,HBase是先写入内存,再写到HLog中(更新操作)</li>
+  <li>HLog : WAL的一种实现方式,只有当HLog更新了,才表示此条数据写入成功。</li>
+</ol>
+
+<h4 id="hbase-读流程">HBASE 读流程</h4>
+
+<ul>
+  <li>Client会先访问zookeeper,得到对应的RegionServer地址,拉去meta信息表</li>
+  <li>Client对RegionServer发起读请求，RegionServer根据meta信息开始读取数据</li>
+  <li>扫描memStore –&gt; 扫描blockcache – &gt; 从storefile中读取数据</li>
+</ul>
+
+<h4 id="三个问题">三个问题</h4>
+
+<ol>
+  <li>HBase启动时发生了什么
+    <ol>
+      <li>HMaster启动,注册Zookeeper,等待RegionServer汇报</li>
+      <li>RegionServer注册到Zokeeper,并向HMaster汇报</li>
+      <li>对各个RegionServer(包括失效的)的数据进行数据整理,分配Region和meta信息</li>
+      <li>其他backupMaster定期向activeMaster进行更新，保证meta的最新</li>
+    </ol>
+  </li>
+  <li>当RegionServer失效后会发生什么
+    <ol>
+      <li>HMaster将失效的RegionServer上的Region分配到其他节点</li>
+      <li>HMaster更新 hbase:meta 表以保证数据正常访问</li>
+    </ol>
+  </li>
+  <li>当HMaster失效后会发生什么
+    <ol>
+      <li>处于Backup状态的HMaster节点推选出一个转为Active状态</li>
+      <li>(若没有配置高可用,activemaster失效后)数据能正常读写,但是不能创建删除表,也不能更改表结构</li>
+    </ol>
+  </li>
+</ol>
+
+<h3 id="hbase实战使用">HBase实战使用</h3>
+
+<h4 id="shell操作命令">SHELL操作命令</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>名称</th>
+      <th>命令表达式</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>查看存在哪些表</td>
+      <td>list</td>
+    </tr>
+    <tr>
+      <td>创建表</td>
+      <td>create ‘表名称’,’列名称1’,’列名称2’,’列名称N’</td>
+    </tr>
+    <tr>
+      <td>添加记录</td>
+      <td>put ‘表名称’,’行名称’,’列名称’,’值’</td>
+    </tr>
+    <tr>
+      <td>查看记录</td>
+      <td>get ‘表名称’,’行名称’</td>
+    </tr>
+    <tr>
+      <td>查看表中的记录总数</td>
+      <td>count ‘表名称’</td>
+    </tr>
+    <tr>
+      <td>删除记录</td>
+      <td>delete ‘表名’,’行名称’,’列名称’</td>
+    </tr>
+    <tr>
+      <td>删除一张表</td>
+      <td>先要屏蔽该表,才能对该表进行删除,第一步 disable ‘表名称’ 第二步 drop ‘表名称’</td>
+    </tr>
+    <tr>
+      <td>查看所有记录</td>
+      <td>scan ‘表名称’</td>
+    </tr>
+    <tr>
+      <td>查看某个表某个列中的所有数据</td>
+      <td>scan ‘表名称’,[‘列名称:’]</td>
+    </tr>
+    <tr>
+      <td>更新记录</td>
+      <td>就是重写一边进行覆盖</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>进入Hbase命令行操作 ： $HBASE_HOME/bin/hbase.sh shell
+
+查看集群状态 ： status
+
+查看所有的表 : list
+
+创建一张表并制定列族 : create 'FileTable','saveInfo','tableInfo'
+
+添加一个列族 : alter 'FileTable','cf'
+
+删除一个列族 : alter 'Filetable',{NAME=&gt;'cf',METHOD=&gt;'delete'}
+
+添加数据 : put 'FileTable','rowkey1','fileInfo:size','10241'
+
+查看表数据 : get 'FileTable','rowkey1'
+    查看指定列族 : get 'FileTable','rowkey1','fileInfo'
+
+查看所有数据 : scan 'FileTable'
+    查看指定列 : scan 'FileTable',{COLUMN=&gt;'fileinfo'}
+    查看 从 rowkey1开始，返回2条数据,版本是最行的
+    scan 'FileTable',{STARTROW=&gt;'rokey1',LIMIT=&gt;2,VERSIONS=&gt;1}
+
+删除列中某一个值 : delete 'FileTable','rowkey1','fileInfo:size'
+删除整个列 : delteall 'FileTable','rowkey1'
+
+删除整个表 :
+    1. disable 'FileTable'
+    2. drop 'FileTable'
+
+查看表状态 is_dsiabled 'FileTable'
+查看是否存在 exists 'FileTable'
+</code></pre></div></div>
+
+<h4 id="hbase-java-api">HBase JAVA API</h4>
+
+<h5 id="开发hbase数据库操作类">开发HBase数据库操作类</h5>
+
+<h6 id="过滤器">过滤器</h6>
+
+<p>HBase为筛选数据提供了一组过滤器,通过过滤器可以在数据的
+多个纬度上进行数据的筛选(行、列、数据版本),通常来说对行
+列进行筛选的应用场景较多</p>
+
+<ol>
+  <li>基于行的过滤器
+    <ol>
+      <li>PrefixFilter: 行的前缀匹配</li>
+      <li>PageFilter: 基于行的分页</li>
+    </ol>
+  </li>
+  <li>基于列的过滤器
+    <ol>
+      <li>ColumnPrefixFilter: 列前缀匹配</li>
+      <li>FirstKeyOnlyFilter: 只返回每一行的第一列</li>
+    </ol>
+  </li>
+  <li>基于单元值的过滤器
+    <ol>
+      <li>KeyOnlyFilter: 返回的数据不包括单元值,只包含行键与列</li>
+      <li>TimestampsFilter: 根据数据的时间戳版本进行过滤</li>
+    </ol>
+  </li>
+  <li>基于列和单元值的过滤器
+    <ol>
+      <li>SingleColumnValueFilter : 对该列的单元值进行比较过滤</li>
+      <li>SingleColumnValueExcludeFilter: 对该列的单元值进行比较过滤</li>
+    </ol>
+  </li>
+  <li>比较过滤器
+    <ol>
+      <li>比较过滤器通常需要一个比较运算符以及一个比较器来实现过滤</li>
+      <li>RowFilter、FamilyFilter、QualifierFilter、ValueFilter</li>
+    </ol>
+  </li>
+  <li>自定义过滤器
+    <ol>
+      <li>实现FilterBase类 实现相应方法</li>
+    </ol>
+  </li>
+</ol>
+
+<h5 id="简单使用">简单使用</h5>
+
+<h6 id="引入包">引入包</h6>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;dependencies&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;org.apache.hbase&lt;/groupId&gt;
+            &lt;artifactId&gt;hbase-client&lt;/artifactId&gt;
+            &lt;version&gt;1.2.4&lt;/version&gt;
+        &lt;/dependency&gt;
+
+        &lt;dependency&gt;
+            &lt;groupId&gt;junit&lt;/groupId&gt;
+            &lt;artifactId&gt;junit&lt;/artifactId&gt;
+            &lt;version&gt;4.12&lt;/version&gt;
+            &lt;scope&gt;test&lt;/scope&gt;
+        &lt;/dependency&gt;
+&lt;/dependencies&gt;
+
+</code></pre></div></div>
+
+<h6 id="获取数据库连接">获取数据库连接</h6>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hbase.HBaseConfiguration;
+import org.apache.hadoop.hbase.TableName;
+import org.apache.hadoop.hbase.client.Connection;
+import org.apache.hadoop.hbase.client.ConnectionFactory;
+import org.apache.hadoop.hbase.client.Table;
+
+import java.io.IOException;
+
+public class HBaseConn {
+
+    private static final HBaseConn INSTANCE = new HBaseConn();
+
+    private static Configuration configuration;
+
+    private static Connection connection;
+
+    private HBaseConn(){
+        try {
+            if (configuration == null){
+                configuration = HBaseConfiguration.create();
+                // zookeeper 地址及端口
+                configuration.set("hbase.zookeeper.quorum","172.16.54.134:2181");
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    // 获取连接
+    private Connection getConnection(){
+        if (connection == null || connection.isClosed()){
+            try {
+                // 设置连接配置
+                connection = ConnectionFactory.createConnection(configuration);
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+        }
+
+        return connection;
+    }
+
+    // 获取连接
+    public static  Connection getHBaseConn(){
+        return INSTANCE.getConnection();
+    }
+
+    // 获取表
+    public static Table getTable(String tableName) throws IOException {
+        return INSTANCE.getConnection().getTable(TableName.valueOf(tableName));
+    }
+
+    // 关闭连接
+    public static void closeConn(){
+        if (connection != null){
+            try {
+                connection.close();
+            }catch (IOException e){
+                e.printStackTrace();
+            }
+        }
+    }
+}
+
+</code></pre></div></div>
+
+<h6 id="创建相应方法">创建相应方法</h6>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>import org.apache.hadoop.hbase.HColumnDescriptor;
+import org.apache.hadoop.hbase.HTableDescriptor;
+import org.apache.hadoop.hbase.TableName;
+import org.apache.hadoop.hbase.client.*;
+import org.apache.hadoop.hbase.filter.FilterList;
+import org.apache.hadoop.hbase.util.Bytes;
+
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+
+public class HBaseUtil {
+
+    /**
+     * @description:
+     * @date: 2019/07/17
+     * @param: [tableName, cfs]
+     * 表名 列族的数组
+     * @return: boolean
+     */
+    public static boolean createTable(String tableName,String[] cfs){
+
+        try (HBaseAdmin admin= (HBaseAdmin)HBaseConn.getHBaseConn().getAdmin()) {
+            if (admin.tableExists(tableName)){
+                return false;
+            }
+            HTableDescriptor tableDescriptor = new HTableDescriptor(TableName.valueOf(tableName));
+
+            Arrays.stream(cfs).forEach( cf -&gt; {
+                HColumnDescriptor columnDescriptor = new HColumnDescriptor(cf);
+                columnDescriptor.setMaxVersions(1);
+                tableDescriptor.addFamily(columnDescriptor);
+            });
+
+            admin.createTable(tableDescriptor);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return true;
+    }
+
+    public static boolean deleteTable(String tablename){
+        try (HBaseAdmin admin= (HBaseAdmin)HBaseConn.getHBaseConn().getAdmin()){
+            admin.disableTable(tablename);
+            admin.deleteTable(tablename);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return true;
+    }
+
+    /*
+     * @description:
+     * @date: 2019/07/17
+     * @param: [tableName, rowkye, cfName, qualifire, data]
+     * 表名 唯一标识 列族名 列标识 数据
+     * @return: boolean
+     */
+    public static boolean putRow(String tableName,
+                                String rowKey,
+                                String cfName,
+                                String qualifier,
+                                String data){
+        try (Table table = HBaseConn.getTable(tableName)){
+
+            Put put = new Put(Bytes.toBytes(rowKey));
+            put.addColumn(Bytes.toBytes(cfName),
+                    Bytes.toBytes(qualifier),
+                    Bytes.toBytes(data));
+
+            table.put(put);
+        }catch (IOException e){
+            e.printStackTrace();
+        }
+
+        return true;
+    }
+
+    // 批量插入
+    public static boolean putRows(String tableName, List&lt;Put&gt; rows){
+
+        try (Table table = HBaseConn.getTable(tableName)){
+
+            table.put(rows);
+        }catch (IOException e){
+            e.printStackTrace();
+        }
+        return true;
+    }
+
+    // 读取一行数据
+    public static Result getRow(String tableName, String rowKey){
+        try (Table table = HBaseConn.getTable(tableName)){
+
+            Get get = new Get(Bytes.toBytes(rowKey));
+            return table.get(get);
+
+        }catch (IOException e){
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+
+    // 通过过滤器获取数据
+    public static Result getRow(String tableName,
+                                String rowKey,
+                                FilterList filterList){
+        try (Table table = HBaseConn.getTable(tableName)){
+
+            Get get = new Get(Bytes.toBytes(rowKey));
+
+            get.setFilter(filterList);
+            return table.get(get);
+
+        }catch (IOException e){
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    // 使用scan扫描
+    public static ResultScanner getScanner(String tableName){
+        try (Table table = HBaseConn.getTable(tableName)){
+
+           Scan scan = new Scan();
+           scan.setCaching(1000);
+           return table.getScanner(scan);
+
+        }catch (IOException e){
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+
+    // 全表扫描 指定开始结束 rowKey
+    // 只包含rowkey1 不包含rowkey2
+    public static ResultScanner getScanner(String tableName,
+                                           String startRowKey,
+                                           String endRowKey){
+        try (Table table = HBaseConn.getTable(tableName)){
+
+            Scan scan = new Scan();
+
+            scan.setStartRow(Bytes.toBytes(startRowKey));
+
+            scan.setStopRow(Bytes.toBytes(endRowKey));
+
+            scan.setCaching(1000);
+
+            return table.getScanner(scan);
+
+        }catch (IOException e){
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    // 全表扫描 指定开始结束 rowKey
+    // 指定过滤器
+    public static ResultScanner getScanner(String tableName,
+                                           String startRowKey,
+                                           String endRowKey,
+                                           FilterList filterList){
+        try (Table table = HBaseConn.getTable(tableName)){
+
+            Scan scan = new Scan();
+
+            scan.setFilter(filterList);
+
+            scan.setStartRow(Bytes.toBytes(startRowKey));
+
+            scan.setStopRow(Bytes.toBytes(endRowKey));
+
+            scan.setCaching(1000);
+
+            return table.getScanner(scan);
+
+        }catch (IOException e){
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    // 删除某一行
+    public static boolean deleteRow(String tableName, String rowKey){
+
+        try (Table table = HBaseConn.getTable(tableName)){
+
+            Delete delete = new Delete(Bytes.toBytes(rowKey));
+
+            table.delete(delete);
+
+        }catch (IOException e){
+            e.printStackTrace();
+        }
+
+        return true;
+    }
+
+    // 删除列族
+    public static boolean deleteCloumn(String tableName, String cfName){
+
+        try (HBaseAdmin admin= (HBaseAdmin)HBaseConn.getHBaseConn().getAdmin()) {
+            admin.deleteColumn(tableName,cfName);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return true;
+    }
+
+    // 删除列族中的qualifier
+    public static boolean deleteQulifier(String tableName,
+                                         String rowKey,
+                                         String cfName,
+                                         String qualifierName){
+        try (Table table = HBaseConn.getTable(tableName)){
+
+            Delete delete = new Delete(Bytes.toBytes(rowKey));
+
+            delete.addColumn(Bytes.toBytes(cfName),
+                    Bytes.toBytes(qualifierName));
+
+            table.delete(delete);
+
+            table.delete(delete);
+
+        }catch (IOException e){
+            e.printStackTrace();
+        }
+
+        return true;
+    }
+
+
+}
+
+</code></pre></div></div>
+
+<h6 id="测试">测试</h6>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>import org.apache.hadoop.hbase.client.Result;
+import org.apache.hadoop.hbase.client.ResultScanner;
+import org.apache.hadoop.hbase.filter.*;
+import org.apache.hadoop.hbase.util.Bytes;
+import org.junit.Test;
+
+import java.util.Arrays;
+
+public class HBaseUtilTest {
+
+    @Test
+    public void createTable(){
+        HBaseUtil.
+                createTable("FileTable",new String[]{"fileInfo","saveInfo"});
+    }
+
+    @Test
+    public void addFileDetails(){
+        HBaseUtil.putRow("FileTable","rowkey3",
+                "fileInfo","name","file11.txt");
+        HBaseUtil.putRow("FileTable","rowkey3",
+                "fileInfo","type","txt");
+        HBaseUtil.putRow("FileTable","rowkey3",
+                "fileInfo","size","1024");
+        HBaseUtil.putRow("FileTable","rowkey3",
+                "fileInfo","creator","ergou");
+
+
+        HBaseUtil.putRow("FileTable","rowkey2",
+                "fileInfo","name","file22.txt");
+        HBaseUtil.putRow("FileTable","rowkey2",
+                "fileInfo","type","txt");
+        HBaseUtil.putRow("FileTable","rowkey2",
+                "fileInfo","size","2048");
+        HBaseUtil.putRow("FileTable","rowkey2",
+                "fileInfo","creator","dagou");
+    }
+
+
+    @Test
+    public void getFileDetail(){
+        Result result = HBaseUtil.getRow("FileTable",
+                "rowkey2");
+
+        if (result != null){
+            System.out.println("rowKey = " + Bytes.toString(result.getRow()));
+
+            System.out.println("fileName = " + Bytes.toString(
+                    result.getValue(Bytes.toBytes("fileInfo"),
+                            Bytes.toBytes("name"))
+            ));
+        }
+    }
+
+}
+</code></pre></div></div>
+:ET

@@ -1,0 +1,63 @@
+I")<h4 id="基本命令">基本命令</h4>
+
+<h6 id="镜像分发打包">镜像分发打包</h6>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker save -o calico-v319.tar.gz  `docker image ls |grep calico |awk '{position=$1":"$2;print $1,position}' |awk '{print $2}'`
+
+</code></pre></div></div>
+
+<h6 id="获取集群中有多少个node">获取集群中有多少个Node</h6>
+
+<p>kubectl get nodes</p>
+
+<h6 id="分析node详情">分析node详情</h6>
+<p>kubectl describe node xxxxx</p>
+
+<h5 id="rc">RC</h5>
+
+<h6 id="创建rc">创建RC</h6>
+<p>kubectl create -f mysql-rc.yaml</p>
+
+<h6 id="查看创建的rc">查看创建的RC</h6>
+<p>kubectl get rc</p>
+
+<h6 id="修改rc的副本数量">修改RC的副本数量</h6>
+
+<p>kubectl scale rc xxxxx –replicas=3</p>
+
+<h5 id="pod">POD</h5>
+
+<h6 id="查看pod创建情况">查看Pod创建情况</h6>
+<p>kubectl get pods</p>
+
+<p>kubectl describe pod mysql-xxx</p>
+
+<p>显示更多信息
+kubectl get pod xxx -o wide</p>
+
+<p>以yaml格式显示Pod的详细信息
+kubectl get pod xxx -o yaml</p>
+
+<p>还可以自定义输出列</p>
+
+<p>指定排序的顺序
+kubectl get pods –sort-by=.metadata.name</p>
+<h5 id="service">Service</h5>
+
+<h6 id="创建service">创建service</h6>
+<p>kubectl create -f mysql-svc.yaml</p>
+
+<h6 id="查看service">查看service</h6>
+
+<p>kubectl get svc</p>
+
+<h5 id="deployment">Deployment</h5>
+
+<h6 id="创建deployment">创建Deployment</h6>
+
+<p>kubectl create -f xxxxx.yaml</p>
+
+<h6 id="查看deployment-信息">查看Deployment 信息</h6>
+
+<p>kubectl get deployements</p>
+:ET

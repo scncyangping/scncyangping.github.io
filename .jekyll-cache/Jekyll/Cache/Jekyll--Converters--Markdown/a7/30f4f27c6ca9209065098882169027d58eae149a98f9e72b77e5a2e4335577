@@ -1,0 +1,31 @@
+I"�<p>MongoDB复制集（Replica Set）通过存储多份数据副本来保证数据的高可靠，通过自动的主备切换机制来保证服务的高可用。但需要注意的时，连接副本集的姿势如果不对，服务高可用将不复存在。</p>
+
+<p>使用前须知
+MongoDB复制集里Primary节点是不固定的。当遇到复制集轮转升级、Primary宕机、网络分区等场景时，复制集可能会选举出一个新的Primary，而原来的Primary则会降级为Secondary，即发生主备切换。总而言之，MongoDB复制集里Primary节点是不固定的。</p>
+
+<p>当连接复制集时，如果直接指定Primary的地址来连接，当时可能可以正确读写数据，但一旦复制集发生主备切换，您连接的Primary会降级为Secondary，您将无法继续执行写操作，这将严重影响到您的线上服务。所以生产环境千万不要直连Primary，那么到底该如何连接复制集？
+正确连接复制集
+要正确连接复制集，您需要先了解下MongoDB的Connection String URI，所有官方的driver都支持以Connection String的方式来连接MongoDB。</p>
+
+<p>Connection String包含以下内容：</p>
+
+<p>mongodb://[username:password@]host1[:port1][,host2[:port2],…[,hostN[:portN]]][/[database][?options]]</p>
+
+<p>说明：</p>
+
+<p>mongodb:// 前缀：代表这是一个Connection String。</p>
+
+<p>username:password@：如果启用了鉴权，需要指定用户密码。</p>
+
+<p>hostX:portX：复制集成员的ip:port信息，多个成员以逗号分割。</p>
+
+<p>/database：鉴权时，用户帐号所属的数据库。</p>
+
+<p>?options：指定额外的连接选项。</p>
+
+<p>实现读写分离：在options里添加readPreference=secondaryPreferred读请求优先到Secondary节点，从而实现读写分离的功能。更多读选项请参考Read preferences。</p>
+
+<p>限制连接数：在options里添加maxPoolSize=xx即可将客户端连接池限制在xx以内。</p>
+
+<p>设置数据写入到大多数节点后返回客户端确认：在options里添加w= majority即可保证写请求成功写入大多数节点才向客户端确认，更多写选项参考Write Concern。</p>
+:ET

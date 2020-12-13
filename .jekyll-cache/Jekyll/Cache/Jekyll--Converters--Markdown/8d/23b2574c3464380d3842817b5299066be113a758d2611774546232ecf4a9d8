@@ -1,0 +1,89 @@
+I".	<h4 id="基础与定义">基础与定义</h4>
+
+<ul>
+  <li>定义了一个算法的骨架，并允许子类为一个或多个步骤提供实现</li>
+  <li>模版方法使得子类可以在不改变算法结构的情况下，重新定义算法的某些步骤</li>
+  <li>类型：行为型</li>
+</ul>
+
+<p>使用场景：</p>
+<ol>
+  <li>一次性实现一个算法不可变的部分，并将可变的行为留给子类来实现</li>
+  <li>各子类中中共行为被提取出来并集中到一个公共父类中，从而避免代码重复</li>
+</ol>
+
+<h4 id="源码实例">源码实例</h4>
+<ol>
+  <li>ArrayList addAll方法</li>
+</ol>
+
+<h4 id="代码实例">代码实例</h4>
+<p>准备录制课程，可以是前端课程，可以是后段课程</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>// 课程抽象类
+public abstract class ACourse {
+    protected final void makeCourse(){
+        this.makePPT();
+        this.makeVideo();
+        if (needwriteArticle()){
+            this.writeArticle();
+        }
+        this.packageCourse();
+    }
+
+    final void makePPT(){
+        System.out.println("制作PPT");
+    }
+
+    final void makeVideo(){
+        System.out.println("制作视频");
+    }
+
+    final void writeArticle(){
+        // 可选项
+        System.out.println("编写手记");
+    }
+    // 钩子方法
+    protected boolean needwriteArticle(){
+        return false;
+    }
+    // 子类实现的方法
+    abstract void packageCourse();
+}
+
+// java 课程
+public class DesignPatternCourse extends ACourse {
+    @Override
+    void packageCourse() {
+        System.out.println("提供Java课程源代码");
+    }
+
+    @Override
+    protected boolean needwriteArticle() {
+        return true;
+    }
+}
+
+// 前端课程
+public class FECourse extends ACourse {
+    @Override
+    void packageCourse() {
+        System.out.println("提供课程前端代码");
+        System.out.println("提供课程多媒体素材");
+    }
+}
+
+// 测试类
+public class Test {
+    public static void main(String[] args){
+        System.out.println("后端课程 -- start");
+        ACourse decourse = new DesignPatternCourse();
+        decourse.makeCourse();
+        System.out.println("后端课程 -- end");
+
+        ACourse feCourse = new FECourse();
+        feCourse.makeCourse();
+    }
+}
+
+</code></pre></div></div>
+:ET

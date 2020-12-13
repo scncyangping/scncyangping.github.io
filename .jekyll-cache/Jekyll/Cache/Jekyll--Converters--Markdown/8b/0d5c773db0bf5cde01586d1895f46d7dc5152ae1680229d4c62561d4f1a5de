@@ -1,0 +1,137 @@
+I"�<h4 id="基础与定义">基础与定义</h4>
+
+<ul>
+  <li>访问者模式是一种将数据操作和数据结构分离的设计模式</li>
+  <li>封装作用于某数据结构(List,Set,Map)中的各个操作</li>
+  <li>需要对一个对象结构中的对象进行很多不同的并且不相关的操作，而需要避免这些操作“污染”这些对象的类，也不希望在增加新操作时修改这些类</li>
+  <li>可以在不改变各元素的类的前提下，定义作用于这些元素的操作</li>
+  <li>类型：行为型</li>
+</ul>
+
+<h4 id="代码实例">代码实例</h4>
+<p>年底，CEO和CTO开始评定员工一年的工作绩效，员工分为工程师和经理，CTO关注工程师的代码量、经理的新产品数量；CEO关注的是工程师的KPI和经理的KPI以及新产品数量。
+由于CEO和CTO对于不同员工的关注点是不一样的，这就需要对不同员工类型进行不同的处理。访问者模式此时可以派上用场了</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>// 员工基类
+public abstract class Staff {
+
+    public String name;
+    public int kpi;// 员工KPI
+
+    public Staff(String name) {
+        this.name = name;
+        kpi = new Random().nextInt(10);
+    }
+    // 核心方法，接受Visitor的访问
+    public abstract void accept(Visitor visitor);
+}
+
+// 工程师
+public class Engineer extends Staff {
+
+    public Engineer(String name) {
+        super(name);
+    }
+
+    @Override
+    public void accept(Visitor visitor) {
+        visitor.visit(this);
+    }
+    // 工程师一年的代码数量
+    public int getCodeLines() {
+        return new Random().nextInt(10 * 10000);
+    }
+}
+
+
+// 经理
+public class Manager extends Staff {
+
+    public Manager(String name) {
+        super(name);
+    }
+
+    @Override
+    public void accept(Visitor visitor) {
+        visitor.visit(this);
+    }
+    // 一年做的产品数量
+    public int getProducts() {
+        return new Random().nextInt(10);
+    }
+}
+
+// 员工业务报表类
+public class BusinessReport {
+
+    private List&lt;Staff&gt; mStaffs = new LinkedList&lt;&gt;();
+
+    public BusinessReport() {
+        mStaffs.add(new Manager("经理-A"));
+        mStaffs.add(new Engineer("工程师-A"));
+        mStaffs.add(new Engineer("工程师-B"));
+        mStaffs.add(new Engineer("工程师-C"));
+        mStaffs.add(new Manager("经理-B"));
+        mStaffs.add(new Engineer("工程师-D"));
+    }
+
+    /**
+     * 为访问者展示报表
+     * @param visitor 公司高层，如CEO、CTO
+     */
+    public void showReport(Visitor visitor) {
+        for (Staff staff : mStaffs) {
+            staff.accept(visitor);
+        }
+    }
+}
+
+
+public interface Visitor {
+
+    // 访问工程师类型
+    void visit(Engineer engineer);
+
+    // 访问经理类型
+    void visit(Manager manager);
+}
+
+// CEO访问者
+public class CEOVisitor implements Visitor {
+    @Override
+    public void visit(Engineer engineer) {
+        System.out.println("工程师: " + engineer.name + ", KPI: " + engineer.kpi);
+    }
+
+    @Override
+    public void visit(Manager manager) {
+        System.out.println("经理: " + manager.name + ", KPI: " + manager.kpi +
+                ", 新产品数量: " + manager.getProducts());
+    }
+}
+
+public class CTOVisitor implements Visitor {
+    @Override
+    public void visit(Engineer engineer) {
+        System.out.println("工程师: " + engineer.name + ", 代码行数: " + engineer.getCodeLines());
+    }
+
+    @Override
+    public void visit(Manager manager) {
+        System.out.println("经理: " + manager.name + ", 产品数量: " + manager.getProducts());
+    }
+}
+
+public class Client {
+
+    public static void main(String[] args) {
+        // 构建报表
+        BusinessReport report = new BusinessReport();
+        System.out.println("=========== CEO看报表 ===========");
+        report.showReport(new CEOVisitor());
+        System.out.println("=========== CTO看报表 ===========");
+        report.showReport(new CTOVisitor());
+    }
+}
+</code></pre></div></div>
+:ET

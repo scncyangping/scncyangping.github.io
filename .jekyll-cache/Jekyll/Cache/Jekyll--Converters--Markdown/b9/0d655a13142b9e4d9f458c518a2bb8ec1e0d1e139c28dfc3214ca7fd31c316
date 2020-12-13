@@ -1,0 +1,163 @@
+I"<h4 id="基础定义">基础定义</h4>
+
+<ul>
+  <li>指原型实例指定创建对象的种类，并且通过拷贝这些原型创建新的对象</li>
+  <li>不需要知道任何创建的细节，不调用构造函数</li>
+  <li>类型：创建型</li>
+  <li>可以通过克隆的方式破坏单例模式</li>
+</ul>
+
+<p>使用场景</p>
+<ol>
+  <li>类初始化消耗较多资源</li>
+  <li>new产生的一个对象需要非常繁琐的过程</li>
+  <li>构造函数比较复杂</li>
+  <li>循环体中产生大量对象</li>
+</ol>
+
+<p>优点：</p>
+<ol>
+  <li>简化过程</li>
+</ol>
+
+<p>缺点：</p>
+<ol>
+  <li>必须配置克隆方法(重写Object的clone方法)</li>
+  <li>对克隆复杂对象进行改造时，容易引入风险</li>
+</ol>
+
+<p>克隆程度：</p>
+<ol>
+  <li>深克隆</li>
+  <li>浅克隆</li>
+</ol>
+
+<p>在实体有另外的引用属性的时候，需要注意复写该属性的clone方法，不然克隆出来的实体是浅克隆的，所有的属性都是一个对象，对其中一个做修改的时候，其他的也会变</p>
+
+<h5 id="源码实例">源码实例</h5>
+
+<ol>
+  <li>ArrayList 的 Clone方法</li>
+  <li>HashMap 的 Clone方法</li>
+  <li>jdk中找实现类CloneAble接口的就是</li>
+  <li>redission、mybatis等等里面都有实现</li>
+</ol>
+
+<h5 id="代码实例">代码实例</h5>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>public class Mail implements Cloneable{
+    private String name;
+    private String emailAddress;
+    private String content;
+    public Mail(){
+        System.out.println("Mail Class Constructor");
+    }
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getEmailAddress() {
+        return emailAddress;
+    }
+
+    public void setEmailAddress(String emailAddress) {
+        this.emailAddress = emailAddress;
+    }
+
+    public String getContent() {
+        return content;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
+    }
+
+    @Override
+    protected Object clone() throws CloneNotSupportedException {
+        // 这样是浅克隆方法
+        System.out.println("克隆方法");
+        return super.clone();
+    }
+}
+
+
+public class MailUtil {
+    public static void sendMail(Mail mail){
+        String outputContent = "向{0}同学,邮件地址{1},邮件内容{2}发送邮件";
+
+        System.out.println(MessageFormat.format(outputContent,mail.getContent(),mail.getEmailAddress(),mail.getEmailAddress()));
+    }
+
+    public static void saveOriginMailRecord(Mail mail){
+        System.out.println("存储记录："+mail.getContent());
+    }
+}
+
+// 使用
+public class Test {
+    public static void main(String[] args) throws CloneNotSupportedException {
+//        Mail mail = new Mail();
+//        mail.setContent("初始化");
+//
+//        for (int i=0;i &lt; 10; i++){
+//            mail.setName("姓名："+i);
+//            mail.setEmailAddress(i+"@imooc");
+//            mail.setContent("你中奖了");
+//            MailUtil.sendMail(mail);
+//        }
+//        MailUtil.saveOriginMailRecord(mail);
+
+        Mail mail = new Mail();
+        mail.setContent("初始化");
+
+        for (int i=0;i &lt; 10; i++){
+            // 克隆的时候不调用构造器
+            Mail mail1 = (Mail) mail.clone();
+            mail1.setName("姓名："+i);
+            mail1.setEmailAddress(i+"@imooc");
+            mail1.setContent("你中奖了");
+            MailUtil.sendMail(mail1);
+        }
+        MailUtil.saveOriginMailRecord(mail);
+    }
+
+}
+</code></pre></div></div>
+
+<h4 id="克隆问题">克隆问题</h4>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>public class Pig implements Cloneable {
+    private String name;
+    private Date birthDay;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public Date getBirthDay() {
+        return birthDay;
+    }
+
+    public void setBirthDay(Date birthDay) {
+        this.birthDay = birthDay;
+    }
+
+    @Override
+    protected Object clone() throws CloneNotSupportedException {
+        Pig pig = (Pig) super.clone();
+        // 深克隆
+        pig.birthDay = (Date) pig.birthDay.clone();
+        return pig;
+    }
+}
+
+</code></pre></div></div>
+:ET

@@ -1,0 +1,26 @@
+---
+layout:     post
+title:      "Go小记 - 数据定义"
+subtitle:   ""
+date:       2020-09-23 02:40:00
+author:     "YaPi"
+header-img: ""
+tags:
+    - golang
+---
+
+#### 定义
+
+
+```
+var a = b+c
+var b = f()
+var c = 1
+func f() int {
+	return c + 1
+}
+// 定义为包内变量则可以编译通过
+// 定义在函数体内就会编译失败 b、c 不存在
+
+```
+

@@ -1,0 +1,370 @@
+I"�"<h3 id="docker-网络">Docker 网络</h3>
+
+<h4 id="ping-telnet">ping telnet</h4>
+<p>ping 验证IP的可达性</p>
+
+<p>telnet 检查服务的可用性</p>
+
+<p>安装telnet</p>
+<ol>
+  <li>yum install telnet-server</li>
+  <li>yum install telnet</li>
+</ol>
+
+<p>telnet 127.0.0.1 8080</p>
+
+<h4 id="linux-网络命名空间">Linux 网络命名空间</h4>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>添加
+
+ip netns add test1
+
+查看
+
+ip netns list
+
+删除
+
+ip netns delete
+
+查看信息
+
+ip netns exec test1 ip a （包含端口信息）
+
+ip netns exec test1 ip link (link信息)
+
+启动
+
+ip netns exec test1 ip link set dev lo up
+
+</code></pre></div></div>
+
+<h4 id="通讯模式">通讯模式</h4>
+
+<ul>
+  <li>
+    <p>第一步：</p>
+
+    <p>创建
+  ip netns add test1
+  ip netns add test2</p>
+  </li>
+  <li>
+    <p>第二步：</p>
+
+    <p>本机添加一对link</p>
+
+    <p>ip link add veth-test1 type veth peer name veth-test2</p>
+  </li>
+  <li>
+    <p>第三步：</p>
+
+    <p>将生成的link添加到前面创建的test1和test2</p>
+
+    <p>ip link set veth-test1 netns test1</p>
+
+    <p>ip link set veth-test2 netns test2</p>
+  </li>
+  <li>
+    <p>第四步：</p>
+
+    <p>为test1 和 test2 添加 ip地址</p>
+
+    <p>ip netns exec test1 ip addr add 192.168.1.1/24 dev veth-test1</p>
+
+    <p>ip netns exec test2 ip addr add 192.168.1.2/24 dev veth-test2</p>
+  </li>
+  <li>
+    <p>第五步：</p>
+
+    <p>启动test1 和 test2</p>
+
+    <p>ip netns exec test1 ip link set dev veth-test1 up</p>
+
+    <p>ip netns exec test2 ip link set dev  veth-test2 up</p>
+  </li>
+  <li>
+    <p>第六步：</p>
+
+    <p>ip netns exec test1 ping 192.168.0.2</p>
+
+    <p>能够连接成功 这个大概就是docker 容器间通讯的方式</p>
+  </li>
+</ul>
+
+<h4 id="docker-网络bridge-host-none">docker 网络(bridge host none)</h4>
+
+<p>查看网络情况</p>
+
+<p>docker network ls</p>
+
+<p>bridge 为内部使用</p>
+
+<p>host 为外部使用</p>
+
+<p>docker network inspect brige网络id</p>
+
+<p>安装
+yum install bridge-utils</p>
+
+<p>brctl show</p>
+
+<p>有一个容器 就会有一个连到docker 的线路</p>
+
+<p>所有的容器都是痛殴docker0进行通讯的</p>
+
+<p>创建连接 (不经常使用)</p>
+
+<p>docker run -d –name=test2 –link test1  busybox /bin/sh -c “while true;do sleep 3600;done”</p>
+
+<p>这里 –link test1 就可以直接使用</p>
+
+<h4 id="让容器之间能够不加link直接ping通">让容器之间能够不加link直接ping通</h4>
+
+<p>1.创建自动网络集
+    docker network create -d bridge my-bridge</p>
+
+<p>2.启动的时候指定</p>
+
+<blockquote>
+  <p>docker run -d –name=test3 –network my-bridge  busybox /bin/sh -c “while true;do sleep 3600;done”</p>
+</blockquote>
+
+<p>或者将已经建立了默认的网络连接到自定义的网络</p>
+
+<blockquote>
+  <p>docker network connect my-bridge test2</p>
+</blockquote>
+
+<h4 id="端口映射">端口映射</h4>
+
+<p>通过 -p  指定</p>
+
+<blockquote>
+  <p>docker run –name web -d -p 9069:80 nginx</p>
+</blockquote>
+
+<h4 id="nonehost-网络">none、host 网络</h4>
+
+<p>docker run -d –name test –network none busybox /bin/sh -c “while true;do sleep 3600;done”</p>
+
+<p>和本机完全一样的网络
+docker run -d –name test –network host busybox /bin/sh -c “while true;do sleep 3600;done”</p>
+
+<h4 id="启动时指定环境变量--e">启动时指定环境变量 -e</h4>
+<p>docker run -d –link redis –name flsk-redis -e REDIS_HOST=redis yangping/flask-redis</p>
+
+<h4 id="多机器通信-etcd">多机器通信 (etcd)</h4>
+
+<p>除bridge、host、none之外的网络 overlay</p>
+
+<p>使用 –net 指定网络</p>
+
+<h4 id="docker-持久化数据">Docker 持久化数据</h4>
+
+<ol>
+  <li>基于本地文件系统的Volume
+ 1.1 受管理的data Volume 由docker后台自动创建
+ 1.2 绑定挂载的Volume，挂载位置由用户指定</li>
+  <li>第三方存储 如aws</li>
+</ol>
+
+<p>Volume 使用</p>
+
+<p>在dockerfile 中 使用关键字 volume 指定本地映射路径</p>
+
+<p>查看所有的volume</p>
+
+<p>docker volume ls</p>
+
+<p>创建的volume的名字不太友好，需指定</p>
+
+<p>-v 自定义名称:volume映射的本地路径</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker run -d -v mysql:/var/lib/mysql --name mysql2 -e MYSQL_ALLOW_EMPTY_PASSWORD=true mysql
+</code></pre></div></div>
+
+<p>把当前容器删除掉，后续创建新的容器 -v 指定的和上述相同，则会数据共享</p>
+
+<p>Bind Mouting(不需要在dockerfile指定volume)</p>
+
+<p>docker run -v /home/aaa:/root/aaa</p>
+
+<h3 id="docker-swarm">Docker Swarm</h3>
+
+<h4 id="docker-swarm-1">docker swarm</h4>
+
+<ul>
+  <li>创建节点
+    <ol>
+      <li>
+        <p>创建maneger
+  docker swarm init –advertise-addr=192.168.0.2</p>
+      </li>
+      <li>
+        <p>会生成一个token，在需要设置为worker的节点上执行 docker swarm join -token SWMTKEN-1-3xxxx 192.168.0.0:2377</p>
+      </li>
+    </ol>
+  </li>
+  <li>
+    <p>查看当前swarm的节点  docker node  ls</p>
+  </li>
+  <li>创建service
+```
+docker service create –name demo busybox sh -c “while true;do sleep 3600;done”</li>
+</ul>
+
+<p>查看service</p>
+
+<p>docker service ls</p>
+
+<p>docker service ps demo</p>
+
+<p>横向扩展</p>
+
+<p>docker service scale demo=5</p>
+
+<p>会在节点中分配并启动5个服务，若某一服务挂掉了，会重新启动一个</p>
+
+<p>删除</p>
+
+<p>docker service rm demo</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+==只有manager节点才能用 docker service 的命令==
+
+#### 构建 wordpress
+
+- 创建overlay网络
+    1.docker network create -d overlay demo
+- 创建mysql服务
+    &gt;docker service create --name mysql --env MYSQL_ROOT_PASSWORD=root --env MYSQL_DATABASE=wordpress --network demo --mount type=volume,source=mysql-data,destination=/var/lib/mysql mysql
+
+- 创建wordpress服务
+    &gt;docker service create --name wordpress -p 80:80 --env WORDPRESS_DB_PASSWORD=root --env WORDPRESS_DB_HOST=mysql --network demo wordpress
+
+创建过后 访问manager或节点的ip都能访问到服务
+
+#### docker swarm 网络
+
+- 创建一个返回服务ip的服务
+    &gt; docker service create --name whoami -p 8000:8000 --network demo -d jwilder/whoami
+
+- 查看DNS    nslookup www.baidu.com
+
+
+
+#### 类似docker-compose部署
+
+配置文件
+
+</code></pre></div></div>
+<p>version: ‘3’  # order 必须要3.4以上</p>
+
+<p>services:</p>
+
+<p>web:
+    image: wordpress
+    ports:
+      - 8080:80
+    secrets:
+      - my-pw
+    environment:
+      WORDPRESS_DB_HOST: mysql
+      WORDPRESS_DB_PASSWORD_FILE: /run/secrets/my-pw
+    networks:
+      - my-network
+    depends_on: # 依赖于某个服务，需要先创建此服务
+      - mysql
+    deploy:
+      mode: replicated  #可扩展
+      replicas: 3  # 启动3个服务
+      restart_policy: # 重启的规则
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+      update_config: # 更新的规则
+        parallelism: 1
+        delay: 10s</p>
+
+<p>mysql:
+    image: mysql
+    secrets:
+      - my-pw
+    environment:
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/my-pw
+      MYSQL_DATABASE: wordpress
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - my-network
+    deploy:
+      mode: global
+      placement:
+        constraints:
+          - node.role == manager</p>
+
+<p>volumes:
+  mysql-data:</p>
+
+<p>networks:
+  my-network:
+    driver: overlay</p>
+
+<h1 id="secrets">secrets:</h1>
+<h1 id="my-pw">my-pw:</h1>
+<h1 id="file-password">file: ./password</h1>
+<p>```</p>
+
+<p>docker stack 命令</p>
+
+<ul>
+  <li>deploy
+    <blockquote>
+      <p>docker stack deploy 服务名称 –compose-file=文件名称</p>
+    </blockquote>
+  </li>
+  <li>ls</li>
+  <li>ps</li>
+  <li>rm</li>
+  <li>services</li>
+</ul>
+
+<h4 id="docker-secret">docker secret</h4>
+
+<p>应用docker manager 节点的分布式存储里面</p>
+
+<ul>
+  <li>存在swarm manager 节点的Raft database 里面</li>
+  <li>secret 可以assign给一个service，这个service就能看到这个secret</li>
+  <li>
+    <p>在container内部secret看起来就像文件，但是实际在内存中</p>
+  </li>
+  <li>创建 docker secret create
+    <ol>
+      <li>从文件中创建
+        <blockquote>
+          <p>docker secret create my-pw 文件名</p>
+        </blockquote>
+      </li>
+      <li>标准输入中创建
+        <blockquote>
+          <table>
+            <tbody>
+              <tr>
+                <td>echo ‘adminadmin’</td>
+                <td>docker secret create my-pw2 -</td>
+              </tr>
+            </tbody>
+          </table>
+        </blockquote>
+      </li>
+    </ol>
+  </li>
+  <li>查看 docker secret ls</li>
+  <li>删除 docker secret rm 名称</li>
+</ul>
+
+<p>-使用 启动service的时候指定 –secret mypwd
+    &gt;进入到节点中在 /run/secrets里面就会有这个文件，内容就是密码</p>
+:ET

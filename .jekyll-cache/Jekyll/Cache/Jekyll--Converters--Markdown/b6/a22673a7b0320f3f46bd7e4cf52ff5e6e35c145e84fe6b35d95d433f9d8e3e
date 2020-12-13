@@ -1,0 +1,79 @@
+I"j<h4 id="基础定义">基础定义</h4>
+
+<ul>
+  <li>定义一个创建对象的接口，但让实现这个接口的类来决定实例化哪个类。</li>
+  <li>工厂方法让类的实例化推迟到子类中运行</li>
+  <li>类型：创建型</li>
+</ul>
+
+<p>使用场景：</p>
+<ol>
+  <li>创建对象需要大量重复代码</li>
+  <li>客户端(应用层)不依赖于产品类实例如何被创建、实现等细节</li>
+  <li>通过其子类来指定创建哪个对象</li>
+</ol>
+
+<p>优点：</p>
+<ol>
+  <li>用户只需要关心所需产品对应的工厂</li>
+  <li>复合开闭原则</li>
+</ol>
+
+<p>缺点：</p>
+<ol>
+  <li>类的个数容易过多，增加负责度</li>
+  <li>增加系统的抽象性和理解难度</li>
+</ol>
+
+<h5 id="源码实例">源码实例</h5>
+
+<ol>
+  <li>集合类 Collection里面的 iterator，在ArrayList里面的实现</li>
+</ol>
+
+<h5 id="代码实例">代码实例</h5>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>public abstract class Video {
+    public abstract void produce();
+}
+
+public class JavaVideo extends Video {
+    @Override
+    public void produce() {
+        System.out.println("Java课程视频");
+    }
+}
+
+public class PythonVideo extends Video {
+    @Override
+    public void produce() {
+        System.out.println("Python课程");
+    }
+}
+
+public abstract class VideoFactory {
+    public abstract Video getVideo();
+}
+
+public class JavaVideoFactory extends VideoFactory {
+    @Override
+    public Video getVideo() {
+        return new JavaVideo();
+    }
+}
+
+public class PythonVideoFactory extends VideoFactory {
+    @Override
+    public Video getVideo() {
+        return new PythonVideo();
+    }
+}
+
+public class Test {
+    public static void main(String[] args){
+        VideoFactory videoFactory = new JavaVideoFactory();
+        videoFactory.getVideo().produce();
+    }
+}
+</code></pre></div></div>
+:ET

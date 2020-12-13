@@ -1,0 +1,140 @@
+I"W<h4 id="基础与定义">基础与定义</h4>
+
+<ul>
+  <li>在不改变原有对象的基础上，将功能附加到对象上</li>
+  <li>提供了比继承更有弹性的替代方案(扩展原有对象功能)</li>
+  <li>类型：结构型</li>
+</ul>
+
+<p>使用场景：</p>
+<ol>
+  <li>扩展一个类的功能</li>
+  <li>动态给对象添加功能，功能可动态的撤销</li>
+</ol>
+
+<p>优点：</p>
+<ol>
+  <li>继承的有力补充，比继承灵活，不改变原有对象的情况下给一个扩展功能</li>
+  <li>符合开闭原则</li>
+</ol>
+
+<p>缺点：</p>
+<ol>
+  <li>出现更多的代码更多的类</li>
+  <li>增加程序的复杂性</li>
+</ol>
+
+<h5 id="源码实例">源码实例</h5>
+<ol>
+  <li>IO包下的
+2.</li>
+</ol>
+
+<h5 id="代码实例">代码实例</h5>
+<p>购买煎饼，可以加蛋、加香肠</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>// 煎饼抽象类
+public abstract class ABatterCake {
+
+    protected abstract String getDesc();
+
+    protected abstract int cost();
+}
+
+// 煎饼实体
+public class BatterCake extends ABatterCake {
+    @Override
+    protected String getDesc() {
+        return "煎饼";
+    }
+
+    @Override
+    protected int cost() {
+        return 8;
+    }
+}
+
+// 装饰抽象类
+public abstract class AbstractDecorator extends ABatterCake {
+
+    private ABatterCake aBattercake;
+
+    public AbstractDecorator(ABatterCake aBattercake) {
+        this.aBattercake = aBattercake;
+    }
+
+    protected abstract void doSomething();
+
+    @Override
+    protected String getDesc() {
+        return this.aBattercake.getDesc();
+    }
+
+    @Override
+    protected int cost() {
+        return this.aBattercake.cost();
+    }
+}
+
+// 装饰实现类
+public class EggDecorator extends AbstractDecorator {
+    private static int i = 0;
+    public EggDecorator(ABatterCake aBattercake) {
+        super(aBattercake);
+    }
+
+    @Override
+    protected void doSomething() {
+        System.out.println("加蛋的额外动作"+"\n");
+    }
+
+    @Override
+    protected String getDesc() {
+        return super.getDesc()+"加一个蛋"+(++i)+"\n";
+    }
+
+    @Override
+    protected int cost() {
+        return super.cost()+1;
+    }
+}
+
+// 香肠装饰实现类
+public class SausageDecorator extends AbstractDecorator {
+    private static int i = 0;
+    public SausageDecorator(ABatterCake aBattercake) {
+        super(aBattercake);
+    }
+
+    @Override
+    protected void doSomething() {
+        System.out.println("加香肠的额外动作"+"\n");
+    }
+
+    @Override
+    protected String getDesc() {
+        return super.getDesc() + "加一根香肠"+(++i)+"\n";
+    }
+
+    @Override
+    protected int cost() {
+        return super.cost()+2;
+    }
+}
+
+
+// 调用
+public class Test {
+    public static void main(String[] args){
+        ABatterCake aBattercake;
+        aBattercake = new BatterCake();
+
+        aBattercake = new EggDecorator(aBattercake);
+        aBattercake = new EggDecorator(aBattercake);
+        aBattercake = new SausageDecorator(aBattercake);
+
+        System.out.println(aBattercake.getDesc() + "\n price: "+ aBattercake.cost());
+    }
+}
+</code></pre></div></div>
+:ET

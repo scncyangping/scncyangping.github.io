@@ -1,0 +1,238 @@
+I"cP<h4 id="简单的时间复杂度分析">简单的时间复杂度分析</h4>
+
+<ul>
+  <li>O(1)、 O(n)、 O(lgn)、 O(nlogn)、</li>
+  <li>大O描述的是算法的运行时间和输入数据之间的关系</li>
+</ul>
+
+<p>例：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>public static int sum(int[] nums){
+    int sum = 0;
+    for(int num : nums)sum += num;
+    return sum;
+}
+</code></pre></div></div>
+<p>上述的时间复杂度是 O(n)的，n是nums中的元素个数。上述这个程序运行时间的多少是和元素个数n成线性关系的。即n数字越大时间就越长。</p>
+
+<p>为什么要用大O，叫做O(n)?</p>
+
+<p>忽略常数。线性方程是 T = c1*n + c2。其中c1 * n 代表for循环，即主要运行时间。c2代表读取数据、返回数据等额外开销。</p>
+
+<p>所以，并不是所有的O(n)的算法会快于O(n2)的算法。这个和n有很大的关系。</p>
+
+<h4 id="均摊复杂度">均摊复杂度</h4>
+
+<p>以数组扩容来说，一个添加操作，当数据量达到了数组容量的时候就会扩容为原来的二倍。比如，初始容量为10，当达到10的时候扩容一倍，容量变为20，当继续添加到20时，才会又扩容。扩容的时间复杂度为O(n)，每一次添加的时间复杂度为O(1)。相当于，添加 n次，会有1次扩容。将这一次操作的耗时均摊到所有添加操作中，那么这个复杂度就变成了n(1)了</p>
+
+<h5 id="复杂度的震荡">复杂度的震荡</h5>
+
+<p>以数组扩容来说，当数组容量达到规定容量过后，需要扩容，当数组中减少一个元素时，需要缩容，若，存在一种情况: 每添加一次元素后，立马删除一个元素，那么就会不断的扩容、缩容、扩容、缩容。这样时间复杂度就会一直会O(n)，而不能均摊成O(1)。这种情况下就需要对缩容方式进行优化，当缩小到容量减少为原数组容量为四分之一时，再进行所容。</p>
+
+<h4 id="自定义数组实现">自定义数组实现</h4>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">/*</span>
+<span class="p">@</span><span class="n">date</span> <span class="p">:</span> <span class="m">2019</span><span class="p">/</span><span class="m">08</span><span class="p">/</span><span class="m">30</span>
+<span class="p">@</span><span class="n">author</span> <span class="p">:</span> <span class="n">YaPi</span>
+<span class="p">@</span><span class="n">desc</span> <span class="p">:</span>
+<span class="p">*/</span>
+<span class="k">package</span> <span class="k">array</span>
+
+<span class="n">import</span> <span class="s2">"strconv"</span>
+
+<span class="p">//</span> <span class="err">定义传入数组类型</span>
+<span class="p">//</span> <span class="n">type</span> <span class="n">E</span> <span class="n">interface</span> <span class="p">{}</span>
+
+<span class="p">//</span> <span class="err">自定义数组类型需满足的方法</span>
+<span class="n">type</span> <span class="n">E</span> <span class="n">interface</span> <span class="p">{</span>
+	<span class="p">//</span> <span class="m">0</span> <span class="err">相等</span> <span class="m">1</span> <span class="err">大于</span> <span class="p">-</span><span class="m">1</span> <span class="err">小于</span>
+	<span class="n">CompareTo</span><span class="p">(</span><span class="n">e</span> <span class="n">E</span><span class="p">)</span><span class="n">int</span>
+	<span class="k">String</span><span class="p">()</span><span class="k">string</span>
+<span class="p">}</span>
+
+<span class="p">//</span> <span class="err">自定义数组结构</span>
+<span class="n">type</span> <span class="n">sArray</span> <span class="n">struct</span> <span class="p">{</span>
+	<span class="n">size</span> 		<span class="n">int</span>
+	<span class="n">data</span> 		<span class="p">[]</span><span class="n">E</span>
+<span class="p">}</span>
+
+<span class="n">func</span> <span class="p">(</span><span class="n">s</span> <span class="p">*</span><span class="n">sArray</span><span class="p">)</span> <span class="k">String</span><span class="p">()</span> <span class="k">string</span> <span class="p">{</span>
+	<span class="n">str</span> <span class="p">:=</span> <span class="s2">"数组长度 : "</span><span class="p">+</span> <span class="n">strconv</span><span class="p">.</span><span class="n">Itoa</span><span class="p">(</span><span class="n">s</span><span class="p">.</span><span class="n">size</span><span class="p">)</span> <span class="p">+</span> <span class="s2">" 【 "</span><span class="p">;</span>
+	<span class="n">for</span> <span class="n">i</span><span class="p">:=</span><span class="m">0</span><span class="p">;</span><span class="n">i</span><span class="p">&lt;</span><span class="n">len</span><span class="p">(</span><span class="n">s</span><span class="p">.</span><span class="n">data</span><span class="p">);</span><span class="n">i</span><span class="p">++{</span>
+		<span class="n">str</span> <span class="p">+=</span> <span class="n">s</span><span class="p">.</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="k">String</span><span class="p">()</span> <span class="p">+</span> <span class="s2">"  "</span>
+	<span class="p">}</span>
+	<span class="n">str</span> <span class="p">+=</span> <span class="s2">" 】"</span>
+	<span class="n">return</span> <span class="n">str</span>
+<span class="p">}</span>
+
+<span class="n">func</span> <span class="n">NewSArray</span><span class="p">()</span> <span class="p">*</span><span class="n">sArray</span> <span class="p">{</span>
+	<span class="n">return</span> <span class="p">&amp;</span><span class="n">sArray</span><span class="p">{}</span>
+<span class="p">}</span>
+
+
+<span class="p">//</span> <span class="err">自定义数组实现的方法</span>
+<span class="n">type</span> <span class="n">SArrayInterface</span> <span class="n">interface</span> <span class="p">{</span>
+	<span class="p">//</span> <span class="err">添加</span>
+	<span class="n">Add</span><span class="p">(</span><span class="n">e</span> <span class="n">E</span><span class="p">)</span>
+	<span class="p">//</span> <span class="err">删除指定位置的元素</span>
+	<span class="n">Remove</span><span class="p">(</span><span class="n">i</span> <span class="n">int</span><span class="p">)</span><span class="n">E</span>
+	<span class="p">//</span> <span class="err">数组容量</span><span class="p">(</span><span class="err">不是数组中元素的总数</span><span class="p">)</span>
+	<span class="n">Capacity</span><span class="p">()</span><span class="n">int</span>
+	<span class="p">//</span> <span class="err">数组中元素的总数</span>
+	<span class="n">Size</span><span class="p">()</span><span class="n">int</span>
+	<span class="p">//</span> <span class="err">查找元素</span><span class="n">E</span><span class="err">在数组中的位置</span>
+	<span class="n">Find</span><span class="p">(</span><span class="n">e</span> <span class="n">E</span><span class="p">)</span><span class="n">int</span>
+	<span class="p">//</span> <span class="err">数组最后一个位置添加元素</span>
+	<span class="n">AddLast</span><span class="p">(</span><span class="n">e</span> <span class="n">E</span><span class="p">)</span>
+	<span class="p">//</span> <span class="err">数组头添加元素</span>
+	<span class="n">AddFirst</span><span class="p">(</span><span class="n">e</span> <span class="n">E</span><span class="p">)</span>
+	<span class="p">//</span> <span class="err">获取指定位置的元素</span>
+	<span class="n">Get</span><span class="p">(</span><span class="n">i</span> <span class="n">int</span><span class="p">)</span><span class="n">E</span>
+	<span class="p">//</span> <span class="err">设置指定位置的元素</span>
+	<span class="k">Set</span><span class="p">(</span><span class="n">i</span> <span class="n">int</span><span class="p">,</span><span class="n">e</span> <span class="n">E</span><span class="p">)</span>
+	<span class="p">//</span> <span class="err">删除第一个元素</span>
+	<span class="n">RemoveFirst</span><span class="p">()</span>
+	<span class="p">//</span> <span class="err">删除最后一个元素</span>
+	<span class="n">RemoveLast</span><span class="p">()</span>
+	<span class="p">//</span> <span class="err">删除找到的第一个元素</span>
+	<span class="n">RemoveElement</span><span class="p">(</span><span class="n">e</span> <span class="n">E</span><span class="p">)</span>
+<span class="p">}</span>
+
+
+<span class="n">func</span> <span class="p">(</span><span class="n">s</span> <span class="p">*</span><span class="n">sArray</span><span class="p">)</span> <span class="n">Add</span><span class="p">(</span><span class="n">e</span> <span class="n">E</span><span class="p">)</span> <span class="p">{</span>
+	<span class="n">s</span><span class="p">.</span><span class="n">data</span> <span class="p">=</span> <span class="n">append</span><span class="p">(</span><span class="n">s</span><span class="p">.</span><span class="n">data</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+	<span class="n">s</span><span class="p">.</span><span class="n">size</span> <span class="p">++</span>
+<span class="p">}</span>
+
+<span class="n">func</span> <span class="p">(</span><span class="n">s</span> <span class="p">*</span><span class="n">sArray</span><span class="p">)</span> <span class="n">Remove</span><span class="p">(</span><span class="n">i</span> <span class="n">int</span><span class="p">)</span> <span class="n">E</span> <span class="p">{</span>
+	<span class="k">if</span> <span class="n">i</span> <span class="p">&lt;</span> <span class="m">0</span> <span class="p">||</span> <span class="n">i</span> <span class="p">&gt;=</span> <span class="n">s</span><span class="p">.</span><span class="n">size</span> <span class="p">{</span>
+		<span class="n">return</span> <span class="n">nil</span>
+	<span class="p">}</span>
+	<span class="n">e</span> <span class="p">:=</span> <span class="n">s</span><span class="p">.</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+	<span class="n">s</span><span class="p">.</span><span class="n">data</span> <span class="p">=</span> <span class="n">append</span><span class="p">(</span><span class="n">s</span><span class="p">.</span><span class="n">data</span><span class="p">[:</span><span class="n">i</span><span class="p">],</span> <span class="n">s</span><span class="p">.</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">+</span><span class="m">1</span><span class="p">:]...)</span>
+	<span class="n">s</span><span class="p">.</span><span class="n">size</span><span class="p">--</span>
+	<span class="n">return</span> <span class="n">e</span>
+<span class="p">}</span>
+
+<span class="n">func</span> <span class="p">(</span><span class="n">s</span> <span class="p">*</span><span class="n">sArray</span><span class="p">)</span> <span class="n">Capacity</span><span class="p">()</span><span class="n">int</span> <span class="p">{</span>
+	<span class="n">return</span> <span class="n">cap</span><span class="p">(</span><span class="n">s</span><span class="p">.</span><span class="n">data</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="n">func</span> <span class="p">(</span><span class="n">s</span> <span class="p">*</span><span class="n">sArray</span><span class="p">)</span> <span class="n">Size</span><span class="p">()</span><span class="n">int</span> <span class="p">{</span>
+	<span class="n">return</span> <span class="n">s</span><span class="p">.</span><span class="n">size</span>
+<span class="p">}</span>
+
+<span class="n">func</span> <span class="p">(</span><span class="n">s</span> <span class="p">*</span><span class="n">sArray</span><span class="p">)</span> <span class="n">Find</span><span class="p">(</span><span class="n">e</span> <span class="n">E</span><span class="p">)</span> <span class="n">int</span> <span class="p">{</span>
+	<span class="n">index</span> <span class="p">:=</span> <span class="p">-</span><span class="m">1</span>
+	<span class="n">for</span> <span class="n">i</span><span class="p">,</span><span class="n">d</span> <span class="p">:=</span> <span class="k">range</span>  <span class="n">s</span><span class="p">.</span><span class="n">data</span><span class="p">{</span>
+		<span class="k">if</span> <span class="n">d</span><span class="p">.</span><span class="n">CompareTo</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="p">==</span> <span class="m">0</span><span class="p">{</span>
+			<span class="n">index</span> <span class="p">=</span> <span class="n">i</span>
+			<span class="k">break</span>
+		<span class="p">}</span>
+	<span class="p">}</span>
+	<span class="n">return</span> <span class="n">index</span>
+<span class="p">}</span>
+
+<span class="n">func</span> <span class="p">(</span><span class="n">s</span> <span class="p">*</span><span class="n">sArray</span><span class="p">)</span> <span class="n">AddLast</span><span class="p">(</span><span class="n">e</span> <span class="n">E</span><span class="p">)</span> <span class="p">{</span>
+	<span class="n">s</span><span class="p">.</span><span class="n">data</span> <span class="p">=</span> <span class="n">append</span><span class="p">(</span><span class="n">s</span><span class="p">.</span><span class="n">data</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+	<span class="n">s</span><span class="p">.</span><span class="n">size</span> <span class="p">++</span>
+<span class="p">}</span>
+
+<span class="n">func</span> <span class="p">(</span><span class="n">s</span> <span class="p">*</span><span class="n">sArray</span><span class="p">)</span> <span class="n">AddFirst</span><span class="p">(</span><span class="n">e</span> <span class="n">E</span><span class="p">)</span> <span class="p">{</span>
+	<span class="n">lNode</span> <span class="p">:=</span> <span class="n">s</span><span class="p">.</span><span class="n">data</span><span class="p">[</span><span class="n">s</span><span class="p">.</span><span class="n">size</span><span class="p">-</span><span class="m">1</span><span class="p">]</span>
+	<span class="n">for</span> <span class="n">i</span><span class="p">:=</span><span class="n">s</span><span class="p">.</span><span class="n">size</span><span class="p">-</span><span class="m">2</span><span class="p">;</span><span class="n">i</span><span class="p">&gt;=</span><span class="m">0</span><span class="p">;</span><span class="n">i</span><span class="p">--{</span>
+		<span class="n">s</span><span class="p">.</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">+</span><span class="m">1</span><span class="p">]</span> <span class="p">=</span> <span class="n">s</span><span class="p">.</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+	<span class="p">}</span>
+	<span class="n">s</span><span class="p">.</span><span class="n">data</span><span class="p">[</span><span class="m">0</span><span class="p">]</span> <span class="p">=</span> <span class="n">e</span>
+	<span class="n">s</span><span class="p">.</span><span class="n">size</span> <span class="p">++</span>
+	<span class="n">s</span><span class="p">.</span><span class="n">data</span> <span class="p">=</span> <span class="n">append</span><span class="p">(</span><span class="n">s</span><span class="p">.</span><span class="n">data</span><span class="p">,</span> <span class="n">lNode</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="n">func</span> <span class="p">(</span><span class="n">s</span> <span class="p">*</span><span class="n">sArray</span><span class="p">)</span> <span class="n">Get</span><span class="p">(</span><span class="n">i</span> <span class="n">int</span><span class="p">)</span> <span class="n">E</span> <span class="p">{</span>
+	<span class="k">if</span> <span class="n">i</span> <span class="p">&lt;</span> <span class="m">0</span> <span class="p">||</span> <span class="n">i</span> <span class="p">&gt;=</span> <span class="n">s</span><span class="p">.</span><span class="n">size</span> <span class="p">{</span>
+		<span class="n">return</span> <span class="n">nil</span>
+	<span class="p">}</span>
+	<span class="n">return</span> <span class="n">s</span><span class="p">.</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+<span class="p">}</span>
+
+<span class="n">func</span> <span class="p">(</span><span class="n">s</span> <span class="p">*</span><span class="n">sArray</span><span class="p">)</span> <span class="k">Set</span><span class="p">(</span><span class="n">i</span> <span class="n">int</span><span class="p">,</span> <span class="n">e</span> <span class="n">E</span><span class="p">)</span> <span class="p">{</span>
+	<span class="k">if</span> <span class="n">i</span> <span class="p">&lt;</span> <span class="m">0</span> <span class="p">||</span> <span class="n">i</span> <span class="p">&gt;=</span> <span class="n">s</span><span class="p">.</span><span class="n">size</span> <span class="p">{</span>
+		<span class="n">return</span>
+	<span class="p">}</span>
+	<span class="n">s</span><span class="p">.</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="p">=</span> <span class="n">e</span>
+<span class="p">}</span>
+
+<span class="n">func</span> <span class="p">(</span><span class="n">s</span> <span class="p">*</span><span class="n">sArray</span><span class="p">)</span> <span class="n">RemoveFirst</span><span class="p">()</span> <span class="p">{</span>
+	<span class="n">s</span><span class="p">.</span><span class="n">Remove</span><span class="p">(</span><span class="m">0</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="n">func</span> <span class="p">(</span><span class="n">s</span> <span class="p">*</span><span class="n">sArray</span><span class="p">)</span> <span class="n">RemoveLast</span><span class="p">()</span> <span class="p">{</span>
+	<span class="n">s</span><span class="p">.</span><span class="n">Remove</span><span class="p">(</span><span class="n">s</span><span class="p">.</span><span class="n">size</span><span class="p">-</span><span class="m">1</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="n">func</span> <span class="p">(</span><span class="n">s</span> <span class="p">*</span><span class="n">sArray</span><span class="p">)</span> <span class="n">RemoveElement</span><span class="p">(</span><span class="n">e</span> <span class="n">E</span><span class="p">)</span> <span class="p">{</span>
+	<span class="n">index</span> <span class="p">:=</span> <span class="n">s</span><span class="p">.</span><span class="n">Find</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+	<span class="k">if</span> <span class="n">index</span> <span class="c1">!= -1{
+</span>		<span class="n">s</span><span class="p">.</span><span class="n">Remove</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+
+<p>测试</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>type NewInt int
+
+func (ee NewInt) String() string {
+	return strconv.Itoa(int(ee))
+}
+
+func (ee NewInt) CompareTo(e E) int {
+
+	eeInt := int(ee)
+
+	eInt := int(e.(NewInt))
+
+	if eeInt &gt; eInt {
+		return 1
+	}else if eeInt == eInt{
+		return 0
+	}else {
+		return -1
+	}
+	return 0
+}
+
+func TestSArray(t *testing.T) {
+	a := NewSArray()
+	for i:=0;i&lt;5;i++{
+		newInt := NewInt(rand.Intn(100))
+		a.Add(newInt)
+	}
+	fmt.Println(a)
+	fmt.Println("添加元素1")
+	a.Add(NewInt(1))
+	fmt.Println(a)
+	fmt.Println("删除第二个元素")
+	a.Remove(2)
+	fmt.Println(a)
+	fmt.Println("查找元素为81的元素: ",a.Find(NewInt(81)))
+	fmt.Println("获取第二个元素: ",a.Get(2))
+	fmt.Println("数组头添加一个元素111")
+	a.AddFirst(NewInt(111))
+	fmt.Println(a)
+	fmt.Println("数组尾添加一个元素123")
+	a.AddLast(NewInt(123))
+	fmt.Println(a)
+	fmt.Println("删除第一个元素")
+	a.RemoveFirst()
+	fmt.Println(a)
+	fmt.Println("删除最后一个元素")
+	a.RemoveLast()
+	fmt.Println(a)
+	fmt.Println("删除指定为1的元素")
+	a.RemoveElement(NewInt(1))
+	fmt.Println(a)
+}
+</code></pre></div></div>
+:ET
