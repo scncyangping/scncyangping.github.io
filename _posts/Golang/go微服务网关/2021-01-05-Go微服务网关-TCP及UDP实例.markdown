@@ -1,0 +1,168 @@
+---
+layout:     post
+title:      "Go微服务网关(二)TCP及UDP实例"
+subtitle:   ""
+date:       2021-01-05 12:01:00
+author:     "YaPi"
+header-img: ""
+tags:
+    - golang
+---
+
+### TCP实例
+
+#### 服务端
+
+```
+func main(){
+    //1、监听端口
+	listener, err := net.Listen("tcp", "0.0.0.0:9089")
+	if err != nil {
+		fmt.Printf("listen fail, err: %v\n", err)
+		return
+	}
+
+	//2.建立套接字连接
+	for {
+		conn, err := listener.Accept()
+		if err != nil {
+			fmt.Printf("accept fail, err: %v\n", err)
+			continue
+		}
+
+		//3. 创建处理协程
+		go process(conn)
+	}
+}
+	
+func process(conn net.Conn) {
+	defer conn.Close()
+	// 当服务端若不关闭，客户端连接断开过后，客户端进行四次挥手，但是服务端不关闭，所以客户端
+	// 就会一直在CLOSE_WAIT状态，而客户端就会处于FIN_WAIT_2状态
+	
+	for {
+		var buf [128]byte
+		n, err := conn.Read(buf[:])
+
+		if err != nil {
+			fmt.Printf("read from connect failed, err: %v\n", err)
+			break
+		}
+		str := string(buf[:n])
+		fmt.Printf("receive from client, data: %v\n", str)
+	}
+}	
+```
+
+#### 客户端
+
+```
+func main()  {
+	doSend()
+}
+func doSend() {
+	//1、连接服务器
+	conn, err := net.Dial("tcp", "localhost:9089")
+	defer conn.Close()
+	// 如果这儿不关闭 这个连接就不会断开
+	// 客户端处于当时不会关闭，等待一定超时时间过后关闭
+	if err != nil {
+		fmt.Printf("connect failed, err : %v\n", err.Error())
+		return
+	}
+	//2、读取命令行输入
+	inputReader := bufio.NewReader(os.Stdin)
+	for {
+		// 3、一直读取直到读到\n
+		input, err := inputReader.ReadString('\n')
+		if err != nil {
+			fmt.Printf("read from console failed, err: %v\n", err)
+			break
+		}
+		// 4、读取Q时停止
+		trimmedInput := strings.TrimSpace(input)
+		if trimmedInput == "Q" {
+			break
+		}
+		// 5、回复服务器信息
+		_, err = conn.Write([]byte(trimmedInput))
+		if err != nil {
+			fmt.Printf("write failed , err : %v\n", err)
+			break
+		}
+	}
+}
+```
+
+### UDP实例
+
+#### 客户端
+
+```text
+func main() {
+	//step 1 监听服务器
+	listen, err := net.ListenUDP("udp", &net.UDPAddr{
+		IP:   net.IPv4(0, 0, 0, 0),
+		Port: 9089,
+	})
+	if err != nil {
+		fmt.Printf("listen failed, err:%v\n", err)
+		return
+	}
+
+	//step 2 循环读取消息内容
+	for {
+		var data [1024]byte
+		n, addr, err := listen.ReadFromUDP(data[:])
+		if err != nil {
+			fmt.Printf("read failed from addr: %v, err: %v\n", addr, err)
+			break
+		}
+
+		go func() {
+			//todo sth
+			//step 3 回复数据
+			fmt.Printf("addr: %v data: %v  count: %v\n", addr, string(data[:n]), n)
+			_, err = listen.WriteToUDP([]byte("received success!"), addr)
+			if err != nil {
+				fmt.Printf("write failed, err: %v\n", err)
+			}
+		}()
+	}
+}
+```
+
+#### 客户端实例
+
+```text
+func main() {
+	//step 1 连接服务器
+	conn, err := net.DialUDP("udp", nil, &net.UDPAddr{
+		IP:   net.IPv4(127, 0, 0, 1),
+		Port: 9089,
+	})
+
+	if err != nil {
+		fmt.Printf("connect failed, err: %v\n", err)
+		return
+	}
+
+	for i := 0; i < 100; i++ {
+		//step 2 发送数据
+		_, err = conn.Write([]byte("hello server!"))
+		if err != nil {
+			fmt.Printf("send data failed, err : %v\n", err)
+			return
+		}
+
+		//step 3 接收数据
+		result := make([]byte, 1024)
+		n, remoteAddr, err := conn.ReadFromUDP(result)
+		if err != nil {
+			fmt.Printf("receive data failed, err: %v\n", err)
+			return
+		}
+		fmt.Printf("receive from addr: %v  data: %v\n", remoteAddr, string(result[:n]))
+	}
+}
+```
