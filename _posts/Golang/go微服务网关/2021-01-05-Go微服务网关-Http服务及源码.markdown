@@ -44,11 +44,11 @@ func main() {
 	transport := &http.Transport{
 		DialContext: (&net.Dialer{
 			Timeout:   30 * time.Second, //连接超时
-			KeepAlive: 30 * time.Second, //探活时间
+			KeepAlive: 30 * time.Second, //探活时间 连接建立过后，TCP自动发送连接报文的时间间隔
 		}).DialContext,
 		MaxIdleConns:          100,              //最大空闲连接
 		IdleConnTimeout:       90 * time.Second, //空闲超时时间
-		TLSHandshakeTimeout:   10 * time.Second, //tls握手超时时间
+		TLSHandshakeTimeout:   10 * time.Second, //tls握手超时时间 使用HTTPS的话就会使用
 		ExpectContinueTimeout: 1 * time.Second,  //100-continue状态码超时时间
 	}
 	// 创建客户端
@@ -73,6 +73,7 @@ func main() {
 
 ### 源码解析
 
+#### 服务端源码
 ```text
 1. mux := http.NewServeMux()
 创建路由器
@@ -211,6 +212,89 @@ func (srv *Server) Serve(l net.Listener) error {
 }
 ```
 
+#### 客户端源码
 
+```text
+1. 连接池相关结构体
+http.Transport{}结构体主要属性
+
+type Transport struct {
+    ...
+	idleMu       sync.Mutex
+	closeIdle    bool                                // 用户是否已关闭所有空闲连接
+	idleConn     map[connectMethodKey][]*persistConn // most recently used at end
+	idleConnWait map[connectMethodKey]wantConnQueue  // waiting getConns
+}
+
+// connectMethodKey可以看作是connectMethod的描述，包含了其基础信息
+type connectMethodKey struct {
+	proxy, scheme, addr string
+	onlyH1              bool
+}
+// 包含了连接地址，代理地址，请求类型等消息
+type connectMethod struct {
+	_            incomparable
+	proxyURL     *url.URL // nil for no proxy, else full proxy URL
+	targetScheme string   // "http" or "https"
+	//如果proxyURL指定了http或https代理，而targetScheme是http（不是https），
+    //那么targetAddr不包含在connect方法键中，因为套接字可以
+    //可重用于不同的targetAddr值。
+	targetAddr string
+	onlyH1     bool // whether to disable HTTP/2 and force HTTP/1
+}
+
+
+
+roundTrip流程
+
+func (t *Transport)roundTrip(req *Request)
+
+// 获取一个持久连接
+// 参数，包装Request后的transportRequest和connectMethod
+pconn,err := t.getConn(treq,cm)
+
+type persistConn struct {
+    br      *bufio.Reader   // 从建立的TCP连接中读取
+    bw      *bufio.Writer   // 向建立的TCP连接中写数据
+    reqch   chan requestAndChan     // read by readLoop
+    writech   chan writeRequest     // read by writeLoop
+}
+
+获取到一个持久化连接过后，就可以尝试去获取一个真是的连接
+
+1. 尝试获取闲置的连接
+pc, idelSince := t.getIdleConn(cm)
+
+2. select监听事件，获取可用连接
+    2.1 case <- t.incHostConnCount(cmKey)，判断主机是否能突破单个限制？有限制，不用当前持久化连接，而是去使用一个非持久化连接
+    2.2 case pc := <- t.getIdelConnch(cm): 尝试获取连接(获取的过程中若有其他空闲出来的连接就使用)
+    2.3 case <- req.Context().Done(): 监听当前获取连接上下文是否取消了获取连接，若取消了直接返回
+3. 异步创建连接
+go func(){pc,err := t.dialConn(ctx,cm)}   
+在这个异步连接中就可以：
+go pconn.readLoop() 一边读数据 -> 监听pconn.reqch, 写入conn
+go pconn.writeLoop() 一边写数据 -> 监听pconn.writech, 写入conn
+
+4. 监听连接是否创建成功
+
+select {
+    case v:= <- dialc: 新增连接成功
+    case pc:= <- idleConnCh: 有可用的连接
+}
+
+当连接创建成功过后调用persistConn的roundTrip方法
+
+resp,err := pconn.roundTrip(treq) -> pc.writech <- writeRequest 
+
+写入的数据就会在persistConn 的 writeLoop()方法中监听读取返回的东西
+```
+
+##### TransPort RoundTrip流程
+
+![avatar](https://blog-1257627424.cos.ap-chengdu.myqcloud.com/golang/Transport%20RoundTrip%E6%B5%81%E7%A8%8B.jpg)
+
+##### Client超时时间设置
+
+![avatar](https://blog-1257627424.cos.ap-chengdu.myqcloud.com/golang/Client%E8%B6%85%E6%97%B6%E6%97%B6%E9%97%B4.jpg)
 
 
