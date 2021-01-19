@@ -290,3 +290,63 @@ func (sh *StreamHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 }
 
 ```
+
+#### websocket代理实例
+
+```text
+import (
+	"flag"
+	"html/template"
+	"log"
+	"net/http"
+
+	"github.com/gorilla/websocket" // 第三方websoket库
+)
+
+var addr = flag.String("addr", "localhost:2003", "http service address")
+
+var upgrader = websocket.Upgrader{} // use default options
+
+func echo(w http.ResponseWriter, r *http.Request) {
+    // 调用第三方库 将协议升级为websocket协议
+    // 这个方法的主要步骤
+    // 1. 校验参数header, Connection = upgrade,Upgrade = websocket, Sec-Websocket-Key 必须存在
+    // 2. 将请求request及返回response封装成自己连接类型，并实现ReadMessage、WriteMessage方法
+    // 3. 返回，状态码为101 Switching Protocols，返回Sec-WebSocket-Accept等
+	c, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Print("upgrade:", err)
+		return
+	}
+	// 必须关闭连接
+	defer c.Close()
+	for {
+	    // 循环读取信息
+		mt, message, err := c.ReadMessage()
+		if err != nil {
+			log.Println("read:", err)
+			break
+		}
+		log.Printf("recv: %s", message)
+		// 发送消息
+		err = c.WriteMessage(mt, message)
+		if err != nil {
+			log.Println("write:", err)
+			break
+		}
+	}
+}
+
+func home(w http.ResponseWriter, r *http.Request) {
+	homeTemplate.Execute(w, "ws://"+r.Host+"/echo")
+}
+
+func main() {
+	flag.Parse()
+	log.SetFlags(0)
+	http.HandleFunc("/echo", echo)
+	http.HandleFunc("/", home)
+	log.Println("Starting websocket server at " + *addr)
+	log.Fatal(http.ListenAndServe(*addr, nil))
+}
+```

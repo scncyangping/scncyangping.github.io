@@ -1,0 +1,74 @@
+---
+layout:     post
+title:      "Go微服务网关(七)http相关协议"
+subtitle:   ""
+date:       2021-01-09 13:01:00
+author:     "YaPi"
+header-img: ""
+tags:
+    - golang
+---
+#### https、http、http2
+
+- https是http安全版本，http2是一种传输协议，两者并没有本质联系
+- https和http区别
+  > http协议的数据传输是铭文的，是不安全的，https使用了ssl/tls协议进行了加密处理
+  > 默认端口不一样，http是80，https是443
+- http1.1与http2区别
+  > http/2采用二进制格式而非文本格式
+  > http/2使用一个连接可实现多路复用
+  > http/2使用报头压缩，降低开销：这次请求的请求头中，大部分信息比如请求方式、scheme等已经包含了，那这一次就不需要传输了
+  > http/2让服务器可以响应主动推送到客户端缓存
+- http2与https的关系
+  > http2代表多路复用的传输协议
+  > https代表的是服务器使用了加密传输
+  > 一个启用https的服务器不一定使用http2
+  > 使用了http2的服务器必须启用https(浏览器强制)
+
+
+http2特点
+
+- 设计目标
+  > 并行操作无需与服务器建立多个连接
+  > 保持http1.1的语义，只是拓展并非替代
+  > 解决http1.1中的队首阻塞问题
+- 基本概念
+  > 流：流是连接中的一个虚拟信道，可以承载双向的消息
+  > 消息：是指逻辑上的HTTP消息，比如请求，响应等
+  > 帧：HTTP2.0通信的最小单位，每个帧包含帧首部，至少也会标识出当前帧所属的流，承载着特定类型的数据
+
+
+
+```text
+多了一些其他的请求头
+
+:authority: example1.com:1234
+:method: GET
+:path:/
+:scheme:https
+
+若是chrome浏览器，可以直接在请求的详细信息里面，查看Protocol和scheme
+```
+
+
+https请求流程
+
+1. 客户端连接server，发送hello，进行TLS握手
+2. 服务器返回证书+hello
+3. 验证服务器证书是否由受信ca颁发
+4. 随机生产客户端RSA公私钥、会话密钥
+5. 发送使用服务器公钥加密后的客户端公钥、客户端会话密钥到服务端
+6. 服务端收到后，用服务器私钥还原，得到客户端公钥、客户端会话密钥，并随机生成服务器会话密钥
+7. 服务端使用客户端公钥加密服务端会话密钥，并发送到客户端
+8. 客户端使用私钥还原服务器会话密钥
+9. 客户端发送 使用客户端会话密钥加密后的http数据
+10. 服务端返回 使用服务器会话密钥加密后的http数据
+
+
+#### Golang实现https及http2协议处理
+
+```text
+http2.ConfigureServer(server, &http2.Server{})
+log.Fatal(server.ListenAndServeTLS(testdata.Path("server.crt"), testdata.Path("server.key")))
+log.Fatal(server.ListenAndServe())
+```
