@@ -1,0 +1,233 @@
+---
+layout:     post
+title:      "k8s-v1.20.2安装(kubeadm)"
+subtitle:   ""
+date:       2020-01-21 12:10:00
+author:     "YaPi"
+header-img: ""
+tags:
+    - Kubernetes
+---
+
+### 系统版本校验
+
+对于v1.20.2来说，安装必要条件如下
+1. 任意节点操作系统为centos 7.8 或 CentOS Stream 8
+2. CPU 内核数量大于等于 2，且内存大于等于 4G
+3. 任意节点 hostname 不是 localhost，且不包含下划线、小数点、大写字母
+4. 任意节点都有固定的内网 IP 地址
+5. 任意节点都只有一个网卡
+6. 任意节点上 Kubelet使用的 IP 地址 可互通（无需 NAT 映射即可相互访问），且没有防火墙、安全组隔离
+
+
+#### 安装
+
+1. 查看系统版本
+```text
+cat /etc/centos-release
+```
+2. 网络配置
+```text
+TYPE=Ethernet
+PROXY_METHOD=none
+BROWSER_ONLY=no
+BOOTPROTO=static
+DEFROUTE=yes
+IPV4_FAILURE_FATAL=no
+IPV6INIT=yes
+IPV6_AUTOCONF=yes
+IPV6_DEFROUTE=yes
+IPV6_FAILURE_FATAL=no
+IPV6_ADDR_GEN_MODE=stable-privacy
+NAME=enp0s3
+UUID=039303a5-c70d-4973-8c91-97eaa071c23d
+DEVICE=enp0s3
+ONBOOT=yes
+IPADDR=192.168.122.21
+NETMASK=255.255.255.0
+GATEWAY=192.168.122.1
+DNS1=223.5.5.5
+```
+
+3. 添加阿里镜像源
+
+```text
+rm -rfv /etc/yum.repos.d/*
+
+curl -o /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-8.repo
+```
+
+4. 配置主机名称
+
+```text
+hostnamectl set-hostname your-new-host-name
+
+# 查看修改结果
+hostnamectl status
+
+# 设置 hostname 解析
+echo "127.0.0.1   $(hostname)" >> /etc/hosts
+```
+5. 关闭swap,注释掉swap分区
+
+```text
+swapoff -a
+
+vi /etc/fstab
+# 注释掉swap分区信息
+#/dev/mapper/cl-swap     swap                    swap    defaults        0 0
+```
+
+6. 配置内核参数，将桥接的IPv4流量传递到iptables的链
+```text
+cat > /etc/sysctl.d/k8s.conf <<EOF
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1
+EOF
+
+sysctl --system
+```
+
+7. 常用包安装
+```text
+yum install vim bash-completion net-tools gcc -y
+```
+8. 安装docker-ce
+
+```text
+yum install -y yum-utils device-mapper-persistent-data lvm2
+yum-config-manager --add-repo https://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
+yum -y install docker-ce
+
+
+# 若报错：
+# requires containerd.io >= 1.4.1, but none of the providers can be installed
+# 去https://download.docker.com/linux找对应版本containerd
+
+wge https://download.docker.com/linux/centos/8/x86_64/stable/Packages/containerd.io-1.4.3-3.1.el8.x86_64.rpm 
+
+yum install containerd.io-1.4.3-3.1.el8.x86_64.rpm
+yum -y install docker-ce
+```
+
+9. 为docker安装加速
+
+```text
+mkdir -p /etc/docker
+
+tee /etc/docker/daemon.json <<-'EOF'
+{
+  "registry-mirrors": ["https://uc5aejsz.mirror.aliyuncs.com"]
+}
+EOF
+
+# 开机启动
+systemctl daemon-reload
+
+systemctl restart docker
+```
+
+10. 安装kubectl、kubelet、kubeadm
+
+```text
+#添加阿里kubernetes源
+cat <<EOF > /etc/yum.repos.d/kubernetes.repo
+[kubernetes]
+name=Kubernetes
+baseurl=https://mirrors.aliyun.com/kubernetes/yum/repos/kubernetes-el7-x86_64/
+enabled=1
+gpgcheck=1
+repo_gpgcheck=1
+gpgkey=https://mirrors.aliyun.com/kubernetes/yum/doc/yum-key.gpg https://mirrors.aliyun.com/kubernetes/yum/doc/rpm-package-key.gpg
+EOF
+
+# 安装
+yum install kubectl kubelet kubeadm
+systemctl enable kubelet
+```
+
+11. 初始化集群
+
+```text
+kubeadm init --kubernetes-version=1.18.0  \
+--apiserver-advertise-address=192.168.122.21   \
+--image-repository registry.aliyuncs.com/google_containers  \
+--service-cidr=10.10.0.0/16 --pod-network-cidr=10.122.0.0/16
+
+
+# 记录生成的最后部分内容，此内容需要在其它节点加入Kubernetes集群时执行。
+# 根据提示创建kubectl
+
+mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+# 安装网络
+kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
+
+# 查看集群状态
+kubectl get node
+
+kubectl get pod --all-namespaces
+```
+12. 从节点加入
+
+```text
+另一台机器执行上述1到10步骤
+
+主节点执行：
+kubeadm token create --print-join-command 
+获取加入命令,复制返回结果
+
+从节点执行上述复制结果
+kubeadm join 192.168.240.129:6443 --token u2jd7e.24ieck9km1o662pv     --discovery-token-ca-cert-hash sha256:0e88c19567dc1a59d14072890088c906be0a31ea92e686e1a207919afbf53d15 
+
+若从节点连接不上,关闭主机及本地防火墙
+systemctl stop firewalld 
+```
+
+13. kubernetes-dashboard安装
+
+```text
+github找到对应的版本此处是v2.1.0
+$ wget https://raw.githubusercontent.com/kubernetes/dashboard/v2.1.0/aio/deploy/recommended.yaml
+
+# 在service里添加nodeport
+
+kind: Service
+apiVersion: v1
+metadata:
+  labels:
+    k8s-app: kubernetes-dashboard
+  name: kubernetes-dashboard
+  namespace: kubernetes-dashboard
+spec:
+  type: NodePort # 新加
+  ports:
+    - port: 443
+      targetPort: 8443
+      nodePort: 30000 # 新加
+  selector:
+    k8s-app: kubernetes-dashboard
+
+
+# 运行
+kubectl create -f recommended.yaml
+
+# 登陆
+使用端口30000登陆，登陆方式选中token
+
+# 查看凭证
+kubectl -n kubernetes-dashboard get secret 
+
+# 使用凭证获取token
+kubectl describe secrets -n kubernetes-dashboard kubernetes-dashboard-token-74jp9 | grep token | awk 'NR==3{print $2}'
+# 使用token登陆,若等上去没有信息，重新配置用户权限
+
+# 清理旧提权
+kubectl delete clusterrolebinding serviceaccount-cluster-admin 
+
+kubectl create clusterrolebinding serviceaccount-cluster-admin –-clusterrole=cluster-admin –-user=system:serviceaccount:kubernetes-dashboard:kubernetes-dashboard
+
+# 重新登陆即可
+```

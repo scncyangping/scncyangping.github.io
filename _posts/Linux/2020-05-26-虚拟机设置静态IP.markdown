@@ -1,0 +1,46 @@
+---
+layout:     post
+title:      "杂记 - 虚拟机设置静态IP"
+subtitle:   ""
+date:       2020-05-25 13:01:00
+author:     "YaPi"
+header-img: ""
+tags:
+    - 杂记
+---
+
+#### MAC VMWARE 设置静态IP
+
+1. cd /Library/Preferences/VMware\ Fusion/vmnet8
+2. cat nat.conf
+3. 获取 ip及netmask，记录下来
+4. cat dhcpd.conf
+5. 获取到 range xxx.xxx.xxx.xx xxx.xxx.xx.xx 这句话，定义了ip可用范围
+6. mac系统偏好设置->网络->高级->DNS 获取到DNS列表
+7. 进入虚拟机 cd /etc/sysconfig/network-scripts
+8. 配置 ifcfg-ens33
+
+```text
+TYPE=Ethernet
+PROXY_METHOD=none
+BROWSER_ONLY=no
+BOOTPROTO=static
+DEFROUTE=yes
+IPV4_FAILURE_FATAL=no
+IPV6INIT=yes
+IPV6_AUTOCONF=yes
+IPV6_DEFROUTE=yes
+IPV6_FAILURE_FATAL=no
+IPV6_ADDR_GEN_MODE=stable-privacy
+NAME=ens33
+UUID=039303a5-c70d-4973-8c91-97eaa071c23d
+DEVICE=enp0s3
+ONBOOT=yes
+IPADDR=192.168.122.21 // 上诉范围内可用随便取
+NETMASK=255.255.255.0 // 上诉获取到的netmask
+GATEWAY=192.168.122.1 // 上诉获取到的ip
+DNS1=223.5.5.5 // 上诉获取到的DNS列表，多个就用DNS2、DNS3表示
+```
+
+如果你换了一个地方上网的话，可能虚拟机网络有问题了，那是因为DNS地址发生了变化
+此时只需要再次编辑ifcfg-enxxx文件，然后加上你现在网络的DNS地址即可

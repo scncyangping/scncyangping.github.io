@@ -1,0 +1,61 @@
+---
+layout:     post
+title:      "Kafka解析"
+subtitle:   ""
+date:       2021-01-19 13:01:00
+author:     "YaPi"
+header-img: ""
+tags:
+    - 架构师
+---
+
+#### 特征
+
+- 分布式流处理平台
+- 提供发布订阅及Topic支持
+- 吞吐量高但不保证消息有序性(其他消息队列一定保证消息有序性)
+- 其他消息队列消息消费完过后，就会消失，kafka不会，可以使用offset消费历史数据
+
+应用场景
+1. 日志收集或流式系统
+2. 消息系统(对消息的有序性不在意的地方，比如：订单服务)
+3. 用户活动跟踪或运营指标监控，比如淘宝这种类似平台
+
+#### 吞吐量为什么大？
+
+- 日志顺序读写和快速检索
+- Partition机制
+- 批量发送接受及数据压缩机制
+- 通过sendfile实现零拷贝原则(主要)
+
+原始拷贝过程
+
+![avatar](https://blog-1257627424.cos.ap-chengdu.myqcloud.com/kafka/%E9%9B%B6%E6%8B%B7%E8%B4%9D01.jpg)
+
+零拷贝过程,就是减少了用户空间和内核空间的切换过程
+
+![avatar](https://blog-1257627424.cos.ap-chengdu.myqcloud.com/kafka/%E9%9B%B6%E6%8B%B7%E8%B4%9D02.jpg)
+
+#### kafka消费者和消费者组
+
+kafka消费者组是kafka消费的单位
+单个Partition只能由消费者组中某个消费者消费
+消费者组中的单个消费者可以消费多个Partition
+
+#### Producer客户端
+
+![avatar](https://blog-1257627424.cos.ap-chengdu.myqcloud.com/kafka/Producer%E5%AE%A2%E6%88%B7%E7%AB%AF02.jpg)
+
+
+![avatar](https://blog-1257627424.cos.ap-chengdu.myqcloud.com/kafka/Producer%E5%AE%A2%E6%88%B7%E7%AB%AF01.jpg)
+
+#### kafka消息有序性保证
+
+kafka的特性只支持单Partition有序。
+但是这样会导致，并行失效，并且只能有一个consumer消费，这样会导致效率不高
+
+可以使用kafka key+offset可以做到业务有序。比如用户的的一个活动分析，可以使用用户
+的id作为key，根据offset进行排序。从而分析出活动的前后顺序
+
+#### kafka topic删除
+
