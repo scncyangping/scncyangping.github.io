@@ -125,6 +125,14 @@ EOF
 systemctl daemon-reload
 
 systemctl restart docker
+
+
+
+# docker-compose 安装 可选
+wget -c  https://github.com/docker/compose/releases/download/1.28.0/docker-compose-Linux-x86_64
+mv docker-compose-Linux-x86_64  /usr/bin/docker-compose
+chmod  a+x /usr/bin/docker-compose 
+docker-compose  --version
 ```
 
 10. 安装kubectl、kubelet、kubeadm
