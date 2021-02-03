@@ -1,0 +1,156 @@
+---
+layout:     post
+title:      "CI/CD实战"
+subtitle:   ""
+date:       2020-02-01 12:20:00
+author:     "YaPi"
+header-img: ""
+tags:
+- 运维
+---
+
+#### 原始方案
+
+Dockerfile
+```text
+# 依赖基础镜像
+FROM golang:1.14-alpine as builder
+WORKDIR /usr/src/app
+# 设置golang包proxy
+ENV GOPROXY=https://goproxy.cn
+COPY ./go.mod ./
+COPY ./go.sum ./
+RUN go mod download
+# 设置基础镜像源及时间设置
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories && \
+apk add --no-cache upx ca-certificates tzdata
+COPY . .
+# 编译
+RUN CGO_ENABLED=0 go build -ldflags "-s -w" -o server
+# 若需要开启压缩
+#&&\
+#upx --1 server -o _upx_server && \
+#mv -f _upx_server server
+
+# 运行环境可设置为更小的镜像
+FROM scratch as runner
+# 拷贝上述生成的文件
+COPY --from=builder /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+COPY --from=builder /usr/src/app/server /opt/app/
+CMD ["/opt/app/server"]
+```
+
+.drone.yml
+
+```text
+kind: pipeline
+type: docker
+name: demo-test2
+
+steps:
+  - name: structure
+    image: plugins/docker
+    settings:
+      dockerfile: ./Dockerfile
+      registry: https://私有仓库ip:端口:repo
+      repo: 私有仓库ip:端口:repo
+      username: xxxxx
+      password: xxxxxx
+      tags:
+        - '1.0.0'
+      insecure: true
+    volumes:
+      - name: docker
+        path: /var/run/docker.sock
+
+volumes:
+  - name: docker
+    host:
+      path: /var/run/docker.sock
+
+trigger:
+  branch:
+    include:
+      - master
+      - feature/*
+  event:
+    - push
+```
+
+
+存在问题 : 无法解决包管理问题
+
+优化：
+将编译过程独立出来，单独镜像中做处理，同时，挂载本机包管理路径，在编译的过程中，复用一套环境，节约包下载时间
+
+#### 优化版本
+
+.drone.yml
+
+```text
+kind: pipeline
+type: docker
+name: demo-test2
+
+# 基础环境
+# 此配置作用：设置过后，每一个步骤都会公用此空间，在此就是 /drone/go/src/workspace
+# 比如：在镜像golang:1.14-alpine会有/drone/go/src/workspace目录，此目录下就会包含
+# 项目源代码。同时，在执行了步骤app-build过后，会在此目录下生成 demo文件夹，文件夹内部会有
+# demo可执行文件及Shanghai、ca-certificates.crt 文件
+# 而后，在执行image-build后，同样的会有/drone/go/src/workspace路径，并且，也会包含上述
+# 步骤生成文件，所以，在Dockerfile文件内，可以直接使用 COPY 命令复制相关文件。
+
+workspace:
+  base: /drone
+  path: /go/src/workspace
+
+steps:
+  - name: app-build
+    image: golang:1.14-alpine
+    # 将上述镜像构建的基础命令，放在此容器中执行
+    commands:
+      - sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
+      - apk add --no-cache upx ca-certificates tzdata
+      - go env -w GOPROXY=https://goproxy.cn,direct
+      - CGO_ENABLED=0 go build -ldflags "-s -w" -o ./demo/demo
+      - cp /usr/share/zoneinfo/Asia/Shanghai ./demo
+      - cp /etc/ssl/certs/ca-certificates.crt ./demo
+    volumes:
+      # 挂载本机目录到容器go path目录
+      - name: cachefile
+        path: /go
+      - name: docker
+        path: /var/run/docker.sock
+
+  - name: image-build
+    image: plugins/docker
+    settings:
+      dockerfile: ./Dockerfile
+      registry: https://harbor.scncys.cn:1442
+      repo: harbor.scncys.cn:1442/mine/demo
+      username: admin
+      password: harbor123
+      tags:
+        - 'test-v3'
+    volumes:
+      - name: docker
+        path: /var/run/docker.sock
+
+volumes:
+  - name: cachefile
+    host:
+      path: /root/goworkspace/
+  - name: docker
+    host:
+      path: /var/run/docker.sock
+
+trigger:
+  branch:
+    include:
+      - master
+      - feature/*
+  # 若event的选择为tag，则不能和branch选择一起使用
+  event:
+    - push
+```

@@ -1,0 +1,221 @@
+---
+layout:     post
+title:      "drone 1.x"
+subtitle:   ""
+date:       2020-01-29 12:20:00
+author:     "YaPi"
+header-img: ""
+tags:
+    - 运维
+---
+
+#### docker-compose.yaml
+
+
+```text
+version: "2.1"
+
+services:
+# 服务端
+  drone-server:
+    image: drone/drone:1
+    ports:
+      - 1443:443
+      - 9089:80
+    volumes:
+      - /var/lib/drone:/data
+    #restart: always
+    depends_on:
+      - mysql
+    environment:
+      - DRONE_DATABASE_DATASOURCE=/var/lib/drone/drone.sqlite
+      - DRONE_DATABASE_DRIVER=sqlite3
+      - DRONE_DATABASE_DRIVER=mysql
+      - DRONE_DATABASE_DATASOURCE=root:root@tcp(ci_mysql:3306)/drone?parseTime=true
+      - DRONE_AGENTS_ENABLED=true
+      - DRONE_LOGS_DEBUG=true
+      - DRONE_GIT_ALWAYS_AUTH=false
+      - DRONE_GITLAB_SERVER=https://gitlab.scncys.cn
+      - DRONE_GITLAB_CLIENT_ID=fc269e800b31a795327cfe3618b2edd30cfa64d87b2fb94ff0f3912913a555a5
+      - DRONE_GITLAB_CLIENT_SECRET=960fd2504fee59dc44d825aaa142dd94b44c2daaf66ba53c6a53150298483f12
+      - DRONE_RPC_SECRET=1d03cced9b1e04cfadc615cfb53c136c # 为server和agent设置一个统一识别码 随便输，但必须前后一致
+      - DRONE_USER_CREATE=username:root,admin:true # 为drone的settings添加Trued username是gitlab用户名 admin默认为true
+      - DRONE_RUNNER_CAPACITY=3
+      - DRONE_SERVER_HOST=111.230.154.127  # drone服务器地址
+      - DRONE_SERVER_PROTO=http
+      - DRONE_TLS_AUTOCERT=false
+    networks:
+      - ci_net
+
+# 客户端
+  drone-agent:
+    image: drone/drone-runner-docker:1
+    restart: always
+    depends_on:
+      - drone-server
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:rw
+    environment:
+      - DRONE_RPC_PROTO=http
+      - DRONE_RPC_HOST=111.230.154.127 # 客户端服务器地址
+      - DRONE_RPC_SECRET=1d03cced9b1e04cfadc615cfb53c136c
+      - DRONE_RUNNER_CAPACITY=3
+      - DRONE_RUNNER_NAME=ip # runner名字 默认为服务器ip
+      - DRONE_LOGS_TRACE=true
+    networks:
+      - ci_net
+
+  mysql:
+    restart: always
+    image: mysql:5.7.16
+    container_name: ci_mysql
+    command: --default-authentication-plugin=mysql_native_password
+    volumes:
+      - ./mydir:/mydir
+      - ./datadir:/var/lib/mysql
+      - ./conf/my.cnf:/etc/my.cnf
+      #      数据库还原目录 可将需要还原的sql文件放在这里
+      - /docker/mysql/source:/docker-entrypoint-initdb.d
+    environment:
+      - "MYSQL_ROOT_PASSWORD=root"
+      - "MYSQL_DATABASE=drone"
+      - "TZ=Asia/Shanghai"
+    networks:
+      - ci_net
+    ports:
+      - 3307:3306
+
+networks:
+  ci_net:
+    driver: bridge
+```
+
+#### 使用方法及说明
+
+##### 触发器trigger
+trigger即配置drone什么时候触发执行的一种配置。比如git的某一个分支，或者某一种
+行为(push，pull_request等),或者某一个repo，或者drone构建中某一个状态等等，下面
+列举常用触发器
+
+- 配置分支
+
+```text
+trigger:
+  branch:
+  - master
+  - feature/*
+  
+或
+trigger:
+  branch:
+    include:
+    - master
+    - feature/*
+或
+trigger:
+  branch:
+    exclude:
+    - master
+    - feature/*
+```
+- 事件触发器
+
+常用trigger事件
+```text
+trigger:
+  event:
+  - cron
+  - custom
+  - push
+  - pull_request
+  - tag
+  - promote
+  - rollback
+  
+同样，可使用上述include或exclude
+```
+
+- 目标触发器: 
+
+```text
+trigger:
+  target:
+  - production
+
+或
+trigger:
+  target:
+    include:
+    - staging
+    - production
+```
+
+##### Platform
+配置系统平台，若不配置，默认linux amd64
+```text
+platform:
+  os: linux
+  arch: arm64
+
+或
+
+platform:
+  os: windows
+  arch: amd64
+  version: 1809
+```
+
+##### steps
+具体执行流程，流程里面可指定相关触发条件
+
+```text
+steps:
+- name: backend
+  commands:
+  - go build
+  - go test
+  when:
+    branch:
+    - master
+```
+
+##### 依赖前置步骤执行
+依赖前置两个操作
+
+```text
+kind: pipeline
+type: docker
+name: default
+
+steps:
+- name: backend
+  image: golang
+  commands:
+  - go build
+  - go test
+
+- name: frontend
+  image: node
+  commands:
+  - npm install
+  - npm test
+
+- name: notify
+  image: plugins/slack
+  settings:
+    webhook:
+      from_secret: webhook
+  depends_on:
+  - frontend
+  - backend
+```
+
+##### 有用的配置
+
+```text
+# 仅当本地不存在相关镜像才拉取
+steps:
+- name: build
+  pull: if-not-exists
+  image: golang
+```

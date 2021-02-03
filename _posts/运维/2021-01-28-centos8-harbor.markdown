@@ -83,3 +83,41 @@ log:
 同目录下：
 docker-compose down
 ```
+
+
+
+#### 若需自己配置nginx
+
+注释相关https配置
+
+```text
+upstream harbor {
+    server 159.75.40.92:8001 weight=1;
+}
+server {
+    listen      80;
+    listen 443 ssl;
+    server_name harbor.scncys.cn;
+    ssl_certificate   /root/ssh/harbor.scncys.cn.crt; 
+    ssl_certificate_key  /root/ssh/harbor.scncys.cn.key; 
+    ssl_session_timeout 5m; 
+    ssl_ciphers ECDHE-RSA-AES128-GCM-SHA256:ECDHE:ECDH:AES:HIGH:!NULL:!aNULL:!MD5:!ADH:!RC4;
+    ssl_protocols TLSv1 TLSv1.1 TLSv1.2; 
+    ssl_prefer_server_ciphers on;
+    location / {
+        proxy_pass http://harbor;
+        proxy_redirect off;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        client_max_body_size 20m;    
+        client_body_buffer_size 128k; 
+        proxy_connect_timeout 90;   
+        proxy_read_timeout 90;      
+        proxy_buffer_size 4k;       
+        proxy_buffers 6 32k;        
+        proxy_busy_buffers_size 64k; 
+        proxy_temp_file_write_size 64k; 
+    }
+}
+```
