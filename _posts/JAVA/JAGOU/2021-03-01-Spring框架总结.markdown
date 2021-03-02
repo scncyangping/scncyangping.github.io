@@ -1,0 +1,120 @@
+---
+layout:     post
+title:      "Spring框架总结"
+subtitle:   ""
+date:       2021-03-01 13:02:00
+author:     "YaPi"
+header-img: ""
+tags:
+    - 架构师
+---
+
+### Spring框架
+Spring 是一种轻量级开发框架，旨在提高开发人员的开发效率以及系统的可维护性。
+
+我们一般说 Spring 框架指的都是 Spring Framework，它是很多模块的集合，使用这些模块可以 很方便地协助我们进行开发。
+这些模块是:核心容器、数据访问/集成,、Web、AOP(面向切面 编程)、工具、消息和测试模块。比如:Core Container中的Core组件是Spring 所有组件的核
+心。Beans 组件和 Context 组件是实现IOC和依赖注入的基础，AOP组件用来实现面向切面编程。
+
+
+#### 注解相关
+@ResponseBody注解的作用是将Controller的方法返回的对象通过适当的转换器转换为指定的格式之后，写入到HTTP响应(Response)对象的body中。
+通常用来返回 JSON 或者 XML 数据，返回 JSON 数据的情况比􏰀多。
+
+@Component 和 @Bean 的区别是什么?
+1. 作用对象不同: @Component 注解作用于类，而 @Bean 注解作用于方法
+2. @Component通常是通过类路径扫描来自动侦测以及自动装配到Spring容器中(我们可以使用@ComponentScan注解定义要扫描的路径从中找出标识了
+   需要装配的类自动装配到 Spring 的 bean 容器中)。 @Bean注解通常是我们在标有该注解的方法中定义产生这个 bean, @Bean 告诉了Spring这是某个类的示例，当我需要用它的时候还给我
+3. @Bean注解比Component 注解的自定义性更强，而且很多地方我们只能通过@Bean注解来注册bean。比如当我们引用第三方库中的类需要装配到 Spring 容器时，则只能通过
+   @Bean 来实现
+
+
+将一个类声明为Spring的 bean 的注解有哪些?
+1. @Component :通用的注解，可标注任意类为 Spring 组件。如果一个Bean不知道属于哪 个层，可以使用 @Component 注解标注
+2. @Repository : 对应持久层即 Dao 层，主要用于数据库相关操作
+3. @Service : 对应服务层，主要涉及一些复杂的逻辑，需要用到 Dao层
+4. @Controller : 对应 Spring MVC 控制层，主要用户接受用户请求并调用 Service 层返回数
+   据给前端⻚面
+
+Spring JPA中如何不序列化一个属性
+1. static String transient1
+2. final String transient2 = “Satish”
+3. transient String transient3
+4. @Transient 注解
+
+#### AOP
+AOP(Aspect-Oriented Programming:面向切面编程)能够将那些与业务无关，却为业务模块所共 同调用的逻辑或责任(例如事务处理、日志管理、权限控制等)
+封装起来，便于减少系统的重复 代码，降低模块间的耦合度，并有利于未来的可拓展性和可维护性。
+
+Spring AOP就是基于动态代理的，如果要代理的对象，实现了某个接口，那么Spring AOP会使 用JDK Proxy，去创建代理对象，而对于没有实现接口的对象。
+就无法使用 JDK Proxy去进行代理了，这时候Spring AOP会使用Cglib ，这时候Spring AOP会使用 Cglib 生成一个被代理对象的 子类来作为代理。
+使用 AOP 之后我们可以把一些通用功能抽象出来，在需要用到的地方直接使用即可，这样大大 简化了代码量。我们需要增加新功能时也方便，这样也提高了系统扩展性。
+日志功能、事务管理等等场景都用到了AOP。
+
+Spring AOP 和 AspectJ AOP 有什么区别?
+
+```text
+Spring AOP 属于运行时增强，而 AspectJ 是编译时增强。 Spring AOP 基于代理(Proxying)，而 AspectJ 基于字节码操作(Bytecode Manipulation)。
+Spring AOP 已经集成了 AspectJ ，AspectJ 应该算的上是 Java 生态系统中最完整的AOP框架了。AspectJ 相比于 Spring AOP 功能更加强大。
+但是 Spring AOP 相对来说更简单， 如果我们的切面比􏰀少，那么两者性能差异不大。但是，当切面太多的话，最好选择 AspectJ ，它比Spring AOP 快很多
+```
+
+#### Bean实例化过程
+
+1. 定位到@ComponentScan注解及其他可定义Bean的注解的资源
+2. 将Bean的定义保存到BeanDefinition的实例中
+3. Ioc容器装载Bean的定义
+4. 容器利用 Java Reflection API 创建一个Bean的实例
+5. 如果涉及到一些属性值 利用 set() 方法设置一些属性值(包括DI)
+6. 如果 Bean 实现了 BeanNameAware 接口，调用 setBeanName() 方法，传入Bean的名字。
+7. 如果 Bean 实现了 BeanClassLoaderAware 接口，调用 setBeanClassLoader() 方法，传入ClassLoader 对象的实例
+8. 与上面的类似，如果实现了其他 *.Aware 接口，就调用相应的方法
+9. 如果有和加载这个Bean的Spring容器相关的 BeanPostProcessor 对象，执行postProcessBeforeInitialization() 方法
+10. @PostConstruct标注方法
+11. 如果Bean实现了 InitializingBean 接口，执行 afterPropertiesSet()方法
+12. 如果 Bean 在配置文件中的定义包含 init-method 属性，执行指定的方法
+13. 如果有和加载这个Bean的Spring容器相关的BeanPostProcessor对象，执行postProcessAfterInitialization() 方法
+14. @PreDestroy方法   
+15. 当要销毁Bean的时候，如果Bean实现了DisposableBean接口，执行destroy()方法
+16. 当要销毁Bean的时候，如果Bean在配置文件中的定义包含 destroy-method 属性，执行指定的方法
+
+#### SpringMVC工作原理
+
+1. 客户端(浏览器)发送请求，直接请求到 DispatcherServlet
+2. DispatcherServlet 根据请求信息调用 HandlerMapping ，解析请求对应的 Handler
+3. 解析到对应的 Handler (也就是我们平常说的 Controller 控制器)后，开始由 HandlerAdapter 适配器处理
+4. HandlerAdapter 会根据 Handler 来调用真正的处理器开处理请求，并处理相应的业务逻辑
+5. 处理器处理完业务后，会返回一个 ModelAndView 对象， Model 是返回的数据对 象， View是个逻辑上的View
+6. ViewResolver 会根据逻辑 View 查找实际的View
+7. DispatcherServlet 把返回的 Model 传给 View (视图渲染)
+8. 把 View 返回给请求者(浏览器)
+
+#### Spring中运用到到设计模式
+1. 工厂设计模式 : Spring使用工厂模式通过BeanFactory、ApplicationContext 创建 bean对象。
+2. 单例设计模式 : Spring 中的 Bean 默认都是单例的
+3. 代理设计模式 : Spring AOP 功能的实现
+4. 包装器设计模式 : 我们的项目需要连接多个数据库，而且不同的客户在每次访问中根据需要 会去访问不同的数据库。这种模式让我们可以根据客户的需求能够动态切换不同的数据源
+5. 观察者模式: Spring 事件驱动模型就是观察者模式很经典的一个应用
+6. 适配器模式 :Spring AOP 的增强或通知(Advice)使用到了适配器模式、spring MVC中也是用到了适配器模式适配Controller
+
+#### Spring事务
+Spring管理事务有两种方式：编程式事务(代码中硬编码)、声明式事务(包含两种：基于XML到声明式事务、基于注解的声明式事务)
+
+Spring包含了5种隔离级别
+1. TransactionDefinition.ISOLATION_DEFAULT: 使用后端数据库默认的隔离级别，Mysql 默认采用的 REPEATABLE_READ隔离级别 Oracle 默认采用的 READ_COMMITTED隔离级别
+2. TransactionDefinition.ISOLATION_READ_UNCOMMITTED: 最低的隔离级别，允许读取 尚未提交的数据变更，可能会导致脏读、幻读或不可重复读
+3. TransactionDefinition.ISOLATION_READ_COMMITTED: 允许读取并发事务已经提交的 数据，可以阻止脏读，但是幻读或不可重复读仍有可能发生
+4. TransactionDefinition.ISOLATION_REPEATABLE_READ: 对同一字段的多次读取结果 都是一致的，除非数据是被本身事务自己所修改，可以阻止脏读和不可重复读，但幻读仍有 可能发生
+5. TransactionDefinition.ISOLATION_SERIALIZABLE: 最高的隔离级别，完全服从ACID的 隔离级别。所有的事务依次逐个执行，这样事务之间就完全不可能产生干扰，也就是说，该级别可以防止脏读、不可重复读以及幻读。
+   但是这将严重影响程序的性能。通常情况下也不会用到该级别
+
+Spring包含了7种传播级别
+1. TransactionDefinition.PROPAGATION_REQUIRED: 如果当前存在事务，则加入该事务;如果当前没有事务，则创建一个新的事务
+2. TransactionDefinition.PROPAGATION_SUPPORTS: 如果当前存在事务，则加入该事务;如果当前没有事务，则以非事务的方式继续运行
+3. TransactionDefinition.PROPAGATION_MANDATORY: 如果当前存在事务，则加入该事务;如果当前没有事务，则抛出异常。(mandatory:强制性)
+4. TransactionDefinition.PROPAGATION_REQUIRES_NEW: 创建一个新的事务，如果当前存在事务，则把当前事务挂起
+5. TransactionDefinition.PROPAGATION_NOT_SUPPORTED: 以非事务方式运行，如果当前存在事务，则把当前事务挂起
+6. TransactionDefinition.PROPAGATION_NEVER: 以非事务方式运行，如果当前存在事务，则抛出异常
+7. TransactionDefinition.PROPAGATION_NESTED: 如果当前存在事务，则创建一个事务作为当前事务的嵌套事务来运行;如果当前没有事务.
+   则该取值等价于TransactionDefinition.PROPAGATION_REQUIRED
+   
