@@ -15,3 +15,38 @@ tags:
 本地内存。因此，默认情况下，元空间的大小仅受本地内存限制。类的元数据放入 native
 memory, 字符串池和类的静态变量放入 java 堆中，这样可以加载多少类的元数据就不再由
 MaxPermSize 控制, 而由系统的实际可用空间来控制。
+
+#### JAVA8
+
+##### 等待某一任务执行
+
+原始方法使用 CountDownLatch 等待多任务执行
+
+```text
+CountDownLatch countDownLatch = new CountDownLatch(6);
+...
+// 完成一个
+countDownLatch.countDown();
+// 等待
+countDownLatch.await();
+```
+
+使用java8提供的异步处理方法
+// 处理一系列文件
+List<String> filePaths = Arrays.asList(...)
+// 异步处理所有文件
+List<CompletableFuture<String>> fileFutures = filePaths.stream()
+    .map(filePath -> doSomeThing(filePath))
+    .collect(Collectors.toList());
+
+// 将他们合并起来
+CompletableFuture<Void> allFutures = CompletableFuture.allOf(
+    fileFutures.toArray(new CompletableFuture[fileFutures.size()])
+);
+
+// doSomeThing
+CompletableFuture<Void> task1 =
+    CompletableFuture.supplyAsync(()->{
+        //自定义业务操作
+        ....
+    });

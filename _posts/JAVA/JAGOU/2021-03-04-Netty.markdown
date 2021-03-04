@@ -1,0 +1,273 @@
+---
+layout:     post
+title:      "Netty总结"
+subtitle:   ""
+date:       2021-03-02 13:02:00
+author:     "YaPi"
+header-img: ""
+tags:
+    - 架构师
+---
+
+### 知识点
+
+#### Netty 是什么?
+
+1. Netty 是一个 基于 NIO 的 client-server(客户端服务器)框架，使用它可以快速简单地开发网 络应用程序。
+2. 它极大地简化并优化了 TCP 和 UDP 套接字服务器等网络编程,并且性能以及安全性等很多方面甚至都要更好
+3. 支持多种协议 FTP，SMTP，HTTP 以及各种二进制和基于文本的传统协议
+
+很多开源项目比如我们常用的 Dubbo、RocketMQ、Elasticsearch、 gRPC等等都用到了Netty
+
+#### 为什么要用 Netty?
+相对于JDK自带的NIO相关的API来说更加易用
+
+- 统一的 API，支持多种传输类型，阻塞和非阻塞的
+- 简单而强大的线程模型
+- 自带编解码器解决 TCP 粘包/拆包问题
+- 真正的无连接数据包套接字支持
+- 比直接使用Java核心API有更高的吞吐量、更低的延迟、更低的资源消耗和更少的内存复制
+- 安全性不错，有完整的SSL/TLS以及StartTLS支持
+
+#### Netty 应用场景
+
+1. 作为 RPC 框架的网络通信工具 : 我们在分布式系统中，不同服务节点之间经常需要相互调 用，这个时候就需要 RPC 框架了。不同服务节点之间的通信是如何做的呢?可以使用 Netty 来做。比如我调用另外一个节点的方法的话，至少是要让对方知道我调用的是哪个类中的哪 个方法以及相关参数吧
+2. 实现一个自己的 HTTP 服务器 :通过 Netty 我们可以自己实现一个简单的 HTTP 服务器， 这个大家应该不陌生。说到 HTTP 服务器的话，作为 Java 后端开发，我们一般使用 Tomcat 比􏰁多。一个最基本的 HTTP 服务器可要以处理常⻅的 HTTP Method 的请求，比 如 POST 请求、GET 请求等等
+3. 实现一个即时通讯系统
+
+#### Netty核心组件有哪些?分别有什么作用?
+
+##### Channel
+
+Channel 接口是 Netty 对网络操作抽象类，它除了包括基本的 I/O 操作，如 bind() 、 connect() 、 read() 、 write() 等。
+比􏰁常用的 Channel 接口实现类是 NioServerSocketChannel (服务端)和 NioSocketChannel (客 户端)，这两个 Channel 可以和
+BIO 编程模型中的 ServerSocket 以及 Socket 两个概念对应上。 Netty 的 Channel 接口所提供的 API，大大地降低了直接使用 Socket 类的复杂性
+
+##### EventLoop 
+
+EventLoop 的主要作用实际就是负责监听网络事件并调用事件处理器进行相关 I/O操作的处理
+
+Channel为Netty网络操作(读写等操作)抽象类， EventLoop负责处理注册到其上的Channel处理 I/O 操作，两者配合参与I/O 操作
+
+##### ChannelFuture
+
+Netty 是异步非阻塞的，所有的 I/O 操作都为异步的。因此，我们不能立刻得到操作是否执行成功，但是，你可以通过ChannelFuture接口的addListener()
+方法注册一个ChannelFutureListener ，当操作执行成功或者失败时，监听就会自动触发返回结果。
+
+并且，你还可以通过 ChannelFuture 的 channel() 方法获取关联的 Channel
+
+##### ChannelHandler 和 ChannelPipeline
+
+ChannelHandler是消息的具体处理器。他负责处理读写操作、客户端连接等事情。 ChannelPipeline 为 ChannelHandler的链，提供了一个容器并定义了用于沿着链传播入站和出站事件流的 API。
+当 Channel 被创建时，它会被自动地分配到它专属的 ChannelPipeline。我们可以在 ChannelPipeline 上通过 addLast() 方法添加一个或者多个 ChannelHandler
+因为一 个数据或者事件可能会被多个 Handler 处理。当一个 ChannelHandler 处理完之后就将数据交给 下一个 ChannelHandler
+
+##### EventLoopGroup了解么?和 EventLoop 啥关系?
+
+EventLoopGroup 包含多个 EventLoop (每一个 EventLoop 通常内部包含一个线程)，上面我们已经说了EventLoop的主要作用实际就是负责监听网络事件并调用事件处理器进行相关I/O操作的处理
+并且EventLoop处理的I/O事件都将在它专有的Thread上被处理，即Thread和EventLoop属于 1 : 1 的关系，从而保证线程安全
+
+##### Bootstrap 和 ServerBootstrap区别
+Bootstrap 是客户端的启动引导类/􏰂助类
+
+```text
+ EventLoopGroup group = new NioEventLoopGroup();
+ try {
+    //创建客户端启动引导/􏰂助类:Bootstrap Bootstrap
+    Bootstrap b = new Bootstrap();
+    b.group(group).
+                ......
+    // 尝试建立连接
+    ChannelFuture f = b.connect(host, port).sync();
+    f.channel().closeFuture().sync();
+ } finally {
+  // 优雅关闭相关线程组资源
+  group.shutdownGracefully();
+ }
+```
+
+ServerBootstrap 客户端的启动引导类/􏰂助类
+
+```text
+// 1.bossGroup 用于接收连接，workerGroup 用于具体的处理
+EventLoopGroup bossGroup = new NioEventLoopGroup(1);
+EventLoopGroup workerGroup = new NioEventLoopGroup();
+
+try {
+   //2.创建服务端启动引导/􏰂助类:ServerBootstrap
+   ServerBootstrap b = new ServerBootstrap();
+   b.group(bossGroup, workerGroup).
+                        ......
+   ChannelFuture f = b.bind(port).sync();
+   f.channel().closeFuture().sync();
+} finally {
+   // 优雅关闭相关线程组资源
+   bossGroup.shutdownGracefully();
+   workerGroup.shutdownGracefully();
+}
+```
+
+1. Bootstrap 通常使用 connet() 方法连接到远程的主机和端口，作为一个 Netty TCP 协议通 信中的客户端。另外
+   Bootstrap 也可以通过 bind() 方法绑定本地的一个端口，作为 UDP 协议通信中的一端
+2. ServerBootstrap 通常使用 bind() 方法绑定本地的端口上，然后等待客户端的连接
+3. Bootstrap 只需要配置一个线程组— EventLoopGroup ,而 ServerBootstrap 需要配置两个线
+   程组—EventLoopGroup ，一个用于接收连接，一个用于具体的处理。
+
+##### Netty线程模型?
+
+大部分网络框架都是基于Reactor模式设计开发的, Reactor模式基于事件驱动，采用多路复用将事件分发给相应的Handler处理，非常适合处理海量IO的场景
+
+在 Netty 主要靠 NioEventLoopGroup 线程池来实现具体的线程模型的
+我们实现服务端的时候，一般会初始化两个线程组:
+
+1. bossGroup :接收连接。
+2. workerGroup :负责具体的处理，交由对应的Handler 处理
+
+下面我们来详细看一下 Netty 中的线程模型
+1. 单线程模型
+
+一个线程需要执行处理所有的accept 、 read 、 decode 、 process 、 encode 、 send 事件。对于高负载、高并发，并且对性能要求比􏰁高的场景不适用
+
+```text
+// NioEventLoopGroup 类的无参构造函数设置线程数量的默认值就是 CPU 核心数 *2
+
+// 1.eventGroup既用于处理客户端连接，又负责具体的处理。
+EventLoopGroup eventGroup = new NioEventLoopGroup(1);
+// 2.创建服务端启动引导/􏰂助类:ServerBootstrap
+ServerBootstrap b = new ServerBootstrap();
+
+b.group(eventGroup, eventGroup)
+```
+
+2. 多线程模型
+
+一个Acceptor线程只负责监听客户端的连接，一个NIO线程池负责具体处理:accept 、 read 、 decode 、 process 、 encode 、 send 事件。
+满足绝大部分应用场景，并发连接量不大的时候没啥问题，但是遇到并发连接大的时候就可能会出现问题，成为性能瓶颈
+
+```text
+ 
+// 1.bossGroup 用于接收连接，workerGroup 用于具体的处理
+EventLoopGroup bossGroup = new NioEventLoopGroup(1);
+EventLoopGroup workerGroup = new NioEventLoopGroup();
+try {
+    //2.创建服务端启动引导/􏰂助类:ServerBootstrap
+    ServerBootstrap b = new ServerBootstrap();
+    //3.给引导类配置两大线程组,确定了线程模型
+    b.group(bossGroup, workerGroup)
+    //......
+}
+```
+
+3. 主从多线程模型
+
+从一个 主线程 NIO 线程池中选择一个线程作为 Acceptor 线程，绑定监听端口，接收客户端连接 的连接，其他线程负责后续的接入认证等工作。
+连接建立完成后，Sub NIO 线程池负责具体处理 I/O 读写。如果多线程模型无法满足你的需求的时候，可以考虑使用主从多线程模型 
+
+```text
+EventLoopGroup bossGroup = new NioEventLoopGroup();
+EventLoopGroup workerGroup = new NioEventLoopGroup();
+try {
+    ServerBootstrap b = new ServerBootstrap();
+    b.group(bossGroup, workerGroup)
+    //......
+}
+```
+
+
+#### Netty服务端和客户端的启动过程
+
+##### 服务端
+
+```text
+// 1.bossGroup 用于接收连接，workerGroup 用于具体的处理
+EventLoopGroup bossGroup = new NioEventLoopGroup(1);
+EventLoopGroup workerGroup = new NioEventLoopGroup();
+try {
+    //2.创建服务端启动引导/􏰂助类:ServerBootstrap
+    ServerBootstrap b = new ServerBootstrap();
+    //3.给引导类配置两大线程组,确定了线程模型
+    b.group(bossGroup, workerGroup)
+        // (非必备)打印日志
+        .handler(new LoggingHandler(LogLevel.INFO))
+        // 4.指定 IO 模型
+        // NioServerSocketChannel: 指定服务端的 IO 模型为 NIO，与 BIO 编程模型中的ServerSocket 对应
+        // NioSocketChannel: 指定客户端的 IO 模型为 NIO， 与 BIO 编程模型中的 Socket 对应
+        .channel(NioServerSocketChannel.class)
+        .childHandler(new ChannelInitializer<SocketChannel>() {
+            @Override
+            public void initChannel(SocketChannel ch) {
+                ChannelPipeline p = ch.pipeline();
+                //5.可以自定义客户端消息的业务处理逻辑
+                p.addLast(new HelloServerHandler());
+            }
+        });
+    // 6.绑定端口,调用 sync 方法阻塞知道绑定完成
+    ChannelFuture f = b.bind(port).sync();
+    // 7.阻塞等待直到服务器Channel关闭(closeFuture()方法获取Channel的CloseFuture对象,然后调用sync()方法)    
+    f.channel().closeFuture().sync();
+} finally {
+    //8.优雅关闭相关线程组资源
+    bossGroup.shutdownGracefully();
+    workerGroup.shutdownGracefully();
+}
+```
+
+
+##### 客户端
+
+```text
+//1.创建一个 NioEventLoopGroup 对象实例
+EventLoopGroup group = new NioEventLoopGroup();
+try{
+    //2.创建客户端启动引导/􏰂助类:Bootstrap
+    Bootstrap b = new Bootstrap();
+    //3.指定线程组
+    b.group(group)
+            //4.指定 IO 模型
+            .channel(NioSocketChannel.class)
+            .handler(new ChannelInitializer<SocketChannel>() {
+                @Override
+                public void initChannel(SocketChannel ch) throws Exception {
+                    ChannelPipeline p = ch.pipeline();
+                    // 5.这里可以自定义消息的业务处理逻辑
+                    p.addLast(new HelloClientHandler(message));
+                }
+            });
+    // 6.尝试建立连接
+    ChannelFuture f = b.connect(host, port).sync();
+    // 7.等待连接关闭(阻塞，直到Channel关闭)
+    f.channel().closeFuture().sync();
+    
+//     若需监听连接是否成功
+//        ChannelFuture f = b.connect(host, port).addListener(future -> {
+//         if (future.isSuccess()) {
+//            System.out.println("连接成功!");
+//         } else {
+//            System.err.println("连接失败!");
+//         }
+//        }).sync();
+} finally {
+  group.shutdownGracefully();  
+}
+```
+
+
+#### Netty心跳机制
+
+在 TCP 保持⻓连接的过程中，可能会出现断网等网络异常出现，异常发生的时候， client 与 server之间如果没有交互的话
+它们是无法发现对方已经掉线的。为了解决这个问题, 我们就需要引入心跳机制 
+
+心跳机制的工作原理是: 在 client 与 server 之间在一定时间内没有数据交互时, 即处于idle状态时, 客户端或服务器就会发送一个特殊的数据包给对方, 当接收方收到这个数据报文后
+也立即发送一个特殊的数据报文, 回应发送方, 此即一个PING-PONG 交互。所以, 当某一端收到心跳消息后, 就知道了对方仍然在线, 这就确保TCP连接的有效性
+
+TCP实际上自带的就有⻓连接选项，本身是也有心跳包机制，也就是TCP的选项: SO_KEEPALIVE。
+但是，TCP协议层面的⻓连接灵活性不够。所以，一般情况下我们都是在应用层协议上实现自定义心跳机制的，也就是在Netty层面通过编码实现。
+通过Netty实现心跳机制的话，核心类是IdleStateHandler
+
+#### Netty的零拷⻉了解么?
+在OS层面上的Zero-copy通常指避免在用户空间(User-space)与内核空间(Kernel-space)之间来回拷⻉数据。而在Netty层面 ，零拷⻉主要体现在对于数据操作的优化
+
+1. 使用 Netty 提供的 CompositeByteBuf 类, 可以将多个 ByteBuf 合并为一个逻辑上的 ByteBuf , 避免了各个 ByteBuf 之间的拷⻉
+2. ByteBuf 支持 slice 操作, 因此可以将 ByteBuf 分解为多个共享同一个存储区域的 ByteBuf , 避免了内存的拷⻉
+3. 通过 FileRegion 包装的 FileChannel.tranferTo 实现文件传输, 可以直接将文件缓冲区的数据 发送到目标 Channel , 避免了传统通过循环 write 方式导致的内存拷⻉问题
+
