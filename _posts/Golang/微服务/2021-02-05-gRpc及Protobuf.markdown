@@ -72,16 +72,20 @@ message ResponseProduct {
 }
 ```
 
-使用docker生成protoBuff文件，避免在机器中安装ProtoBuff
-
+安装protobuf后生成相关文件
 ```text
-docker run --rm -v $(PWD):${PWD} -w $(PWD) \
-    -e ICODE=CF388DF1EF1C5EB cap1573/cap-protoc \
-    -I ./ --go_out=./ --micro_out=./ ./*.proto
-    
---rm ： 命令执行完了，不保留容器
--v $(PWD):${PWD} ：将本机当前目录映射到容器目录
--w $(PWD) ：指定工作区
+mac os :
 
+brew install protoc
 
+go get -u github.com/golang/protobuf/proto
+go get -u github.com/golang/protobuf/protoc-gen-go
+go get github.com/micro/micro/v2/cmd/protoc-gen-micro
+
+若执行的时候报找不到文件：
+
+找到protoc-gen-go 文件，执行以下命令，该文件通过go get安装时会安装在$GOPATH/go/bin目录下
+cp protoc-gen-go /usr/local/bin/
+然后vim ~/.bash_profile
+export GOPATH=$HOME/go PATH=$PATH:$GOPATH/bin
 ```

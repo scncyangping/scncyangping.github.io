@@ -1,0 +1,32 @@
+---
+layout:     post
+title:      "Git操作"
+subtitle:   ""
+date:       2020-01-28 12:20:00
+author:     "YaPi"
+header-img: ""
+tags:
+    - 运维
+---
+
+#### 仓库相关
+
+无仓库，创建仓库
+```text
+mkdir micro-category
+cd micro-category
+git init
+touch README.md
+git add README.md
+git commit -m "first commit"
+git remote add origin git@gitee.com:scncyp/micro-category.git
+git push -u origin master
+```
+
+已有仓库
+
+```text
+cd existing_git_repo
+git remote add origin git@gitee.com:scncyp/micro-category.git
+git push -u origin master
+```

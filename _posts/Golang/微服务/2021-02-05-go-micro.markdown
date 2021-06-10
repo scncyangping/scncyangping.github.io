@@ -1,0 +1,59 @@
+---
+layout:     post
+title:      "go-micro"
+subtitle:   ""
+date:       2021-06-07 14:01:00
+author:     "YaPi"
+header-img: ""
+tags:
+    - Go微服务
+---
+
+#### 核心概念
+
+##### Micro是什么
+用来构建和管理分布式程序的系统，包含下述三个主要部分
+
+- Runtime(运行时)：用来管理配置，认证，网络等
+- Framework(程序开发框架)：用来方便编写微服务
+- Clients(多语言客户端)：支持多语言访问服务端 
+
+
+#### 设置
+##### GO module私有仓库设置
+
+- go get 内部使用git clone命令，默认只支持共有仓库
+- 在指定git仓库添加本地ssh密钥并验证
+- 替换，如：git config --global url."git@gitee.com:".insteadOf "https://gitee.com/"
+
+#### 创建
+
+##### micro创建项目
+
+1. sudo docker pull micro/micro
+2. sudo docker run --rm -v $(pwd):$(pwd) -w $(pwd) micro/micro new (模块名称)
+3. 项目创建好后，生成对应protobuf文件
+
+```
+protoc --proto_path=. --micro_out=. --go_out=:. proto/micro-user.proto
+```
+
+编写业务代码
+
+1. 编写model,指定实体
+2. 根据实体编写repository, repository主要处理数据库相关操作
+3. 编写service，此service主要根据repository处理相关业务操作
+4. 编写handler,实现micro相关proto文件中定义的handler,暴露相关接口
+5. 启动类，加载相关handler
+6. 编译：CGO_ENABLE=0 GOOS=linux GOARCH=amd64 go build -o user *.go
+7. 打包成docker镜像: docker build -t micro-user:latest .
+   
+##### GORM基本介绍及使用
+是什么？
+- go语言中实现数据访问的ORM库
+
+依赖说明
+
+- go get github.com/jinzhu/gorm
+- go get github.com/go-sql-driver/mysql
+- gorm.Open("mysql","root:123@/test?charset=utf8@parseTime=true&loc=Local")
