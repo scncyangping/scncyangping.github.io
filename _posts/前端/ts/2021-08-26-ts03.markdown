@@ -1,0 +1,108 @@
+---
+layout:     post
+title:      "TypeScript(三) Promise"
+subtitle:   ""
+date:       2020-08-26 13:20:00
+author:     "YaPi"
+header-img: ""
+tags:
+    - typeScript
+---
+
+#### 知识点
+
+- 前端的异步运行机制
+- 创建一个Promise
+- 等待一个Promise的运行
+- 处理Promise的错误
+- Promise的串联
+- 同时等待多个Promise
+- async/await 异步函数
+
+实例: 计算 （1+2+3） * 10
+
+```text
+# 定义返回 Promise类型数据
+function add(a:number,b:number): Promise<number> {
+    return new Promise((resolve,reject) => {
+        if (b % 17 === 0){
+            reject(`bad number : ${b}`)
+        }
+        setTimeout(() => {
+            resolve(a +b)
+        },2000)
+    })
+}
+
+# 定义返回 Promise类型数据
+function mul(a:number,b:number): Promise<number> {
+    return new Promise((resolve,reject) => {
+        setTimeout(() => {
+            resolve(a * b)
+        },2000)
+    })
+}
+
+add(1,2).
+then(res => {
+    console.log("1 + 2 = "+res)
+    return add(res,17)
+}).then(res => {
+    console.log("1 + 2 + 7 = "+res)
+    return mul(res,17)
+}).then(res => {
+    console.log("(1 + 2 + 7) * 10 = "+res)
+}).catch(err => {
+    console.log("err : "+err)
+})
+
+# new Promise((resolve,reject) resolve为正确情况，reject为错误情况
+# 若需在下一个then中继续使用，则需要return
+# catch可捕获异常
+```
+
+实例: 计算 （2+3) * (4+5),运用 Promise.all
+
+```text
+Promise.all([add(2,3),add(4,5)]).then(res => {
+    const [a,b] = res
+    console.log('result',a,b)
+    return mul(a,b)
+}).then(res => {
+    console.log('final result',res)
+})
+```
+
+并行计算只返回最快执行 Promise.race
+
+```text
+Promise.race([add(2,3),add(4,5)])
+.then(res =>{
+    console.log(res)
+})
+```
+
+#### async await
+
+```text
+// 方式一
+async function run (){
+    const [a,b] = await Promise.all([add(2,3),add(4,5)])
+    return mul(a,b)
+}
+
+run().then(res => console.log(res))
+
+
+
+// 方式二 直接定义
+const a = async ()=> {
+    const [a,b] = await Promise.all([add(2,3),add(4,5)])
+    return mul(a,b)
+}
+a().then(res => console.log(res))
+```
+
+async、await其实就是Promise语法糖
+
+await不能用在全局中,需要放在某方法内,并且,此方法需要用async修饰,同时,此方法返回值是Promise类型

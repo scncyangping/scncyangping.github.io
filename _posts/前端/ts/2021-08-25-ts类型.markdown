@@ -1,0 +1,111 @@
+---
+layout:     post
+title:      "TypeScript(一) 基本类型"
+subtitle:   ""
+date:       2020-08-25 12:20:00
+author:     "YaPi"
+header-img: ""
+tags:
+    - typeScript
+---
+
+#### 安装
+运用npm安装
+
+1. npm install -g typescript
+2. npx tsc
+
+#### 类型
+
+- number
+- boolean
+- string
+- literal
+- 类型的并集
+- any类型
+- undefined类型
+
+```text
+# 常量不能改变
+const ttt = "123" 
+# 指定类型后，能改变，但是不能改变类型,未指定类型会自动推断类型
+let amount:number = 123
+# 可以定义多个类型,后续若修改此变量也只能在定义的变量类型中
+let amount:number|string = 123
+# 可指定变量值数组，定义的变量值只能在此当中
+let amount:123|321|'123'|'321' = 123
+# 定义变量为任意类型
+let amount:any = 123
+# 定义为undefined，则只能为undefined
+let amount:undefined = undefined
+```
+#### 异常
+
+所有判断等于的情况尽量用三个等于，判断不相等的时候使用两个等于
+
+```text
+
+for (let i =0;i<100;i++){
+    sum+=i
+    try{
+        if (i % 18 === 0){
+            throw `caonima ${i}`
+        }
+    }catch(err){
+        console.log(err)
+    }
+}
+# out put
+[LOG]: "caonima 0" 
+[LOG]: "caonima 18" 
+[LOG]: "caonima 36" 
+[LOG]: "caonima 54" 
+[LOG]: "caonima 72" 
+[LOG]: "caonima 90" 
+[LOG]: 4950 
+```
+
+#### 特有类型(枚举)
+
+定义
+
+```text
+
+enum HttpStatus {
+    OK,
+    Not_FOUND,
+    INTERNAL_SERVER_ERROR
+}
+
+function processHTTPStatus(s: HttpStatus){
+    // 状态码
+    console.log(s)
+    // 也可以直接打印枚举定义的名字
+    console.log(HttpStatus[s]
+}
+
+processHTTPStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+
+
+编译后的JS代码
+
+var HttpStatus;
+(function (HttpStatus) {
+    HttpStatus[HttpStatus["OK"] = 0] = "OK";
+    HttpStatus[HttpStatus["Not_FOUND"] = 1] = "Not_FOUND";
+    HttpStatus[HttpStatus["INTERNAL_SERVER_ERROR"] = 2] = "INTERNAL_SERVER_ERROR";
+})(HttpStatus || (HttpStatus = {}));
+function processHTTPStatus(s) {
+    console.log(s);
+}
+processHTTPStatus(HttpStatus.INTERNAL_SERVER_ERROR);
+
+
+自己定义状态码
+可以设置为数字或字符串
+enum HttpStatus {
+    OK = 200,
+    Not_FOUND = 400,
+    INTERNAL_SERVER_ERROR = 500
+}
+```

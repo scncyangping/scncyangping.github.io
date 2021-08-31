@@ -1,0 +1,146 @@
+---
+layout:     post
+title:      "TypeScript(二) 函数式编程"
+subtitle:   ""
+date:       2020-08-25 13:20:00
+author:     "YaPi"
+header-img: ""
+tags:
+    - typeScript
+---
+
+### 函数式编程
+
+- 函数式编程风格
+
+1. 函数是一等公民
+2. 高阶函数
+3. 闭包
+4. 部分应用函数
+
+- 惰性计算
+- 引用透明性
+- 无副作用
+  > 对函数的引用不用操作其他数据,比如: 下述闭包例子中，不使用闭包，而去使用全局变量定义交换次数,就需要每次操作都去删除前一个值
+
+```text
+原始js数组排序
+let a = [5,2,1,6,8,23,1,6,11,23,5]
+
+a.sort()
+
+# 会按照字典顺序排序
+#out
+1 1 11 2 ...
+
+# 使用函数排序
+function compareNumber(a: number, b:number){
+    // 小于返回负数
+    return a-b
+}
+a.sort(compareNumber)
+console.log(a)
+```
+
+##### 函数作为一等公民
+
+- 变量类型可以是函数
+- 值可以是函数
+- 对象的字段可以是函数
+- 函数的参数可以是返回
+- 函数的返回值可以是函数
+
+
+##### 闭包
+
+```text
+// 直接比较
+function compareNumber(a: number, b:number){
+    // 小于返回负数
+    return a-b
+}
+// 包装后返回
+function loggingCompareNumber(f:(a:number,b:number)=>number){
+    return (a:number,b:number) =>{
+        console.log(a,b)
+        return f(a,b)
+    }
+}
+
+let a = [5,2,1,6,8,23,1,6,11,23,5]
+
+a.sort(compareNumber)
+console.log(a)
+a.sort(loggingCompareNumber(compareNumber))
+
+# 直接使用表达式
+a.sort(loggingCompareNumber((a,b)=> b-a))
+console.log(a)
+```
+
+```text
+function compareNumber(a: number, b:number){
+    // 小于返回负数
+    return a-b
+}
+
+function loggingCompareNumber(
+    log: (a:number,b:number)=> void,
+    f:(a:number,b:number)=>number){
+    return (a:number,b:number) =>{
+        log(a,b)
+        return f(a,b)
+    }
+}
+
+function start(array:number[]){
+    let count = 0
+    const log = (a:number,b:number)=>{
+        count++
+        console.log(a,b)
+    }
+    a.sort(loggingCompareNumber(log,(a:number,b:number)=> a-b))
+
+    return count
+}
+let a = [5,2,1,6,8,10,5,25,16,23,11]
+
+console.log(a)
+console.log(start(a))
+```
+
+##### 部分应用函数
+
+```text
+# 有两个参数的函数，返回false
+function isGoodNumber(goodFactor:number, v:number){
+    return v % goodFactor === 0
+}
+
+# 只接受一个数组，和一个只有一个参数的参数，返回false
+function filterArray(a:number[], f: (v: number) => boolean){
+    return a.filter(f)
+}
+
+const GOOD_FACTORY = 2
+
+const a =[1,2,3,4,5,6,7,8,9]
+
+# 一个函数有两个参数，但是比较函数只有一个参数使用
+console.log(
+    filterArray(a,(v) => isGoodNumber(GOOD_FACTORY,v))
+)
+
+
+# 另外一种写法
+# 将外部参数传入，作为指定函数参数
+function partiallyApply(f: (a:number,b:number)=>boolean,
+    aa:number){
+        return (bb:number) => f(aa,bb)
+    }
+
+
+console.log(
+    filterArray(a, partiallyApply(isGoodNumber,GOOD_FACTORY))
+)
+```

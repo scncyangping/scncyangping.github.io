@@ -1,0 +1,236 @@
+---
+layout:     post
+title:      "TypeScript(四) 接口、类、泛型"
+subtitle:   ""
+date:       2020-08-27 13:20:00
+author:     "YaPi"
+header-img: ""
+tags:
+    - typeScript
+---
+
+### 接口
+
+接口用来描述一个类型
+
+可以定义字段/函数
+
+readonly 用来标记一个字段为只读字段(很少使用)
+
+```text
+interface Employee {
+    readonly name : string
+    salary?: number
+    bonus?: number
+    updateBonus?(p:number):void
+}
+
+const emp1: Employee = {
+    name: 'joh',
+    salary: 8000
+}
+ 
+const emp2: Employee ={
+    name: '123',
+    bonus: 123
+}
+```
+
+#### 高级用法
+
+可选参数串连
+
+```text
+interface Employee {
+    name?: {
+        first?: string
+        last: string
+    }
+    salary?: number
+    bonus?: number
+}
+
+使用时若直接使用 e.name.first.startWith('sss')会报错,编译不通过
+因为name和first可能不存在。
+
+使用方式：
+
+// 这种是ts加入的能力
+e.name?.first?.startWith('sss')
+```
+
+非空断言
+
+```text
+// 若需要跳过这种校验,则使用 ! ,这种方式叫非空断言 
+e.name!.first!.startWith('sss')
+```
+
+接口扩展
+
+```text
+interface HasName {
+    name?: {
+            first?: string
+            last: string
+        }
+}
+interface Employee extends HasName{
+    salary?: number
+    bonus?: number
+}
+```
+
+
+#### 判断接口类型
+
+接口翻译成js代码是不会存在相关类型的，所以不能用instanceof 判断类型
+
+```text
+interface WxButton {
+    visible: boolean
+    enabled: boolean
+    onClick() : void
+}
+
+interface WxImage {
+    visible: boolean,
+    src: string,
+    width: number
+    height: number
+}
+
+// 第一种
+// function hideElement(e: WxButton | WxImage){
+//     if ( (e as any).onClick){
+//         const btn = e as WxButton
+//         btn.onClick()
+//     }else {
+//         const img = e as WxImage
+//         console.log(img.src)
+//     }
+// }
+
+// 第二种 编译器会自动识别
+function hideElement(e: WxButton | WxImage){
+    if (isButton(e)){
+        e.onClick()
+    }else {
+        console.log(e.src)
+    }
+}
+function isButton(e: WxButton | WxImage): e is WxButton {
+    return (e as WxButton).onClick !== undefined
+}
+```
+
+### 类
+
+```text
+// 第一种定义方式
+// class Employee {
+//     name : string 
+//     salary: number
+//     private bonus: number = 0
+//     constructor(name:string,salary:number){
+//         this.name = name
+//         this.salary = salary
+//     }
+// }
+
+// getter/setter
+class Employee {
+    private allocatedBonus?: number
+
+    constructor(public name:string,public salary:number){}
+
+    set bonus(v:number){
+        this.allocatedBonus = v
+    }
+
+    get bonus() {
+        return this.allocatedBonus || 0
+    }
+}
+
+// 继承
+class Manager extends Employee {
+
+    private reporters : Employee[] = []
+
+    constructor(name:string,salary:number){
+        super(name,salary)
+    }
+    addReporter(e:Employee){
+        this.reporters.push(e)
+    }
+}
+
+// 类的构造方法constructor定义，可以给方法加public或者private，这样就不用定义相关字段
+const emp1 = new Employee('jphn',8000)
+
+// 类可以定义get和set方法，使用的时候直接点号
+emp1.bonus = 123
+// 类可以继承，若要复用父类属性，本身就不需要再定义
+const manage = new Manager('warer',20000)
+manage.addReporter(emp1)
+manage.bonus = 60000
+
+console.log(manage)
+
+
+
+// 类实现接口
+// 实现某个接口需要类拥有所有接口拥有的属性
+// 可以显示指定
+class EmployImpl implements Employee {
+
+}
+// 也可以不使用implements，只要拥有了接口的属性就自动实现了该接口
+```
+
+#### 泛型
+
+
+```text
+// 定义权重接口
+interface Weight {
+    weight:number
+}
+
+// 自定义数组 实现权重接口
+class MyArray<T extends Weight> {
+    data : T[]=[]
+    add(t : T){
+        this.data.push(t)
+    }
+    map<U>(f: (v:T) => U): U[]{
+        return this.data.map(f)
+    }
+    print(){
+        console.log(this.data)
+    }
+    // 自定义数组采用权重方式
+    sortByWeight(){
+        this.data.sort((a,b)=> a.weight - b.weight)
+    }
+}
+// 定义具体的类 该类实现类权重接口
+class WeightNum {
+    constructor(public weight:number){}
+}
+
+// 定义权重数组
+const a = new MyArray<WeightNum>()
+a.add(new WeightNum(10500))
+a.add(new WeightNum(500))
+a.add(new WeightNum(1500))
+
+console.log(a.map(v => v.weight + "123"))
+
+console.log(a)
+
+a.sortByWeight()
+
+console.log(a)
+```
