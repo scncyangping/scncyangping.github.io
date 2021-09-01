@@ -1,0 +1,73 @@
+---
+layout:     post
+title:      "go随笔-编译反编译及工具使用"
+subtitle:   ""
+date:       2021-09-01 14:01:00
+author:     "YaPi"
+header-img: ""
+tags:
+    - go
+---
+
+#### 编译
+
+在Go语言中,可以使用下述语句观察整个编译过程
+
+```text
+go build -x main.go
+```
+在编译过程中，主要包含两个步骤
+
+- 编译
+  > 将源代码文件编译为.o结尾的目标文件
+- 链接
+  > 将目标文件合并为可执行文件
+
+可执行文件在不同操作系统中规范不一样。linux系统中为ELF，windows系统中PE，macos系统中Mach-O
+
+Linux 的可执行文件 ELF(Executable and Linkable Format)为例包含: 
+
+- ELF header
+- Section header
+- Sections
+
+linux操作系统在解析可执行文件时候，首先解析ELF header,其次，加载文件至内存，最后，从entry point开始执行代码
+
+
+#### 分析工具
+
+- readelf
+- dlv
+- go tool compile -S
+- go tool objdump 
+
+在linux系统中，可以使用工具readelf来找到Go进程的执行入口
+
+```text
+readelf -h ./可执行文件名称
+```
+![avatar](https://blog-1257627424.cos.ap-chengdu.myqcloud.com/go%E9%9A%8F%E7%AC%94/1630492367504.jpg)
+
+可使用dlv中的命令进行调试
+
+```text
+b *内存地址 命令设置了一个断点，可多次标记
+使用 c 命令，即为下一步，跳转到某一额断点。
+跳转了过后会有具体代码执行文件到位置
+```
+
+![avatar](https://blog-1257627424.cos.ap-chengdu.myqcloud.com/go%E9%9A%8F%E7%AC%94/1630492698359.jpg)
+
+
+CPU 无法理解文本，只能执行一条一条的二进制机器码指令,每次执行完一条指令，pc寄存器就指向下一条继续执行
+
+编译时查看: 
+```text
+go tool compile -S ./main.go | grep "main.go:5"
+```
+
+查看可执行文件
+
+```text
+go tool objdump ./main -E |grep "main.go"
+```
