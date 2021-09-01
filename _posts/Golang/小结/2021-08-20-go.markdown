@@ -48,12 +48,13 @@ readelf -h ./可执行文件名称
 ```
 ![avatar](https://blog-1257627424.cos.ap-chengdu.myqcloud.com/go%E9%9A%8F%E7%AC%94/1630492367504.jpg)
 
-可使用dlv中的命令进行调试
+找到执行入口地址过后，就可使用dlv中的命令进行调试了
 
 ```text
 b *内存地址 命令设置了一个断点，可多次标记
-使用 c 命令，即为下一步，跳转到某一额断点。
+使用 c 命令，即为下一步，跳转到某一断点。
 跳转了过后会有具体代码执行文件到位置
+
 ```
 
 ![avatar](https://blog-1257627424.cos.ap-chengdu.myqcloud.com/go%E9%9A%8F%E7%AC%94/1630492698359.jpg)
