@@ -1,0 +1,38 @@
+---
+layout:     post
+title:      "go随笔-垃圾回收"
+subtitle:   ""
+date:       2021-09-10 14:01:00
+author:     "YaPi"
+header-img: ""
+tags:
+    - go
+---
+
+### 垃圾回收
+
+##### 垃圾分类
+
+语义垃圾(semantic garbage)—有的被称作内存泄露，语义垃圾指的是从语法上可达(可以通过局部、全局变量引用 得到)的对象，但从语义上来讲他们是垃圾，垃圾回收器对此 无能为力。
+
+语法垃圾(syntactic garbage) 语法垃圾是讲那些从语法上无法到达的对象，这些才是垃圾收集器主要的收集目标。
+
+
+##### 常见垃圾收集算法
+
+引用计数(Reference Counting): 某个对象的根引用计数变为 0 时，其所有子节点均需被回收。 
+标记压缩(Mark-Compact): 将存活对象移动到一起，解决内存碎片问题。
+复制算法(Copying): 将所有正在使用的对象从 From 复制到 To 空间，堆利用率只有一半。
+标记清扫(Mark-Sweep):解决不了内存碎片问题。需要与能尽量避免内存碎片的分配器使用，如 tcmalloc。Go语言也是采用的此方式
+
+##### GC标记流程
+
+![avatar](https://blog-1257627424.cos.ap-chengdu.myqcloud.com/golang/GC%E4%B8%BB%E6%B5%81%E7%A8%8B.jpg)
+
+##### 触发 gcStart
+
+- runtime.GC : 手动调用
+- runtime.mallocgc，可能内存分配的速度会超过内存回收的速度，所以在内存分配的时候可能会触发GC或协助处理一些GC的工作
+- forcegchelper: 若在一定时间内没有执行GC,Go后台会启动一个协程执行GC。一般时间为2min
+
+![avatar](https://blog-1257627424.cos.ap-chengdu.myqcloud.com/golang/gc.svg)

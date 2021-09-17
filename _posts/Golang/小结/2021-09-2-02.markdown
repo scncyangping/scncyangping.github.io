@@ -1,0 +1,83 @@
+---
+layout:     post
+title:      "go随笔-系统初始化"
+subtitle:   ""
+date:       2021-09-02 14:01:00
+author:     "YaPi"
+header-img: ""
+tags:
+    - go
+---
+
+#### 系统初始化流程
+
+首先确定程序启动位置，当前编译过后可执行文件名称为 main
+
+1. 使用readelf -h /main 找到程序启动位置
+2. 使用dlv exec /main 调试代码，在上述启动位置使用 b * 命令打上断点
+3. dlv中使用si跳转到下一个位置。
+
+这样就找到了启动文件在 ../golang/src/runtime/rt0_linux_amd64.s:8
+
+```text
+[root@c4ddfe6f8f1e /]# dlv exec ./main
+Type 'help' for list of commands.
+(dlv) b *0x45cfa0
+Breakpoint 1 set at 0x45cfa0 for _rt0_amd64_linux() .usr/lib/golang/src/runtime/rt0_linux_amd64.s:8
+(dlv) c
+> _rt0_amd64_linux() .usr/lib/golang/src/runtime/rt0_linux_amd64.s:8 (hits total:1) (PC: 0x45cfa0)
+Warning: debugging optimized function
+     3: // license that can be found in the LICENSE file.
+     4: 
+     5: #include "textflag.h"
+     6: 
+     7: TEXT _rt0_amd64_linux(SB),NOSPLIT,$-8
+=>   8:         JMP     _rt0_amd64(SB)
+     9: 
+```
+
+而后，使用si进入下一步
+
+```text
+(dlv) si
+> _rt0_amd64() .usr/lib/golang/src/runtime/asm_amd64.s:15 (PC: 0x459ae0)
+Warning: debugging optimized function
+    10: // _rt0_amd64 is common startup code for most amd64 systems when using
+    11: // internal linking. This is the entry point for the program from the
+    12: // kernel for an ordinary -buildmode=exe program. The stack holds the
+    13: // number of arguments and the C-style argv.
+    14: TEXT _rt0_amd64(SB),NOSPLIT,$-8
+=>  15:         MOVQ    0(SP), DI       // argc
+    16:         LEAQ    8(SP), SI       // argv
+    17:         JMP     runtime·rt0_go(SB)
+    18: 
+    19: // main is common startup code for most amd64 systems when using
+    20: // external linking. The C startup code will call the symbol "main"
+(dlv) 
+
+```
+
+由此可得启动步骤：
+
+1. runtime._rt0_amd64_linux
+2. runtime._rt0_amd64
+3. runtime.rto_go
+
+在runtime.rto_go中，执行了程序初始化相关步骤并开始进入调度循环
+
+1. argc、argv处理
+2. 全局m0、g0初始化
+3. 获取CPU核心数
+4. 开始执行用户main函数
+
+
+```text
+......
+	CALL	runtime·args(SB)
+	CALL	runtime·osinit(SB)
+	CALL	runtime·schedinit(SB)
+
+	// create a new goroutine to start program
+	MOVQ	$runtime·mainPC(SB), AX		// entry
+......
+```

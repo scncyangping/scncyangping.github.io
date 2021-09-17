@@ -1,0 +1,200 @@
+---
+layout:     post
+title:      "go随笔-内置数据结构"
+subtitle:   ""
+date:       2021-09-03 14:01:00
+author:     "YaPi"
+header-img: ""
+tags:
+    - go
+---
+
+### 内置数据结构
+
+#### Channel
+
+主要数据结构
+
+```text
+type hchan struct {
+	qcount   uint           // 当前队列当中的数据数量
+	dataqsiz uint           // 循环队列的长度
+	buf      unsafe.Pointer // 对应数据数组地址
+	elemsize uint16 
+	closed   uint32
+	elemtype *_type // element type
+	sendx    uint   // 对应循环队列的位置，下一个元素发送的位置
+	recvx    uint   // 对应循环队列的位置，下一个被消费的元素位置
+	recvq    waitq  // 当前buf无数据，并且，也没有发送的数据，那么会封装成一个sudog类型的链表，等待接收数据
+	sendq    waitq  // 当循环队列被放满时，再次发送的数据，会被封装成一个sudog类型的链表，等待消费
+
+	// lock protects all fields in hchan, as well as several
+	// fields in sudogs blocked on this channel.
+	//
+	// Do not change another G's status while holding this lock
+	// (in particular, do not ready a G), as this can deadlock
+	// with stack shrinking.
+	lock mutex 
+}
+
+
+type waitq struct {
+	first *sudog
+	last  *sudog
+}
+
+type sudog struct {
+	// The following fields are protected by the hchan.lock of the
+	// channel this sudog is blocking on. shrinkstack depends on
+	// this for sudogs involved in channel ops.
+
+	g *g
+
+	next *sudog
+	prev *sudog
+	elem unsafe.Pointer // data element (may point to stack)
+
+	// The following fields are never accessed concurrently.
+	// For channels, waitlink is only accessed by g.
+	// For semaphores, all fields (including the ones above)
+	// are only accessed when holding a semaRoot lock.
+
+	acquiretime int64
+	releasetime int64
+	ticket      uint32
+
+	// isSelect indicates g is participating in a select, so
+	// g.selectDone must be CAS'd to win the wake-up race.
+	isSelect bool
+
+	parent   *sudog // semaRoot binary tree
+	waitlink *sudog // g.waiting list or semaRoot
+	waittail *sudog // semaRoot
+	c        *hchan // 所在channel
+}
+```
+
+- 创建
+
+对应runtime.makechan(),创建时，可以指定buf大小，若设置为0，则是无缓冲channel
+
+- 添加
+
+1. 当前有缓冲，且缓冲未满，则，直接放入缓冲，并且qcount数增加1，同时，设置sendx指向队列下一个位置
+2. 当前有缓冲，但缓冲满了,则，封装成一个sudog,加入到sendq对应的sudog链表
+3. 当前无缓冲，若recvq中有等候接收的G,则，把send的数据直接拷贝到目标到栈上，并调用 goready()唤醒之前被阻塞的revq,若无接收的q，则报错
+- 读取
+
+1. 当前有缓冲，且缓冲区有数据，将recvx位置对应的数据进行出队。同时，recvx指向下一个位置。若此时，队列已满，
+则，判断sendq是否有待发送数据，若有，则将sendq中，先加入的数据进行出队，并复制到recvx原位置。
+2. 当前有缓冲，若当前缓冲区无数据，且sendq中也无数据，则将此读取操作封装成sudog,放入到recvq对应的链表中
+3. 当前无缓冲，若sendq中有等待发送的G,则，从sendq的栈上拷贝数据，并调用goready()唤醒发送的G,若无，则报错
+
+
+channel的并发安全其实也是通过锁来实现的。在运行时有专门的锁，channel在执行发送、接收、关闭的时候都会加锁来保证
+并发安全。
+
+每一个可接管的阻塞均是由gopark方法挂起，每一个gopark也都对应着goready唤醒操作。在channel中，Sender挂起，一定
+是由receiver或close唤醒，Receiver挂起，一定是由sender或close唤醒
+
+对应：
+channel send -> channel receive/close
+Lock -> Unlock
+Read -> Read Ready, epoll_wait返回了该fd事件
+Timer -> checkTimers,检查到期唤醒
+
+#### Timer
+
+golang Timer在早期版本，全局采用一个timer heap。有专门的G来运行。后面改成了64个数组，每个数组里有一个timer heap。
+同时，每一个P绑定一个timer。提升并发时效率。
+
+并且，将timer到期的校验，放在了schedule中的checkTimers方法中执行。每次根据构建的四叉小顶堆，找到堆顶元素执行。
+
+timer新版还会有工作窃取的功能，会从其他P当中偷取timer执行
+
+runtime.sysmon中会为timer未被触发(timeSleepUntil)兜底,会启动新线程执行
+
+
+
+#### Map
+
+设计结构体
+
+```text
+type hmap struct {
+	count     int // # live cells == size of map.  Must be first (used by len() builtin)
+	flags     uint8
+	B         uint8  // log_2 of # of buckets (can hold up to loadFactor * 2^B items)
+	noverflow uint16 // approximate number of overflow buckets; see incrnoverflow for details
+	hash0     uint32 // hash seed
+
+	buckets    unsafe.Pointer // array of 2^B Buckets. may be nil if count==0.
+	oldbuckets unsafe.Pointer // previous bucket array of half the size, non-nil only when growing
+	nevacuate  uintptr        // progress counter for evacuation (buckets less than this have been evacuated)
+
+	extra *mapextra // optional fields
+}
+
+// mapextra holds fields that are not present on all maps.
+type mapextra struct {
+	// If both key and elem do not contain pointers and are inline, then we mark bucket
+	// type as containing no pointers. This avoids scanning such maps.
+	// However, bmap.overflow is a pointer. In order to keep overflow buckets
+	// alive, we store pointers to all overflow buckets in hmap.extra.overflow and hmap.extra.oldoverflow.
+	// overflow and oldoverflow are only used if key and elem do not contain pointers.
+	// overflow contains overflow buckets for hmap.buckets.
+	// oldoverflow contains overflow buckets for hmap.oldbuckets.
+	// The indirection allows to store a pointer to the slice in hiter.
+	overflow    *[]*bmap
+	oldoverflow *[]*bmap
+
+	// nextOverflow holds a pointer to a free overflow bucket.
+	nextOverflow *bmap
+}
+
+// A bucket for a Go map.
+type bmap struct {
+	// tophash generally contains the top byte of the hash value
+	// for each key in this bucket. If tophash[0] < minTopHash,
+	// tophash[0] is a bucket evacuation state instead.
+	tophash [bucketCnt]uint8
+	// Followed by bucketCnt keys and then bucketCnt elems.
+	// NOTE: packing all the keys together and then all the elems together makes the
+	// code a bit more complicated than alternating key/elem/key/elem/... but it allows
+	// us to eliminate padding which would be needed for, e.g., map[int64]int8.
+	// Followed by an overflow pointer.
+}
+```
+
+字段释义: 
+1. count ，当前map中元素个数
+2. B，对应buckets的数量为2的B次冥
+3. noverflow,溢出桶数量
+4. 位置确定：根据key进行hash，高8位设置位bmap中，tophash对应的值，低位(具体看B，得到B的二进制数据)与bucketMask做与运算确定所在bucket
+
+
+扩容机制：
+
+1. 当count > bucket * 6.5 进行增大扩容
+2. 当溢出桶过多，当noverflow大于2的15次方或者，小于2的15次方同时，溢出桶的数量noverflow 小于2的15次方大于count
+
+再扩容过程中，若发生了元素操作
+
+- mapasssign:将命中的 bucket 从 oldbuckets 顺手搬运到buckets 中，顺便再多搬运一个bucket
+- mapdelete:将命中的 bucket 从 oldbuckets 顺手搬运到buckets 中，顺便再多搬运一个 bucket
+- mapaccess: 优先在 oldbuckets 中找，如果命中，则说明这个 bucket 没有被搬运
+
+
+遍历：
+
+map的遍历，在遍历开始时，通过fastrand方法算出起始桶和遍历起始位置，即startBucket和offset
+则遍历的时候，遍历buckets时，从startBucket开始遍历，遍历bmap时，从offset开始，遍历所有
+
+
+
+#### Context
+
+- emptyCtx，所有 ctx 类型的根,通过context.TODO和context.Background创建
+- valueCtx，主要就是为了在 ctx 中嵌入上下文数据，一个简单的 k 和 v 结构，同一个 ctx 内只支持一对 kv，需要更多的 kv 的话，会形成一棵 树形结构，通过context.WithValue创建
+- cancelCtx，用来取消程序的执行树，通过context.WithCancel创建。取消需要在下级线程内监听并处理cancel事件，否则即使外部关闭，内部协程也不会中断
+- timerCtx，在cancelCtx 上包了一层，支持基于时间的 cancel，通过context.WithTimeOut和context.WithDeadline创建
