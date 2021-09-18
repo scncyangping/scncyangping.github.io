@@ -36,3 +36,84 @@ tags:
 - forcegchelper: 若在一定时间内没有执行GC,Go后台会启动一个协程执行GC。一般时间为2min
 
 ![avatar](https://blog-1257627424.cos.ap-chengdu.myqcloud.com/golang/gc.svg)
+
+
+##### 大致流程
+
+1. 三种GC触发方式，触发gcStart()
+
+```text
+ 1.1 抢占全局锁，因为同一时间可能会多次触发gcStart(),比如：同一时间多次分配内存
+ 1.2 调用gcBgMarkStartWorkers()，开启后台GC的worker，这个G和P进行绑定，执行标记等任务。
+     但是不是立即执行，会先启动协程，在调度器执行GC时唤醒(schedule() -> gcBlackenEnabled !=0 -> findRunnableGCWorker())，根据当前P的数量，唤醒一定比例(0.25*P)的worker
+```
+
+2. 根据ROOT对象遍历(此过程在调用器唤醒过后才会执行)。在Go语言中，根对象包括了全局变量(在.bss 和.data段内存中)、span中的finalizer的任务数量、以及所有的协程栈。
+   finalizer是Go语言中和某种对象绑定的析构器。当某些对象的内存释放后，需要调用析构器函数，从而完整释放资源。例如os.File对象使用了析构器函数关闭操作系统文件描述符，即便用户忘记了调用close()方法也会释放操作系统资源。
+   
+```text
+2.1 gcMarkWorker(每个P的GC标记的对象)和Mark assist(内存分配的时候，辅助GC标记的对象)会存放于P的gcw内
+    gcw是由两个worker数组wbuf1、wbuf2构成，数组长度大概为253。每次将扫描到的对象添加到gcw时，会使用其中到一个wbuf1，
+    当其中一个满了的时候，会将两个buf交换。当两个都满了的话，会将wbuf2推送到全局worker数组(work.full)。在标记的过程
+    中，也可能会碰到本地wbfu1、wbfu2没有值的情况，这时会从全局work.full中偷取一部分指针数据放到本地的gcw当中，如果还没
+    有数据，就会从wbBuf(开启写屏障过后的数据)当中取
+2.2 在标记过程中，开启了写屏障过后，在此期间的指针修改情况会放在P的wbBuf当中，这是一个512大小的数组
+```
+
+##### 三色标记
+
+```text
+三色抽象
+黑:已经扫描完毕，子节点扫描完毕。(gcmarkbits = 1，且在队列外)
+灰:已经扫描完毕，子节点未扫描完毕。(gcmarkbits = 1, 在队列内)
+白:未扫描，collector 不知道任何相关信息
+
+三色标记过程中并未STW,所以业务代码可能会修改指针的指向。为了解决此为题需要在垃圾回收过程中开启写屏障。
+三色标记过程中，解决对象漏标的情况有两种理论基础，强、弱三色不变性
+
+强三色不变性：禁止黑色对象指向白色对象
+弱三色不变性：黑色对象可以指向白色对象，但同时必须有灰色对象到它的可达路径
+
+两种算法：
+
+Dijkstra barrier: 如果目标对象src为黑色，则将新引用的对象标记为灰色
+Yuasa barrier: 一旦取消了原引用后，就立即将原引用标记为灰色。
+
+这两种算法他们都存储浮动垃圾的问题，所以go语言中采用了混合屏障的算法
+
+即，混合屏障会将指针(指向堆的)修改前的位置和修改后的指向的位置都标灰
+
+同时，在垃圾收集过程中分配的对象，都标记为黑色
+```
+
+##### 代码流程
+- gcStart -> gcBgMarkWorker && gcRootPrepare，这时 gcBgMarkWorker 在休眠中
+- schedule -> findRunnableGCWorker 唤醒适宜数量的 gcBgMarkWorker
+- gcBgMarkWorker -> gcDrain -> scanobject -> greyobject(set mark bit and put to gcw)
+- 在 gcBgMarkWorker 中调用gcMarkDone排空各种wbBuf后，使用分布式termination检查算法，进入gcMarkTermination -> gcSweep 唤醒后台沉睡的 sweepg 和 scvg -> sweep -> wake bgsweep && bgscavenge
+
+##### 垃圾收集过程中CPU使用控制
+- GC 的 CPU 控制目标是整体 25%
+- 当P=4*N时，只要启动N个worker就可以。
+- 但 P 无法被 4 整除时，需要兼职的 gcMarkWorker 来帮助做一部分工作
+- 全职 GC 员工:Dedicated worker，需要一直干活，直到被抢占。
+- 兼职 GC 员工:Fractional worker，达到业绩目标(fractionalUtilizationGoal)时可以主动让出。
+- 还有一种 IDLE 模式，在调度循环中发现找不到可执行的 g，但此时有标记任务未完
+成，就用开启 IDLE 模式去帮忙。
+- Worker 运行模式在:_p_.gcMarkWorkerMode
+
+
+#### 相关参数
+
+- https://jishuin.proginn.com/p/763bfbd31e38
+- https://jishuin.proginn.com/p/763bfbd31e32
+- https://jishuin.proginn.com/p/763bfbd323e4
+- https://jishuin.proginn.com/p/763bfbd4ea8e
+- https://jishuin.proginn.com/p/763bfbd4ea8b
+- https://jishuin.proginn.com/p/763bfbd4ea86
+- https://jishuin.proginn.com/p/763bfbd4ea84
+- https://jishuin.proginn.com/p/763bfbd4ec55
+- https://jishuin.proginn.com/p/763bfbd4ee7b
+- https://jishuin.proginn.com/p/763bfbd54fed
+
+
