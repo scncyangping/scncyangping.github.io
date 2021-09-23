@@ -1,0 +1,308 @@
+---
+layout:     post
+title:      "go随笔-并发编程"
+subtitle:   ""
+date:       2021-09-22 14:01:00
+author:     "YaPi"
+header-img: ""
+tags:
+    - go
+---
+
+#### Go语言并发编程库
+
+##### sync.Once
+初始化方法必须且只能被调用一次
+Do返回后，初始化一定已经执行完成
+```text
+
+// Once is an object that will perform exactly one action.
+type Once struct {
+	// 表明动作是否被执行
+	done uint32
+	m    Mutex
+}
+
+
+func (o *Once) Do(f func()) {
+	// Note: Here is an incorrect implementation of Do:
+	//
+	//	if atomic.CompareAndSwapUint32(&o.done, 0, 1) {
+	//		f()
+	//	}
+	//
+	// Do guarantees that when it returns, f has finished.
+	// This implementation would not implement that guarantee:
+	// given two simultaneous calls, the winner of the cas would
+	// call f, and the second would return immediately, without
+	// waiting for the first's call to f to complete.
+	// This is why the slow path falls back to a mutex, and why
+	// the atomic.StoreUint32 must be delayed until after f returns.
+
+	if atomic.LoadUint32(&o.done) == 0 {
+		// Outlined slow-path to allow inlining of the fast-path.
+		o.doSlow(f)
+	}
+}
+
+func (o *Once) doSlow(f func()) {
+	o.m.Lock()
+	defer o.m.Unlock()
+	if o.done == 0 {
+		defer atomic.StoreUint32(&o.done, 1)
+		f()
+	}
+}
+```
+
+##### sync.Pool
+
+sync.Pool 是 Golang 内置的对象池技术，可用于缓存临时对象，避免因频繁建立临时对象所带来的消耗以及对 GC 造成的压力。
+在许多知名的开源库中，都可以看到 sync.Pool 的大量使用。例如，HTTP 框架 Gin 用 sync.Pool 来复用每个请求都会创建的 gin.Context 对象。
+在 grpc-Go、kubernates 等也都可以看到对 sync.Pool 的身影。 但需要注意的是，sync.Pool 缓存的对象随时可能被无通知的清除，因此不能将
+sync.Pool 用于存储持久对象的场景
+
+主要在两种场景使用
+
+1. 进程中的inuse_objects数过多，gc mark消耗大量CPU
+   > 进程中存活对象过多，在GC过程中，标记的时候就会消耗大量CPU
+2. 进程中的inuse_objects数过多，进程中RSS占用过高
+   > 比如，docker当中指定分配一定量的内存，对象数过多就会kill掉进程
+
+请求生命周期开始时，pool.Get。请求结束时，pool.Put。在fasthttp中有大量应用
+
+![avatar](https://blog-1257627424.cos.ap-chengdu.myqcloud.com/golang/sync.pool.jpg)
+
+大致数据结构
+```
+// A Pool must not be copied after first use.
+type Pool struct {
+	noCopy noCopy   // 不可复制标志 pool在初次使用过后不能被复制
+
+	local     unsafe.Pointer // 固定大小的poolLocal数组  actual type is [P]poolLocal
+	localSize uintptr        // 数组大小
+
+	victim     unsafe.Pointer // 上一次发生GC后的local拷贝 
+	victimSize uintptr        // 上一次发生GC后的local拷贝数组大小
+
+	// New optionally specifies a function to generate
+	// a value when Get would otherwise return nil.
+	// It may not be changed concurrently with calls to Get.
+	// 创建的方法
+	New func() interface{}
+}
+
+```
+
+local 是个数组，长度为 P 的个数。其元素类型是 poolLocal。这里面存储着各个 P 对应的本地对象池。可以近似的看做 [P]poolLocal。
+localSize代表 local 数组的长度。因为 P 可以在运行时通过调用 runtime.GOMAXPROCS 进行修改, 因此我们还是得通过 localSize
+来对应 local 数组的长度。 * New 就是用户提供的创建对象的函数。这个选项也不是必需。当不填的时候，Get 有可能返回 nil。
+
+其他几个字段我们暂时不用太过关心，这里先简单介绍下： victim 和 victimSize。这一对变量代表了上一轮清理前的对象池，其内容语义
+local 和 localSize 一致。victim 的作用还会在下面详细介绍到。 noCopy 是 Golang 源码中禁止拷贝的检测方法。
+
+由于每个 P 都有自己的一个本地对象池 poolLocal，Get 和 Put 操作都会优先存取本地对象池。由于 P 的特性，操作本地对象池的
+时候整个并发问题就简化了很多，可以尽量避免并发冲突
+
+```
+type poolLocal struct {
+	poolLocalInternal
+
+	// Prevents false sharing on widespread platforms with
+	// 128 mod (cache line size) = 0 .
+	pad [128 - unsafe.Sizeof(poolLocalInternal{})%128]byte
+}
+
+// Local per-P Pool appendix.
+type poolLocalInternal struct {
+	private interface{} // Can be used only by the respective P.
+	shared  poolChain   // Local P can pushHead/popHead; any P can popTail.
+}
+
+type poolChain struct {
+	// head is the poolDequeue to push to. This is only accessed
+	// by the producer, so doesn't need to be synchronized.
+	head *poolChainElt
+
+	// tail is the poolDequeue to popTail from. This is accessed
+	// by consumers, so reads and writes must be atomic.
+	tail *poolChainElt
+}
+
+type poolChainElt struct {
+	poolDequeue
+	next, prev *poolChainElt
+}
+
+
+type poolDequeue struct {
+	headTail uint64
+	vals []eface
+}
+
+```
+
+poolLocal中 pad 变量的作用是用来解决false sharing(伪共享)。先看poolLocalInternal 的定义
+其中每个本地对象池，都会包含两项： private 私有变量。Get 和 Put 操作都会优先存取 private 变量
+如果 private 变量可以满足情况，则不再深入进行其他的复杂操作。 shared变量其类型为 poolChain。
+从名字不难看出这个是链表结构，这个就是 P 的本地对象池了
+
+
+
+为什么 poolChain 是这么一个链表 + ring buffer 的复杂结构呢？简单的每个链表项为单一元素不行吗？
+使用 ring buffer 是因为它有以下优点： 
+
+1. 预先分配好内存，且分配的内存项可不断复用。
+2. 由于ring buffer 本质上是个数组，是连续内存结构，非常利于 CPU Cache。在访问poolDequeue 某一项时
+   其附近的数据项都有可能加载到统一 Cache Line 中，访问速度更快。
+
+ring buffer 的这两个特性，非常适合于 sync.Pool的应用场景。
+
+我们再注意看一个细节，poolDequeue 作为一个 ring buffer，自然需要记录下其 head 和 tail 的值。
+但在 poolDequeue 的定义中，head 和 tail 并不是独立的两个变量，只有一个 uint64 的 headTail 变量。
+这是因为 headTail 变量将 head 和 tail 打包在了一起：其中高 32 位是 head 变量，低 32 位是 tail 变量
+
+
+对于一个 poolDequeue 来说，可能会被多个 P 同时访问，这个时候就会带来并发问题。
+例如：当 ring buffer 空间仅剩一个的时候，即 head - tail = 1。 如果多个 P 同时访问 ring buffer，在没有任何并发措施的情况下，两个 P 都可能会拿到对象，这肯定是不符合预期的。
+在不引入 Mutex 锁的前提下，sync.Pool 是怎么实现的呢？sync.Pool 利用了 atomic 包中的 CAS 操作。两个 P 都可能会拿到对象，但在最终设置 headTail 的时候
+只会有一个 P 调用 CAS 成功，另外一个 CAS 失败
+
+```text
+atomic.CompareAndSwapUint64(&d.headTail, ptrs, ptrs2)
+
+
+在更新 head 和 tail 的时候，也是通过原子变量 + 位运算进行操作的。例如，当实现 head++ 的时候，需要通过以下代码实现
+const dequeueBits = 32
+atomic.AddUint64(&d.headTail, 1<<dequeueBits)
+```
+
+##### Put 的实现
+
+```text
+func (p *Pool) Put(x interface{}) {
+    if x == nil {
+        return
+    }
+    // 会标记当前不可抢占
+    l, _ := p.pin()
+
+    if l.private == nil {
+        l.private = x
+        x = nil
+    }
+
+    if x != nil {
+        l.shared.pushHead(x)
+    }
+    // 去除不可抢占
+    runtime_procUnpin()
+}
+```
+
+从以上代码可以看到，在 Put 函数中首先调用了 pin()。pin 函数非常重要，它有三个作用： 
+1. 初始化或者重新创建local数组。 当 local 数组为空，或者和当前的 runtime.GOMAXPROCS 不一致时，将触发重新创建 local 数组，以和 P 的个数保持一致。
+2. 取当前 P 对应的本地缓存池 poolLocal
+3. 防止当前 P 被抢占。这点非常重要。在 Go 1.14 以后，Golang 实现了抢占式调度：一个 goroutine 占用 P 时间过长，将会被调度器强制挂起。如果一个 goroutine 在执行 Put 或者 Get 期间被挂起
+   有可能下次恢复时，绑定就不是上次的 P 了。那整个过程就会完全乱掉。因此，这里使用了 runtime 包里面的 procPin，暂时不允许 P 被抢占
+
+接着，Put 函数会优先设置当前 poolLocal 私有变量 private。如果设置私有变量成功，那么将不会往 shared 缓存池写了。这样操作效率会更高效。
+如果私有变量之前已经设置过了，那就只能往当前 P 的本地缓存池 poolChain 里面写了。我们接下来看下，sync.Pool 的每个 P 的内部缓存池 poolChain 是怎么实现的。
+在 Put 的时候，会去直接取 poolChain 的链表头元素 HEAD： 如果 HEAD 不存在 ，则新建一个 buffer 长度为 8 的 poolDequeue，并将对象放置在里面。 如果 HEAD 存在，且 buffer 尚未满，则将元素直接放置在 poolDequeue 中。 * 如果 HEAD 存在，但 buffer 满了，则新建一个新的 poolDequeue，长度为上个 HEAD 的 2 倍。同时，将 poolChain 的 HEAD 指向新的元素。
+Put 的过程比较简单，整个过程不需要和其他 P 的 poolLocal 进行交互
+
+##### Get 的实现
+
+```text
+func (p *Pool) Get() interface{} {
+    l, pid := p.pin()
+
+    x := l.private
+    l.private = nil
+
+    if x == nil {
+        // 首先获取本地数据
+
+        
+        // 
+        
+        x, _ = l.shared.popHead()
+
+        if x == nil {
+            x = p.getSlow(pid)
+        }
+    }
+    runtime_procUnpin()
+
+    if x == nil && p.New != nil {
+        x = p.New()
+    }
+    return x
+}
+```
+
+Get 函数会尝试从当前 P 的 本地对象池 poolChain 中获取对象。从当前 P 的 poolChain 中取数据时，是从链表头部开始取数据。 
+具体来说，先取位于链表头的 poolDequeue，然后从 poolDequeue 的头部开始取数据
+
+如果从当前 P 的 poolChain 取不到数据，意味着当前 P 的缓存池为空，那么将尝试从其他 P 的缓存池中 窃取对象。这也对应 getSlow 函数的内部实现
+
+```text
+for i := 0; i <int(size); i++ {
+    l := indexLocal(locals, (pid+i+1)%int(size))
+    if x, _ := l.shared.popTail(); x != nil {
+        return x
+    }
+}
+```
+
+在 getSlow 函数，会将当前 P 的索引值不断递增，逐个尝试从其他 P 的 poolChain 中取数据。注意，当尝试从其他 P 的 poolChain 中取数据时，是从链表尾部开始取的
+
+
+在对其他 P 的 poolChain 调用 popTail，会先取位于链表尾部的 poolDequeue，然后从 poolDequeue 的尾部开始取数据。
+如果从这个 poolDequeue 中取不到数据，则意味着该 poolDequeue 为空，则直接从该 poolDequeue 从 poolChain 中移除
+同时尝试下一个 poolDequeue。 如果从其他 P 的本地对象池，也拿不到数据。接下来会尝试从 victim 中取数据。上文讲到 victim 是上一轮被清理的对象池
+从 victim 取对象也是 popTail 的方式。最后，如果所有的缓存池都都没有数据了，这个时候会调用用户设置的 New 函数，创建一个新的对象
+
+sync.Pool 在设计的时候，当操作本地的 poolChain 时，无论是 push 还是 pop，都是从头部开始。而当从其他 P 的 poolChain 获取数据，只能从尾部 popTail 取。这样可以尽量减少并发冲突
+
+##### 对象的清理
+sync.Pool 没有对外开放对象清理策略和清理接口。我们上面讲到，当窃取其他 P 的对象时，会逐步淘汰已经为空的 poolDequeue。但除此之外，sync.Pool 一定也还有其他的对象清理机制，否则对象池将可能会无限制的膨胀下去，造成内存泄漏。
+
+Golang 对 sync.Pool 的清理逻辑非常简单粗暴。首先每个被使用的 sync.Pool，都会在初始化阶段被添加到全局变量 allPools []*Pool 对象中。Golang 的 runtime 将会在 每轮 GC 前，触发调用 poolCleanup 函数，清理 allPools。代码逻辑如下：
+
+```text
+func poolCleanup() {
+    for _, p := range oldPools {
+        p.victim = nil
+        p.victimSize = 0
+    }
+
+    for _, p := range allPools {
+        p.victim = p.local
+        p.victimSize = p.localSize
+        p.local = nil
+        p.localSize = 0
+    }
+
+    oldPools, allPools = allPools, nil
+}
+```
+
+这里需要正式介绍下 sync.Pool 的 victim(牺牲者) 机制，我们在 Get 函数的对象窃取逻辑中也有提到 victim。
+
+在每轮 sync.Pool 的清理中，暂时不会完全清理对象池，而是将其放在 victim 中。等到下一轮清理，才完全清理掉 victim。也就是说，每轮 GC 后 sync.Pool 的对象池都会转移到 victim 中，同时将上一轮的 victim 清空掉。
+
+为什么这么做呢？ 这是因为 Golang 为了防止 GC 之后 sync.Pool 被突然清空，对程序性能造成影响。因此先利用 victim 作为过渡，如果在本轮的对象池中实在取不到数据，也可以从 victim 中取，这样程序性能会更加平滑。
+
+
+##### sync.Pool 的性能之道
+
+1. 利用 GMP 的特性，为每个 P 创建了一个本地对象池 poolLocal，尽量减少并发冲突。
+2. 每个 poolLocal 都有一个 private 对象，优先存取 private 对象，可以避免进入复杂逻辑。
+3. 在 Get 和 Put 期间，利用 pin 锁定当前 P，防止 goroutine 被抢占，造成程序混乱。
+4. 在获取对象期间，利用对象窃取的机制，从其他 P 的本地对象池以及 victim 中获取对象。
+5. 充分利用 CPU Cache 特性，提升程序性能。
+
+##### 参考
+
+https://zhuanlan.zhihu.com/p/399150710
