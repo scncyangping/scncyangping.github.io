@@ -1,0 +1,123 @@
+---
+layout:     post
+title:      "go随笔-go抢占式调度"
+subtitle:   ""
+date:       2021-09-24 14:01:00
+author:     "YaPi"
+header-img: ""
+tags:
+    - go
+---
+
+#### 抢占式调度触发
+
+- GC 时STW时需要抢占
+- 后台线程(sysmon)判断当前G是否执行时间过长，时间过长就需要抢占
+
+##### 老版本抢占标记
+
+调用函数proc.go -> preemptone 将正在P上执行的M的curg的标志位置为true
+后续goroutine执行的时候判断相关字段
+
+```text
+func preemptone(_p *p) bool {
+    mp := _p.m.ptr()
+    gp := mp.curg
+    // 设置抢占状态为true
+    gp.preempt = true
+
+    // 在函数调用的时候，会检查当前栈空间是否足够，不够的话会申请新的栈空间
+    // 在正常的汇编代码中，会在函数调用的开始和结束新增一部分代码，用于检查
+    // 当前栈空间的大小时候足够。但是，这种检测只有当framesize > 0,即
+    // 当前局部变量个数大于0时才会有。
+    
+    // 当检测到空间不够，会执行扩容代码，保存当前goroutine的运行线程，切换到m.g0
+    // 执行newstack
+    // 在执行newstack的时候，就会去判断当前statckguard0是否等于stackPreempt
+    // 若等于stackPreempt，就会将当前g放在全局g队列当中
+    
+    gp.statckguard0 = stackPreempt
+    return true
+}
+```
+
+##### 新版本
+
+````text
+func preemptone(_p_ *p) bool {
+	......
+	// 新加
+	if preemptMSupported && debug.asyncpreemptoff == 0 {
+		_p_.preempt = true
+		preemptM(mp)
+	}
+    ......
+}
+
+func preemptM(mp *m) {
+	......
+	if atomic.Cas(&mp.signalPending, 0, 1) {
+		if GOOS == "darwin" {
+			atomic.Xadd(&pendingPreemptSignals, 1)
+		}
+
+		signalM(mp, sigPreempt)
+	}
+    ......
+}
+````
+新版不仅会标记对应G的状态，还会通过系统调用给特定的线程发信号
+
+信号的方式比业务系统代码的方式粒度更细，属于系统级别指令的调用。在cpu执行代码的时候，
+一旦收到了这个信号，就会在指定指令位置中断，去执行对应signal handler。
+
+对于go语言来说，主要有两部分
+
+- 信号的初始化
+
+```text
+func mstartm0(){
+    initsig(false)
+}
+
+func initsig(preinit bool) {
+    for i:= uint32(0); i< _NSIG; i++ {
+        setsig(i,funcPC(sighandler)
+    }
+}
+
+var sigtable = [...]sigTabT {
+    ......
+    ......
+}
+```
+
+处理SIGURG信号时，相当于被强行插入了一条asyncPreempt的函数
+
+会保存所有通用非通用寄存器及ctxt信息保存到栈上，然后将下一步执行的指令进行修改,调用asyncPreempt
+并进入具体的处理流程
+
+1. GC抢占流程
+   markroot -> allgs[i] -> g -> suspendG(g)在此处插入信号 -> scan g stack -> resumeG
+2. 后台监控抢占(sysmon)
+   sysmon->retake->preemptone(运行超过10ms之后执行)->asyncPreempt->globalrunqput
+
+```text
+func asyncPreempt2() {
+	gp := getg()
+	gp.asyncSafePoint = true
+	// GC抢占分之
+	if gp.preemptStop {
+	    // M、G解除绑定，G挂起，暂停执行，M继续调度其它
+	    // 挂起的G在扫描完栈过后恢复，继续执行
+		mcall(preemptPark)
+	} else {
+	    // globalrunqput 解除M、G绑定，放入全局G队列
+		mcall(gopreempt_m)
+	}
+	gp.asyncSafePoint = false
+}
+```
+   
+
+
