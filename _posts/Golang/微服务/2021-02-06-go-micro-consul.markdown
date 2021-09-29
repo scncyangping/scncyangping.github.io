@@ -2,7 +2,7 @@
 layout:     post
 title:      "服务发现及配置中心"
 subtitle:   ""
-date:       2021-06-010 14:01:00
+date:       2021-06-10 14:01:00
 author:     "YaPi"
 header-img: ""
 tags:
