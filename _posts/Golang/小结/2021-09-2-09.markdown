@@ -1,0 +1,141 @@
+---
+layout:     post
+title:      "go随笔-性能调优"
+subtitle:   ""
+date:       2021-09-24 14:01:00
+author:     "YaPi"
+header-img: ""
+tags:
+    - go
+---
+
+#### 内存分配
+
+在go语言中，可能会发生一次请求大量分配内存，当内存空间不足时，会发生系统事故。所以在代码提交阶段
+需要对相应业务代码进行内存分配分析。对大量的对象分配代码进行调整。
+
+Zero garbage 一般是利用sync.Pool来将堆分配完全消灭的手段，在一些http router框架中会提到这个概念
+比如说gin
+
+对代码进行相应的逃逸分析
+```text
+go build -gcflags="m" escape.go
+```
+
+在代码测试阶段，可以采用benchmark对相应的内存分配、cpu使用进行分析。
+```text
+func BeanchmarkIsPalindrome(b *testting.B){
+    for i:=0; i<b.N; i++ {
+        IsPalindrome("A man,a plan, a canal: Panama")
+    }
+}
+
+go test -bench=.
+
+使用相关的输出指令再分析对应的代码
+
+// 分析cpu使用
+-cpuprofile=$FILE writes a CPU profile to $FILE
+// 分析内存使用
+-memprofile=$FILE writes a memory profile to $FILE
+-memprofilerate=N adjusts the profile rate to 1/N
+-mutexprofile=$FILE write mutex profile to $FILE
+```
+
+以下有个例子
+```text
+// test 1
+for i:=0; i<b.N; i++ {
+    main = ""
+    main += "userid : " + 1
+    main += "location: " + ab
+}
+// test 2
+for i:=0; i<b.N; i++ {
+    main = ""
+    main += fmt.Sprintf("userid : %v","1")
+    main += fmt.Sprintf("location : %v","ab")
+}
+
+test2觉得test1代码书写很难看，进行了相关的优化。但是fmt.Sprintf会造成
+变量的逃逸，在堆上分配。同时分配的次数多于test1。造成效率还没test1高
+```
+
+#### false sharing
+操作系统为解决cpu和内存操作之间的速率不对等性使用了三级cache来解决这个问题。
+即，从cpu到内存需要经过多级cache。缓存当中使用缓存行作为基本的读取单元，并且，更行
+的时候也是以一个缓存行作为基本单元。当一个对象内存大小未达到一个缓存行大小时，若对此
+对象进行了修改，会使其他cpu上此缓存行对象都进行失效，这对缓存同步会带来相关的性能影响。
+一般来说可以加上缓存填充来解决此问题
+
+
+在linux系统中，可以通过 lscpu 指令查看缓存大小
+可以使用 getconf LEVEL1_DCACHE_LINESIZE查看缓存行大小
+
+#### 线上排除性能问题
+1. 排除外部问题，例如依赖的上游服务(如DB、Redis、MQ)
+2. CPU占用过高 -> 看CPU profile -> 优化占用CPU较多的部分逻辑
+3. 内存占用过高，可接入prometheus，内存RSS多少，gorutine数量多少，
+    goroutine栈占用多少 -> 如果goroutine不多，那么重点关注heap profile
+    中的inuse -> 定时任务类需要看alloc
+4. goroutine数量过多 -> 从profile网页进去看看goroutine都在看什么 ->
+    查死锁、阻塞等问题 -> 个别不在意延迟的选择第三方库优化
+
+#### 线上问题问题
+
+##### 阻塞
+1. 调用外部命令 ：exec.Command等
+2. 阻塞导致高延迟
+3. 设计到文件操作，有锁，过多
+
+锁瓶颈优化手段
+1. 缩小临界区：只锁必须锁的对象，临界区内锦鲤那个不放慢操作，如syscall
+2. 降低锁粒度：全局锁 -> 对象锁，全局锁->连接锁，连接锁->请求锁，文件锁-> 多个文件锁
+3. 同步改异步：同步日志 -> 异步日志，若队列慢则丢弃，不阻塞业务逻辑
+
+双buffer完全干掉锁阻塞
+比如：有一个全局配置变量，读和更新都会操作这个对象。在更新的时候，使用另外一个变量保存，当全部
+配置加载完成后，再加锁更新原有的全局变量
+
+##### cpu使用高
+GC使用CPU过高，GC的时候一般是cpu25%,但是有的时候会超过25%,用户线程会协助进行标记工作
+
+- 应用逻辑导致
+
+1. json 序列化
+    1. 使用一些优化的json库替换标准库
+    2. 使用二进制编码方式替换json编码
+    3. 同物理节点通信，使用共享内存IPC,直接干掉序列化开销
+2. MD5算法hash成本太高 -> 使用cityhash,murmurhash
+3. 其他逻辑，具体分析
+
+- GC使用CPU过高
+
+1. 减少堆对象分配
+    1. sync.Pool进行堆对象重用
+    2. Map -> slice 
+    3. 指针 -> 非指针对象
+    4. 多个小对象 -> 合并为一个大对象
+2. Off heap (将堆上的对象直接放在堆外去)也可以减少Go进程的内存占用和内存使用波动，但要使用到cgo
+3. 降低GC频率
+    1. 修改全局GOGC
+    2. Make全局大slice,初始化创建一个大的slice，大小为1G
+
+
+
+cpu过高例子
+
+1. map中引用大量指针，就会造成额外的堆分配以及在扫描的时候会多次扫描
+2. go GC触发内存大小设置不合理，比如，GOGC设置为10M,go大概在上次GC的2倍内存大小时触发GC，当某一次
+    分配突然分配了大内存，比如1GB,就会频繁的触发GC
+   
+##### 内存占用高
+gorutine数量太多导致内存占用高
+
+1. Goroutine栈占用的内存(难优化，一条tcp连接至少对应一个gorutine)
+2. Tcp read buffer 占用内存(难优化，因为大部分连接阻塞在read buffer 基本没有可以释放的时机)
+3. Tcp write buffer 占用内存(易优化，因为活跃连接不多)
+
+解决
+1. 尝试使用goroutine pool减少goroutine的创建与销毁
+2. 控制对打的goroutine数量
