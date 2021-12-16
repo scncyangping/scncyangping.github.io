@@ -170,6 +170,60 @@ value 可以为任意类型,key需要是不可变类型
 {}
 ```
 
+### 变量定义
+
+组成：数字、下划线、字母
+
+特点：
+1. 不能用数字开始
+2. 系统关键字不能使用
+
+```shell
+['False', 'None', 'True', 'and', 'as', 'assert', 'async', 'await', 'break', 'class', 'continue',
+'def', 'del', 'elif', 'else', 'except', 'finally', 'for', 'from', 'global', 'if', 'import', 'in',
+'is','lambda', 'nonlocal', 'not', 'or', 'pass', 'raise', 'return', 'try', 'while', 'with', 'yield']
+```
+
+虽然type不是保留关键字,但是还是不推荐使用
+```text
+>>> type=1
+>>> type(1)
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+TypeError: 'int' object is not callable
+```
+
+需要注意的是，由于 Python 是严格区分大小写的，保留字也不例外。所以，我们可以说 if 是保留字，但 IF 就不是保留字
+
+#### 表达式优先级
+- 对照表
+
+运算符说明|Python运算符
+---|---
+小括号| ()
+乘方|**
+按位取反|~
+符号运算符|+（正号）、-（负号）
+乘/除|*、/、//、%
+加减| +、-
+位移|>>、<<
+按位与|&
+按位异或|^
+按位或|｜
+比较运算符| ==、!=、>、>=、<、<=
+is运算符|is 、is not
+in运算负|in 、not in
+逻辑非| not
+逻辑与| and
+逻辑或| or
+
+- and 或 or
+
+其一, 在不加括号时候, and优先级大于or
+
+其二, x or y 的值只可能是x或y. x为真就是x, x为假就是y
+
+其三, x and y 的值只可能是x或y. x为真就是y, x为假就是x
 
 ### 系统函数
 - ord('d') : 获取字符的ASCII
