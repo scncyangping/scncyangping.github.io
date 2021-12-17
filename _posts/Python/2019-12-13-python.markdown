@@ -224,6 +224,3 @@ in运算负|in 、not in
 其二, x or y 的值只可能是x或y. x为真就是x, x为假就是y
 
 其三, x and y 的值只可能是x或y. x为真就是y, x为假就是x
-
-### 系统函数
-- ord('d') : 获取字符的ASCII

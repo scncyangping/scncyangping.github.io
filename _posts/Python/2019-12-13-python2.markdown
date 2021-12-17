@@ -1,0 +1,181 @@
+---
+layout:     post
+title:      "Python基础(二)"
+subtitle:   ""
+date:       2019-12-14 13:01:00
+author:     "YaPi"
+header-img: ""
+tags:
+    - Python
+---
+
+### 分支/循环
+没有Switch
+
+- if else 
+- for 
+- while
+
+```
+if True:
+    xxx
+else:
+    xxx
+```
+
+```text
+while True:
+    xxx
+else:
+    print("推出后使用")
+```
+
+```text
+# 主要用来遍历/循环序列或者集合、字典
+for x in a:
+    # 加上end='',不换行
+    # 使用break跳出循环
+    # 使用continue跳过当前循环
+    print(x,end='')
+else:
+    print("正常遍历完就执行(包括使用continue)，如果使用break打断了是不会执行else的，continue可以")
+    
+# for range
+# 从0开始，一共10个，只会到0到9
+for x in range(0,10):
+    print(x)
+    
+# 加上步长
+for x in range(0,10,2):
+    print(x,end='|') 
+    
+# 按照指定步长选择数据 
+a = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+
+for x in range(0, len(a), 2):
+    print(a[x], end=' | ')
+
+# 等同于
+a[0:len(a):2]
+
+# 返回
+1 | 3 | 5 | 7 | 9 | [1, 3, 5, 7, 9]
+```
+
+
+注意：
+
+在循环的内部定义的变量，可以在外部使用
+
+```text
+def test():
+    c = 123
+    for i in range(0, 9):
+        c += 1
+        a = 'a'
+    else:
+        a = 'aaa'
+    # while c > 114:
+    #     c -= 1
+    #     a = 'a'
+    # else:
+    #     a= 'aaa'
+    print(c)
+    print(a)
+
+test()
+
+# 都能够正确打印出 a 的值
+```
+
+### 项目结构
+
+- 包(物理上看是一个文件夹)
+- 模块(物理上看是一个.py文件)
+- 类
+- 函数、变量
+
+#### 包
+若需要将一个普通文件夹变成一个python包，则需要在此文件夹下面添加
+__init__.py文件，且此模块的名字就是包的名字
+
+包的导入: 若需要跨包引用，则需要导入
+```text
+import 包名.模块名
+import b.test as c
+import c.test2
+
+或者
+
+from b import test
+from b.test import a
+
+from b.test import *
+
+当使用*键导入的时候，不能导入原模块中 __all__定义的数据
+```
+
+### 函数
+参数
+1. 必须参数
+2. 关键字参数，使用参数名称赋值，可以调整顺序，提升可读性
+3. 默认参数
+    1. 方法参数列表可以同时包含必须和默认参数，但是非默认参数必须在最前面，不能混杂
+    2. 多个参数若为指定参数名称，按照顺序对应
+4. 可变参数，接受任意多个参数
+    1. 将传递的参数当成了一个元组
+    2. 若传入一个元组会变成二维元祖,若需要传递后变成元祖，再调用的时候需使用*号
+    3. 两个*号，会被解析成dict，调用的时候，直接等式调用如：addTest(x=1,y=2,c=3)
+```text
+# 必须参数
+def add(x,y):
+    xxx
+# 默认参数
+def add(x=1, y=2):
+    xxx
+# 关键字参数
+add(y=3,x=2)
+
+# 可变参数
+def demo(*param)
+    # 得到的是一个元组类型
+    print(type(param))
+
+# 得到字典
+def temp(**param):
+    # 注意一定要记得用items
+    for key, value in param.items():
+        print(key, value)
+
+
+temp(bj='32', xm='23')
+也可以直接传入一个字典
+p = {'a':1,'b':2}
+temp(**p)
+```
+
+
+返回值：无return返回一个空值 None
+
+多返回值返回的是一个元组
+```text
+def add(x, y):
+    x *= 4
+    y *= 3
+    return x, y
+
+a, b = add(1, 2)
+print(a, b)
+```
+
+序列解包
+```text
+d = 1,2,3
+
+a,b,c = d
+
+a,b,c = [1,2,3]
+
+a=b=c= 1
+解包个数需要相等
+```

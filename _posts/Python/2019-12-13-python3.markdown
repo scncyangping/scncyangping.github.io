@@ -1,0 +1,24 @@
+---
+layout:     post
+title:      "Python系统函数"
+subtitle:   ""
+date:       2018-12-14 13:01:00
+author:     "YaPi"
+header-img: ""
+tags:
+    - Python
+---
+
+### 系统函数
+- ord('d') : 获取字符的ASCII
+- input() : 获取用户输入
+- print() : 打印数据
+- round(a,2) : 四舍五入保留小数
+
+
+python中递归有最大深度限制，可以调用系统库修改此配置
+
+```text
+import sys
+sys.setrecursionlimit(10000)
+```
