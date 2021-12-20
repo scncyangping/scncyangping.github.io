@@ -1,24 +1,275 @@
 ---
 layout:     post
-title:      "Python系统函数"
+title:      "Python面向对象"
 subtitle:   ""
-date:       2018-12-14 13:01:00
+date:       2018-12-15 13:01:00
 author:     "YaPi"
 header-img: ""
 tags:
     - Python
 ---
 
-### 系统函数
-- ord('d') : 获取字符的ASCII
-- input() : 获取用户输入
-- print() : 打印数据
-- round(a,2) : 四舍五入保留小数
+### 类
+使用关键字class定义
 
 
-python中递归有最大深度限制，可以调用系统库修改此配置
+在类里面编写函数和在模块里编写不同，需要在函数参数里面加上self。
 
 ```text
-import sys
-sys.setrecursionlimit(10000)
+class Student():
+    # 类变量
+    name = ''
+    # 类变量
+    age = 0
+    
+    # 实例方法/构造方法
+    def __init__(self,name,age):
+        # 实例变量
+        self.age = age
+        self.name = name
+        # 实例变量和类变量不一样，是不同的
+        self.xxxx_name = name
+        
+        print('init')
+    # 实例方法
+    def nom():
+        pass
+    
+    # 类方法，调用可以用类名调用，也可以用实例调用
+    @classmethod
+    def plus_name(cls):
+        pass
+    
+    # 静态方法
+    # 没有默认强制传入一个参数
+    # 实例可以调用、类也可以调用
+     @staticmethod
+    def static(self):
+        pass
+    
+
+# 构造方法    
+stu = Student('a',2)
+stu.__init__()
+
+# 会打印两次，可得两个结论
+# __init__函数在初始化的时候会执行
+# __init__函数可以单独被调用
+```
+
+对于模块来说
+
+```text
+c = 50
+def add(x, y):
+    c = x + y
+    print(c)
+
+add(1, 2)
+print(c)
+# 返回 3 50
+# 可得结论，局部变量不会改变全局变量得值
+```
+
+类实例变量获取规则
+
+```text
+class Student:
+    name = 'ggggg'
+
+    def __init__(self, name, age):
+        name = name
+        age = age
+
+
+stu = Student(name='123', age=12)
+print(stu.name)
+
+输出
+
+stu  ggggg
+Student  ggggg
+
+若是把name = name 改成 self.name = name
+输出
+stu  123
+Student  ggggg
+
+# 可得
+实例变量stu获取name的时候，会先找自身保存的变量值，若没有，则会找类变量的值
+类变量Student用点获取变量值时，始终都是获取的类变量
+
+# 同时，类变量可用__class__获取
+
+stuName = stu.__class__.name
+```
+
+##### 成员可见性
+
+通过对变量或者方法的名称前面加上双下划线设置可见性，如果有就是私有的，若没有，就是公开的
+
+1. 为什么__init__方法能够被调用呢？
+
+这是因为python规定了方法名称以双下划线结尾的是可以访问的，即使它以双下划线开始。
+
+2. 为什么实例变量设置成了私有的，但是实例还是可以通过变量名获取呢？
+
+```text
+实例有一个变量定义成了__score,在创建好实例过后，尝试给其赋值
+
+stu = Student()
+stu.__score = -1
+print(stu.__score)
+
+同样不会报错，也会输出
+
+这是因为python的语言特性，它会认为是给实例stu新加了一个变量，而不是访问。
+
+如果直接调用就会报错
+stu = Student()
+print(stu.__score)
+```
+
+
+
+通过实例调用__dict__方法可以查看所有的实例变量。
+
+私有实例变量生成的是 ： _类名+实例变量名称
+
+
+#### 继承
+Python支持多继承
+
+```text
+class Student(Human):
+    def __init__(self,name,age):
+        # 使用super关键字调用父类初始化方法
+        super(Student,self).__init__(name,age)
+```
+
+
+#### 枚举
+首先引入一个枚举类 Enum,需要继承这个类
+```text
+from enum import Enum
+
+class VIP(Enum):
+    Yellow = 1
+    Green = 2
+    Black = 3
+    Red = 4
+
+print(VIP.Yellow)
+print(VIP.Yellow.name)
+print(VIP.Yellow.value)
+```
+
+使用枚举可以有效的防止更改数值。也可以枚举名称重复，若重复类会报错。
+
+不支持大小比较，支持 is 比较，支持等值比较
+```text
+result = VIP.RED is VIP.RED
+```
+
+```text
+from enum import IntEnum,unique
+
+# 只运行值为int类型，使用IntEnum
+# 不允许值重复，加入unique，并使用注解
+
+@unique
+class VIP(IntEnum):
+    Yellow = 1
+    Green = 2
+    Black = 3
+    Red = 4
+```
+
+取值
+
+```text
+print(VIP.Yellow) # VIP.Yellow
+print(VIP.Yellow.name) # Yellow
+print(VIP.Yellow.value) # 1
+print(VIP[VIP.Yellow.name]) # VIP.Yellow
+print(VIP[VIP.Yellow.name].name) # Yellow
+print(VIP[VIP.Yellow.name].value) # 1
+
+print(VIP(VIP.Yellow.value)) # VIP.Yellow
+print(VIP(VIP.Yellow.value).name) # Yellow 
+print(VIP(VIP.Yellow.value).value) # 1
+```
+
+#### 闭包
+
+闭包 = 函数 + 定义函数时候的环境变量(不能是全局变量,需要是调用函数所在的环境变量)
+```text
+def curve_pre():
+    a = 25
+    def curve(x):
+        return a * x * x
+    return curve
+    
+# 得到闭包函数
+f = curve_pre()
+# 打印闭包函数相关信息
+print(f.__closure__)
+```
+
+
+注：局部变量不会影响上级作用域对象的值
+
+```text
+def f1():
+    a = 10
+
+    def f2():
+        # 此时的a会被认为是一个局部变量，局部变量不影响外部变量的值
+        a = 20
+        print(a)
+
+    print(a)
+    f2()
+    print(a)
+
+
+f1()
+
+输出：
+10
+20
+10
+```
+
+次级作用域引用全局变量,使用global关键字
+```text
+origin = 0
+
+def go(step):
+    global origin
+    new_pos = origin + step
+    origin = new_pos
+    return new_pos
+
+print(go(2)) => 2
+print(go(3)) => 5
+print(go(6)) => 11
+```
+
+次级作用域声明参数不是局部变量，使用nonlocal关键字定义
+```text
+def go(step):
+    def do(x):
+        nonlocal step
+        step += x
+        return step
+
+    return do
+
+
+g = go(0)
+print(g(2))
+print(g(3))
+print(g(5))
+print(g.__closure__)
 ```
