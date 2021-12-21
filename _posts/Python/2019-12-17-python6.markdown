@@ -1,0 +1,303 @@
+---
+layout:     post
+title:      "Python高效编程"
+subtitle:   ""
+date:       2018-12-17 13:01:00
+author:     "YaPi"
+header-img: ""
+tags:
+    - Python
+---
+
+#### 字典代替switch
+字段不仅仅可以使用 ['key'] 获取值，也可以使用 .get('key','默认value') 获取
+
+```text
+def dosometh1():
+    return 'dosometh1'
+
+
+def dosometh2():
+    return 'dosometh2'
+
+
+def dosometh3():
+    return 'dosometh3'
+
+
+dict_1 = {
+    '0': dosometh1,
+    '1': dosometh2
+}
+
+# 使用get方式取值
+t = dict_1.get('1', dosometh3)
+print(t())
+```
+
+#### 列表推导式
+列表、set, dist、元组 都可以被推导
+```text
+a = [1, 2, 3, 4, 5, 6, 7]
+# 每个参数平方
+b = [i ** 2 for i in a]
+# 对大于5的数字取平方
+c = [i ** 2 for i in a if i >= 5]
+# 得到的也可以不仅仅是列表，也可以是set等,修改返回数据中括弧
+b = (i ** 2 for i in a)
+print(b)
+print(c)
+```
+
+dict推导式编写
+
+```text
+# 提取key
+students = {
+    'a': 18,
+    'b': 20,
+    'c': 22
+}
+
+b = [k for k, v in students.items()]
+print(b)
+
+
+# 颠倒key，value
+students = {
+    'a': 18,
+    'b': 20,
+    'c': 22
+}
+
+b = [{v: k} for k, v in students.items()]
+print(b)
+```
+
+推导出的可以编写为元组，但是返回的不是直接的元组类型，而是generater类型
+
+#### 迭代器
+```text
+class Book:
+    pass
+
+# 若想实现迭代器，需要实现两个方法
+# __next__(self)
+# __iter__(self)
+class BookCollection:
+    def __init__(self):
+        self.data = ['a', 'b', 'c']
+        self.cur = 0
+
+    def __next__(self):
+        if self.cur >= len(self.data):
+            raise StopIteration()
+
+        r = self.data[self.cur]
+        self.cur += 1
+        return r
+
+    def __iter__(self):
+        return self
+
+
+books = BookCollection()
+#
+for book in books:
+    print(book)
+
+# 迭代器只能遍历一次，第二次不会打印
+# 如果想要多次，需要在遍历之前，进行拷贝
+
+# import copy
+# b = copy.copy(book)
+for book in books:
+    print(book)
+
+
+# 使用next函数
+# print(next(books))
+# print(next(books))
+# rint(next(books))
+
+# 使用__next__()方法
+# print(books.__next__())
+# print(books.__next__())
+# print(books.__next__())
+```
+
+#### 生成器
+
+```text
+# 生成器
+# print 0~10000
+
+# 消耗内存
+nn = [i for i in range(0, 10001)]
+print(nn)
+
+
+# 不消耗内存,并且节约资源
+def gen(max):
+    n = 0
+    while n <= max:
+        n += 1
+        # 生成器
+        # 相当于把n返回回去了，第二次在执行时接着执行
+        yield n
+
+
+g = gen(10000)
+#
+# for i in g:
+#     print(i)
+print(next(g))
+print(next(g))
+print(next(g))
+```
+
+#### None
+None是NoneType类型，None就是None,不等于空字符串、不等于空的列表、不等于0、不等于False 
+如果要做判空操作，使用 not 或者直接值去判断
+
+```text
+a = []
+if not a:
+    xxx
+else:
+    xxx
+
+if a is None:
+    xxx
+else:
+    xxx
+```
+
+在用对象做判断时，对象不一定就是True，也有可能是False
+
+```text
+class Test:
+    # 有bool方法使用bool方法
+    # 但是bool方法返回只能是Bool类型返回值
+    def __bool__(self):
+        return False
+
+    # 没有bool方法使用len方法
+    # 返回值需要是int和bool类型
+    def __len__(self):
+        return 0
+
+
+# len()方法对对象使用时，也会调用__len__方法
+# len()调用对时候必须申明__len__方法，不然会报错
+print(bool(Test()))
+```
+
+#### 装饰器弊端
+
+```text
+def f1():
+    """
+        This is f1
+    """
+    
+    print(f1.__name__)
+    
+   
+   
+# 如果使用装饰器对f1()进行了装饰，那么打印出来的
+# 就不是f1了，而是装饰器函数的名字，并且相关help信息也没了(调用：help(f1) )
+# 如何解决: 
+
+import time
+from functools import wraps
+
+
+def decorator(func):
+    # 添加注解，拷贝原始函数信息到wrapper函数内部
+    @wraps(func)
+    def wrapper():
+        print(time.time())
+        func()
+
+    return wrapper
+
+
+@decorator
+def f1():
+    """
+    test
+    :return: s
+    """
+    print(f1.__name__)
+
+
+f1()
+print(help(f1))
+```
+
+#### 海象运算符3.8
+定义'   :=  '
+
+```text
+# 冗余代码问题
+a = '123'
+
+if len(a) > 5:
+    print(f'长度大于5；真实长度{b}')
+    x = len(a)
+    xxx
+
+
+# 运算并赋值
+if (b = len(a)) > 5:
+    print("长度为 : "+ str(b))   
+    x = b
+    xxx
+```
+
+
+#### 数据类 dataclass
+
+```text
+# 传统赋值需要在__init__方法中传入参数再赋值到实例变量
+class Student:
+    def __init__(self, name, age, school_name):
+        self.name = name
+        self.age = age
+        self.school_name = school_name
+
+    def test(self):
+        print(self.name)
+
+
+student = Student('123',18,'sdfs')
+student.test()
+```
+
+dataclass
+
+```text
+from dataclasses import dataclass
+
+
+# 自动重写init方法、repr方法(相当于java的toString())
+@dataclass
+class Student:
+    name: str
+    age: int
+    school_name: str
+
+    # def __init__(self, name, age, school_name):
+    #     self.name = name
+    #     self.age = age
+    #     self.school_name = school_name
+
+    def test(self):
+        print(self.name)
+
+
+student = Student('123', 18, 'sdfs')
+student.test()
+
+```
