@@ -256,7 +256,8 @@ print(go(3)) => 5
 print(go(6)) => 11
 ```
 
-次级作用域声明参数不是局部变量，使用nonlocal关键字定义
+次级作用域声明参数不是局部变量，使用nonlocal关键字定义，注意这儿是存在
+step赋值操作，才会认为是i个局部变量，若只是引用，则不影响，不需要nonlocal申明
 ```text
 def go(step):
     def do(x):

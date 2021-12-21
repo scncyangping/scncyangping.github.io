@@ -1,0 +1,163 @@
+---
+layout:     post
+title:      "Python函数式编程"
+subtitle:   ""
+date:       2018-12-16 13:01:00
+author:     "YaPi"
+header-img: ""
+tags:
+    - Python
+---
+
+### 函数式编程
+
+#### 匿名函数
+
+##### 定义
+使用lambda关键字
+lambda parameter_list: expression
+
+```text
+# 正常函数
+def add(x, y):
+    return x + y
+
+# 匿名函数
+f = lambda x, y: x + y
+
+print(f(1,2))
+```
+#### 三元表达式
+条件为真时返回的结果 if 条件判断 else 条件为假时返回结果
+
+```text
+x = 2
+y = 1 
+
+r = x if x > y else y
+```
+
+#### map
+
+```text
+list_x = [1, 2, 3, 4, 5, 6]
+
+
+def base(x):
+    return x // 2
+
+# map函数传入操作函数和序列
+r = map(base, list_x)
+
+# 使用list函数，把返回的map转成list
+print(list(r))
+
+
+# 或者使用lambda
+list_x = (1, 2, 3, 4, 5, 6)
+r = map(lambda x: x*2, list_x)
+
+
+# lambada多参数
+list_x = [1, 2, 3, 4, 5, 6]
+list_y = [1, 2, 3, 4, 5, 6]
+
+r = map(lambda x, y: x * x + y, list_x, list_y)
+
+print(list(r))
+
+返回得到的结果个数，取决于传入列表的个数
+```
+
+#### reduce
+reduce函数在python3中不在默认空间，需要先导入才能使用
+
+reduce(function, sequence, initial=_initial_missing)
+
+原理：
+首次使用前两个元素，做操作后，将返回值及后续一个数继续做处理
+initial是一个初始值，会优先计算
+
+```text
+from functools import reduce
+
+list_x = [1, 2, 3, 4, 5, 6]
+r = reduce(lambda x, y: x + y, list_x)
+print(r) = > 36
+
+# 初始值
+# 先计算10 + 1，然后再做后续运算
+r = reduce(lambda x, y: x + y, list_x,10)
+print(r) = > 46
+```
+
+#### filter
+list_x = [1, 0, 1, 0, 2, 0]
+
+# 不一定是True或False，只要可以判断真假就行，比如 1，0
+r = filter(lambda x: True if x == 1 else False, list_x)
+print(list(r))
+
+
+#### 装饰器
+简单例子
+```text
+import time
+
+
+def decorator(func):
+    def wrapper():
+        print(time.time())
+        func()
+
+    return wrapper
+
+
+def f1():
+    print("This is a function")
+
+
+f = decorator(f1)
+f()
+```
+
+私用 @ 符号语法糖
+
+```text
+#调用 不用改变f1的调用方式
+@decorator
+def f1():
+    print("This is a function")
+```
+
+完整装饰器例：
+
+```text
+import time
+
+
+def decorator(func):
+    # 在python当中，*param + **kw可以指代任意参数
+    # 当你定义一个函数不明确参数时，可以使用此方式
+    def wrapper(*param, **kw):
+        print(time.time())
+        func(*param, **kw)
+
+    return wrapper
+
+
+@decorator
+def f1(name):
+    print("This is a function " + name)
+
+
+@decorator
+def f2(name, age, **kw):
+    print("This is a function " + name + age)
+    print(type(kw))
+
+
+f1("wangerwa")
+f2("wangerwa", "123", c='345', d='456')
+
+```
