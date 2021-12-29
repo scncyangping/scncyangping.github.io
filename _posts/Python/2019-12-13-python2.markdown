@@ -27,7 +27,7 @@ else:
 while True:
     xxx
 else:
-    print("推出后使用")
+    print("退出后执行")
 ```
 
 ```text
@@ -126,6 +126,7 @@ from b.test import *
     1. 将传递的参数当成了一个元组
     2. 若传入一个元组会变成二维元祖,若需要传递后变成元祖，再调用的时候需使用*号
     3. 两个*号，会被解析成dict，调用的时候，直接等式调用如：addTest(x=1,y=2,c=3)
+   
 ```text
 # 必须参数
 def add(x,y):
@@ -158,6 +159,7 @@ temp(**p)
 返回值：无return返回一个空值 None
 
 多返回值返回的是一个元组
+
 ```text
 def add(x, y):
     x *= 4
@@ -169,6 +171,7 @@ print(a, b)
 ```
 
 序列解包
+
 ```text
 d = 1,2,3
 
