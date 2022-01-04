@@ -1,6 +1,6 @@
 ---
 layout:     post
-title:      "Python基础类型"
+title:      "Python系列(一)基础类型"
 subtitle:   ""
 date:       2018-12-12 13:01:00
 author:     "YaPi"

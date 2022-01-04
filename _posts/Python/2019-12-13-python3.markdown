@@ -1,6 +1,6 @@
 ---
 layout:     post
-title:      "Python系统函数"
+title:      "Python系列(三)系统函数"
 subtitle:   ""
 date:       2018-12-14 13:01:00
 author:     "YaPi"
