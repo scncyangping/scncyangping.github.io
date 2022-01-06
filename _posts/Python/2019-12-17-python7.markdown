@@ -1,0 +1,72 @@
+---
+layout:     post
+title:      "Python系列(七)一切皆对象"
+subtitle:   ""
+date:       2018-12-18 13:01:00
+author:     "YaPi"
+header-img: ""
+tags:
+    - Python
+---
+
+### type、object、class关系
+
+type是一个类型，它的实例对象也是type。所有对象都都有类型，内置对象，比如int、float、str等
+这些对象的基础类型都是type。
+
+```text
+class Student:
+    pass
+
+stu = Student()
+print(type(stu))
+print(Student.__bases__)
+
+print(type(1))
+print(type(int))
+
+print(type.__bases__)
+print(type(object))
+print(object.__bases__)
+
+输出
+# 输出当前变量类型
+<class '__main__.Student'>
+# Student类的基类为object
+(<class 'object'>,)
+# 数字 1 的类型为int类型
+<class 'int'>
+# int类型其实在python中也是由一个类来表示的，它的类的类型为type类型。同样，type也是python内置的一个类
+<class 'type'>
+# 查看type类的基类，可以看到是object这个类
+(<class 'object'>,)
+# 查看object这个类的类型，可以看到是type类型
+<class 'type'>
+# 查看object类的基类，可以看到它是没有基类的
+()
+```
+
+type -> class -> obj
+
+object是最顶层的类，所有类默认继承此类(使用类名.)
+
+
+### 魔法函数
+以双下划线开始的函数，大多Python自带的
+
+```text
+class Student:
+    def __init__(self):
+        self.list = ['a', 'b', 'c']
+    
+    # 添加此方法，可以使实例能够for循环遍历，能够进行切片操作
+    def __getitem__(self, item):
+        return self.list[item]
+
+
+stu = Student()
+
+# 直接遍历实例
+for e in stu:
+    print(e)
+```
