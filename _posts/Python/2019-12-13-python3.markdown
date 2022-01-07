@@ -22,3 +22,6 @@ python中递归有最大深度限制，可以调用系统库修改此配置
 import sys
 sys.setrecursionlimit(10000)
 ```
+
+- hasattr(obj,methodName) : 判断某个类是否有某个函数
+- isinstance(obj,sized) : 判断某个类是否是某种类型

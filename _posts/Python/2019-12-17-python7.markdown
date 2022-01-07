@@ -9,9 +9,9 @@ tags:
     - Python
 ---
 
-### type、object、class关系
+#### type、object、class关系
 
-type是一个类型，它的实例对象也是type。所有对象都都有类型，内置对象，比如int、float、str等
+type是一个类型，它的实例对象也是type。所有对象都都有类型。内置对象中比如int、float、str等
 这些对象的基础类型都是type。
 
 ```text
@@ -51,8 +51,8 @@ type -> class -> obj
 object是最顶层的类，所有类默认继承此类(使用类名.)
 
 
-### 魔法函数
-以双下划线开始的函数，大多Python自带的
+#### 魔法函数
+以双下划线开始的函数，Python有很多自带的魔法函数
 
 ```text
 class Student:
@@ -70,3 +70,83 @@ stu = Student()
 for e in stu:
     print(e)
 ```
+
+#### 抽象基类abc模块
+类似于java中的接口，无法创建实例类，继承此方法需要复写所有方法。
+
+主要作用：
+
+- 类型判断，使用isinstance
+- 强制继承
+
+```text
+import abc
+
+
+class Cache(metaclass=abc.ABCMeta):
+    @abc.abstractmethod
+    def get(self, key):
+        pass
+
+    @abc.abstractmethod
+    def set(self, key, value):
+        pass
+
+
+class RedisCache(Cache):
+    pass
+
+# 报错: 需要实现所有的方法，才能使用，达到强制继承的作用
+r = RedisCache()
+```
+
+
+isinstance方法可以判断继承关系，type不能
+
+#### 实例方法和静态方法
+
+```text
+class Date:
+    def __init__(self, year, month, day):
+        self.year = year
+        self.month = month
+        self.day = day
+    
+    # 返回格式化后的数据
+    def get_time(self):
+        return '{year}-{month}-{day}'.format(year=self.year, month=self.month, day=self.day)
+    
+    # 静态方法
+    @staticmethod
+    def get_format(str):
+        year, month, day = tuple(str.split('/'))
+        return Date(year, month, day)
+    
+    # 类方法
+    # 不用指定类名去实例
+    @classmethod
+    def get_format_cls(cls, str):
+        # 元组解包
+        year, month, day = tuple(str.split('/'))
+        return cls(year, month, day)
+
+
+d = Date.get_format_cls('2018/11/02')
+print(d.get_time())
+
+d2 = Date.get_format('2018/11/02')
+print(d.get_time())
+
+```
+
+#### 查看变量结构
+
+- dir()方法 : 可以查看类和系统自带类型
+- 类名.__dict__ : 查看类属性
+- 实例.__dict__ : 查看实例变量
+
+#### super关键字
+python3之前: super(obj,self).__init__()
+python3 : super().__init__()
+
+若一个类继承了多个类，则它的调用父类方法的顺序和属性查找顺序一样(MRO)
