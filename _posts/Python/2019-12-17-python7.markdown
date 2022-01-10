@@ -142,12 +142,13 @@ print(d.get_time())
 #### 查看变量结构
 
 - dir()方法 : 可以查看类和系统自带类型
-- 类名.__dict__ : 查看类属性
-- 实例.__dict__ : 查看实例变量
+- 类名.\__dict\__ : 查看类属性
+- 实例.\__dict\__ : 查看实例变量
 
 #### super关键字
-python3之前: super(obj,self).__init__()
-python3 : super().__init__()
+python3之前: super(obj,self).\__init\__()
+
+python3 : super().\__init\__()
 
 若一个类继承了多个类，则它的调用父类方法的顺序和属性查找顺序一样(MRO)
 
