@@ -1,0 +1,111 @@
+---
+layout:     post
+title:      "Python系列(八)自定义序列类"
+subtitle:   ""
+date:       2018-12-19 13:01:00
+author:     "YaPi"
+header-img: ""
+tags:
+    - Python
+---
+
+### 内置序列
+
+结构分类
+
+- 容器序列(可放任意类型数据)：list、tuple、deque
+- 扁平序列：str、bytes、bytearray、array.array
+
+可变性
+
+- 可变序列：list、deque、bytearray、array
+- 不可变序列：str、tuple、bytes
+
+#### 序列操作
+
+序列' + ' 操作和 ' += '操作是不一样的
+
+'+' 操作需要前后数据结构都一样。比如list不能直接和tuple相加。但是'+='可以。
+'+='相当于调用 __iadd__方法。底层还是调用extend方法，所以也可以直接调用extend方法
+
+extend方法和append方法不一样，extend传入一个序列，会将其遍历然后相加。append会直接
+当作一个元素进行相加
+
+
+其他操作也就是调用具体内置的魔法函数，容器相关的在此包中
+```text
+from collections import  abc
+```
+
+#### 切片操作
+
+模式：[start:end:step]
+
+当step的值为负数时代表反向切，这是需要start大于end
+
+
+```text
+import numbers
+
+
+class Group:
+    # 支持切片操作
+    def __init__(self, name, company_name, staffs):
+        self.name = name
+        self.company_name = company_name
+        self.staffs = staffs
+
+    def __reversed__(self):
+        self.staffs.reverse()
+
+    def __getitem__(self, iterm):
+        # return self.staffs[iterm]
+        cls = type(self)
+        if isinstance(iterm, slice):
+            return cls(company_name=self.company_name,
+                       name=self.name,
+                       staffs=self.staffs[iterm])
+        elif isinstance(iterm, numbers.Integral):
+            return cls(company_name=self.company_name,
+                       name=self.name,
+                       staffs=[self.staffs[iterm]])
+
+    def __len__(self):
+        return len(self.staffs)
+
+    def __iter__(self):
+        return iter(self.staffs)
+
+    def __contains__(self, item):
+        if item in self.staffs:
+            return True
+        else:
+            return False
+
+
+staffs = ['1', '2', '3', '4']
+group = Group(company_name='xxx', name='wanger', staffs=staffs)
+
+# 此方法对应魔法函数 __reversed__
+reversed(group)
+g = group[:2]  # '1' '2'
+g1 = g[:1]  # '1'
+print(g1.staffs[0])  # 1
+# 对应魔法函数__len__
+print(len(g1))  # 1
+# 对应__contains__魔法函数
+if '4' in g1:
+    print('yes')
+else:
+    print('false')
+
+
+
+# 输出
+4
+1
+yes
+```
+
+处理已排序的序列，升序
+
