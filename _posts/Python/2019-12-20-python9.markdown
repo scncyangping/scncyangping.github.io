@@ -1,0 +1,79 @@
+---
+layout:     post
+title:      "Python系列(九)可变性、垃圾回收"
+subtitle:   ""
+date:       2018-12-20 13:01:00
+author:     "YaPi"
+header-img: ""
+tags:
+    - Python
+---
+
+####  == 和 is
+
+is 判断两个对象的id是否相等，使用id()方法获取id。
+
+intern机制：对于一些小整数、小的字符串，python会将其全局存储一份儿。
+
+
+对于 ' == ' 来说判断的是具体的值是否相等
+
+
+#### 垃圾回收
+Python中垃圾回收算法采用引用计数算法。
+
+
+```text
+class A:
+    # 在回收之前调用
+    def __del__(self):
+        pass
+        
+```
+
+
+#### 可变性
+
+经典错误: 使用可变对象当作默认值
+
+```text
+class Test:
+    def __init__(self, name, l=[]):
+        self.name = name
+        self.l = l
+
+    def add(self, staff_name):
+        self.l.append(staff_name)
+
+    def remove(self, staff_name):
+        self.l.remove(staff_name)
+
+
+if __name__ == '__main__':
+    t1 = Test('t1', ['1', '2', '3'])
+    t1.add('4')
+
+    print(t1.name, ' ', t1.l)
+
+    t2 = Test('t2')
+    t2.add('5')
+    print(t2.name, ' ', t2.l)
+
+    t3 = Test('t3')
+    t3.add('6')
+    # t2 和 t3都没有传递列表，所以都使用默认的
+    # 默认的列表是可变类型，所以更改都指向同一对象
+    print(t2.name, ' ', t2.l)
+    print(t3.name, ' ', t3.l)
+    print(t2.l == t3.l)
+    
+# 输出
+t1   ['1', '2', '3', '4']
+t2   ['5']
+t2   ['5', '6']
+t3   ['5', '6']
+True
+```
+
+
+
