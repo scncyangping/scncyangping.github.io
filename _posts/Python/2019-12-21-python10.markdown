@@ -1,0 +1,275 @@
+---
+layout:     post
+title:      "Python系列(十)元类编程"
+subtitle:   ""
+date:       2018-12-21 13:01:00
+author:     "YaPi"
+header-img: ""
+tags:
+    - Python
+---
+
+#### @property
+
+使用@property添加一个没有定义的属性
+
+使用@属性名.setter为添加的属性赋值
+
+```text
+from datetime import date, datetime
+
+
+class User:
+    def __init__(self, name, birthday):
+        self.name = name
+        self.birthday = birthday
+
+    @property
+    def age(self):
+        return datetime.now().year - self.birthday.year
+
+    # 为此属性添加赋值方法
+    @age.setter
+    def age(self, value):
+        self.birthday = date(value, self.birthday.month, self.birthday.day)
+
+
+if __name__ == "__main__":
+    user = User('erwa', date(year=2010, month=1, day=12))
+    # 没有定义age属性
+    # 使用@property装饰器可添加一个属性
+    print(user.age)
+
+    user.age = 2002
+    print(user.age)
+```
+
+#### \__getattr\__ 和 \__getattribute\__
+
+\__getattr\__ 在查找不到属性的时候调用
+
+对于一个属性来说，查找属性的顺序是先找实例变量是否存在，不存在则找类变量中是否存在。
+若有继承关系，会找父类中的类变量。当都不存在时，使用实例.属性名获取的时候会抛出异常。
+此时，若不想抛出异常，可在类中复些此方法
+
+```text
+class A:
+    def __init__(self):
+        pass
+    # 没有找到属性值的时候才调用此方法
+    # 若有返回值，则返回相应数据，若五返回值，则返回None     
+    def __getattr__(self, iterm):
+        return xxxx
+        
+    # 首先就会调用此方法，无论属性中是否有    
+    def __getattribute__(self, iterm):
+        return xxxx
+```
+
+#### 属性查找顺序
+
+如果user是某个类的实例，那么user.age(以及等价的getattr(user,'age'))首先调用__getattribute__。
+如果定义了__getattr__方法，那么在__getattribute__抛出AttributeError的时候就会调用__getattr__。
+而对于描述符(\__get\__)的调用，则是发生在__getattribute__内部的。
+
+user = User()，那么user.age顺序如下：
+
+1) 如果 'age' 是出现在User(类变量)或其基类的__dict__中，且age是 data descriptor(数据描述符类型，类似上述 IntField)则调用其数据描述符中的__get__方法
+```
+class A:
+    age = IntFiled()
+```
+2) 如果 'age' 出现在obj(对象的实例，这里指代user)的__dict__中，那么直接返回 obj.\__dict\__['age'],否则
+   
+3) 如果 'age' 出现在User或其基类的__dict__中
+
+```
+   3.1) 如果age是 non-data descriptor,那么调用其__get__方法
+        '''
+        class B:
+            age = NonDataIntField()
+        '''
+
+   3.2) 否则, 返回__dict__['age']
+```
+
+4) 如果User有__getattr__方法，调用__getattr__方法，否则
+   
+5) 抛出AttributeError
+
+```text
+import numbers
+
+# 数据描述符 实现__get__ 和 __set__
+class IntField:
+    def __get__(self, instance, owner):
+        return self.value
+
+    def __set__(self, instance, value):
+        if not isinstance(value, numbers.Integral):
+            raise ValueError("int value need")
+        if value < 0:
+            raise ValueError("value must over 0")
+
+        self.value = value
+
+    def __delete__(self, instance):
+        self.value = None
+
+
+# 非数据属性描述符
+class NonDataIntField:
+    def __get__(self, instance, owner):
+        return self.value
+
+
+class User:
+    age = IntField()
+
+
+if __name__ == "__main__":
+    u = User()
+    u.age = 32
+    print(u.__dict__)
+    print(u.age)
+```
+
+#### \__new\__ 和 \__init\__
+
+```text
+class User:
+    def __new__(cls, *args, **kwargs):
+        print("in new")
+        return super().__new__(cls)
+
+    def __init__(self, name):
+        print("init")
+        self.name = name
+
+
+# new 是用来控制对象的生成过程，在对象生成之前
+# init 是用来完善对象的
+# 如果new方法不反悔对象，则不会调用init函数
+# 且，如果创建时指定了参数，则，__init__方法中的参数需要一致，否则会报错
+if __name__ == '__main__':
+    u = User('123')
+```
+
+#### 元类编程
+实现ORM
+
+```text
+import numbers
+
+
+class Field:
+    pass
+
+
+# 数据属性描述符
+class IntField(Field):
+    def __init__(self, db_column, min_value=0, max_value=20):
+        self._value = None
+        self.min_value = min_value
+        self.max_value = max_value
+        self.db_column = db_column
+
+    def __get__(self, instance, owner):
+        return self._value
+
+    def __set__(self, instance, value):
+        if not isinstance(value, numbers.Integral):
+            raise ValueError("int value need")
+        if value < self.min_value or value > self.max_value:
+            raise ValueError("value must between min_value and max_value")
+        self._value = value
+
+
+# 数据属性描述符
+class CharField(Field):
+    def __init__(self, db_column, max_length=None):
+        self._value = None
+        self.db_column = db_column
+        if max_length is None:
+            raise ValueError("length Error")
+
+        self.max_length = max_length
+
+    def __get__(self, instance, owner):
+        return self._value
+
+    def __set__(self, instance, value):
+        if not isinstance(value, str):
+            raise ValueError("char value need")
+        if len(value) > self.max_length:
+            raise ValueError("char length error")
+        self._value = value
+
+
+class ModeMetaClass(type):
+    def __new__(mcs, name, bases, attrs, **kwargs):
+        if name == "BaseModel":
+            # __new__必须要返回一个对象，否则__init__函数不会执行
+            return super().__new__(mcs, name, bases, attrs, **kwargs)
+        fields = {}
+        for key, value in attrs.items():
+            if isinstance(value, Field):
+                fields[key] = value
+        attrs_meta = attrs.get("Meta", None)
+        _meta = {}
+        db_table = name.lower()
+        if attrs_meta is not None:
+            table = getattr(attrs_meta, "db_table", None)
+            if table is not None:
+                db_table = table
+        _meta["db_table"] = db_table
+        attrs["_meta"] = _meta
+        attrs["fields"] = fields
+        del attrs["Meta"]
+
+        # return super(ModeMetaClass, mcs).__new__()
+        # __new__必须要返回一个对象，否则__init__函数不会执行
+        return super().__new__(mcs, name, bases, attrs, **kwargs)
+
+
+class BaseModel(metaclass=ModeMetaClass):
+    def __init__(self, *args, **kwargs):
+        for key, value in kwargs.items():
+            setattr(self, key, value)
+
+        return super().__init__()
+
+    def save(self):
+        fields = []
+        values = []
+        for key, value in self.fields.items():
+            db_column = value.db_column
+            if db_column is None:
+                db_column = key.lower()
+            fields.append(db_column)
+            value = getattr(self, key)
+            values.append(str(value))
+
+        sql = "insert {db_table}({fields}) value({values})".format(db_table=self._meta["db_table"],
+                                                                   fields=','.join(fields),
+                                                                   values=','.join(values))
+
+        print(sql)
+
+
+class User(BaseModel):
+    name = CharField(db_column='name', max_length=10)
+    age = IntField(db_column='age', min_value=0, max_value=100)
+
+    class Meta:
+        db_table = "user"
+
+
+if __name__ == '__main__':
+    user = User(name='Yapi', age=28)
+    # user.name = 'Yapi'
+    # user.age = 28
+    user.save()
+
+```
+
