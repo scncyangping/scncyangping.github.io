@@ -1,0 +1,241 @@
+---
+layout:     post
+title:      "Python系列(十一)生成器和迭代器"
+subtitle:   ""
+date:       2018-12-22 13:01:00
+author:     "YaPi"
+header-img: ""
+tags:
+    - Python
+---
+
+### 迭代器和生成器
+
+#### 迭代器和迭代协议
+迭代器是访问集合内元素的一种方式，一般用来遍历数据
+迭代器和以下标的访问方式不一样，迭代器只能一条一条的访问，提供类一种惰性方式数据
+
+使用 ['xxx']访问元素默认是实现 __getitem__方法
+使对象变成可迭代对象默认是实现 __iter__方法
+
+在__iter__方法找不到的时候，会去找__getitem__方法
+
+
+```text
+from collections.abc import Iterable, Iterator
+
+# 自定义Iterator需要实现两个方法
+# Iterable 中的__iter__方法
+# Iterator 中的__next__方法
+
+
+class Company:
+    def __init__(self, e_list):
+        self.e_list = e_list
+
+    def __iter__(self):
+        return MyIterator(self.e_list)
+
+    # for 循环 和 c[1]下标取值方式需要实现此方法
+    # def __getitem__(self, item):
+    #     return self.e_list[item]
+
+
+class MyIterator(Iterator):
+    def __init__(self, e_list):
+        self.e_list = e_list
+        self.index = 0
+
+    def __next__(self):
+        try:
+            w = self.e_list[self.index]
+        except IndexError:
+            raise StopIteration
+        self.index += 1
+        return w
+
+
+if __name__ == '__main__':
+    c = Company(['1', '2', '3'])
+    # 转换成为迭代器
+    # 迭代器只能被遍历一次
+    # 无论是用next()方法，或for循环都算
+    my_iterator = iter(c)
+
+    # for i in my_iterator:
+    #     print(i)
+    #
+    # print('pass')
+    while True:
+        try:
+            print(next(my_iterator))
+        except StopIteration:
+            break
+```
+
+#### 生成器
+简单实例
+
+```text
+# 生成器函数，函数里之遥有yield关键字
+def fib(index):
+    if index <= 2:
+        return 1
+    else:
+        return fib(index - 1) + fib(index - 2)
+
+
+# 显示整个过程
+def fib2(index):
+    re_list = []
+    n, a, b = 0, 0, 1
+    while n < index:
+        re_list.append(b)
+        a, b = b, a + b
+        n += 1
+    return re_list
+
+
+# 使用yield改造
+def fib3(index):
+    n, a, b = 0, 0, 1
+    while n < index:
+        yield b
+        a, b = b, a + b
+        n += 1
+
+
+if __name__ == '__main__':
+    # 直接打印
+    print(fib(10))
+    # 显示过程
+    for i in fib2(10):
+        print(i, end=', ')
+        print()
+    # 直接显示过程中，若index较大，就会相当消耗内存
+    for i in fib3(10):
+        print(i, end=', ')
+```
+
+##### 原理
+生成器函数的栈帧对象于普通函数栈帧对象不同，它多了一层封装。
+
+每次调用时，会保存调用的是变量及执行位置，调用过后生成新的栈帧对象。所以
+每次调用都能够知道下一次是什么值
+
+```text
+import inspect
+frame = None
+
+
+def foo():
+    bar()
+
+
+def bar():
+    global frame
+    frame = inspect.currentframe()
+
+
+# python.exe会用一个叫做PyEval_EvalFramEx(c函数)去执行foo函数，首先会创建一个栈帧
+
+"""
+当foo调用自函数bar，又会创建一个栈帧
+所有的栈帧都是分配在堆内存上，这就决定了栈帧可以
+独立于调用者存在
+"""
+
+# 查看函数字节码
+# import dis
+# print(dis.dis(foo))
+
+foo()
+# 所在函数名称
+print(frame.f_code.co_name)
+caller_frame = frame.f_back
+# 调用当前函数的函数名称
+print(caller_frame.f_code.co_name)
+
+
+def gen_func():
+    yield 1
+    name = "ergou"
+    yield 2
+    age = 29
+    yield 2
+    return "abc"
+
+
+# 生成器对象
+# 每次调用都会重新生成一个栈帧对象
+gen = gen_func()
+# print(dis.dis(gen))
+# 最近的代码执行的位置
+print(gen.gi_frame.f_lasti)
+# 保存的变量
+print(gen.gi_frame.f_locals)
+next(gen)
+print(gen.gi_frame.f_lasti)
+print(gen.gi_frame.f_locals)
+next(gen)
+print(gen.gi_frame.f_lasti)
+print(gen.gi_frame.f_locals)
+next(gen)
+print(gen.gi_frame.f_lasti)
+print(gen.gi_frame.f_locals)
+
+```
+
+##### 应用场景
+python 内部实现的str、list、dict是用c语言写的，我们要自定义类实现这些类的功能时
+不能直接继承，因为c语言实现内部有很多优化，并且有一些方法不能够自定义。为了解决这种
+情况，python内部用python实现了相关的类。可继承这些类实现相关的方法。
+
+```text
+from collections import UserList
+from collections import UserDict
+from collections import UserString
+```
+
+```text
+# class MutableSequence(Sequence) 中实现
+def __iter__(self):
+    i = 0
+    try:
+        while True:
+            v = self[i]
+            yield v
+            i += 1
+    except IndexError:
+        return
+```
+
+##### 读取大文件
+
+```text
+def my_read_lines(f, newline):
+    buf = ""
+    while True:
+        while newline in buf:
+            # 找到包含换行分隔符的位置
+            pos = buf.index(newline)
+            # 将分隔符之前的数据截取保存
+            yield buf[:pos]
+            # 设置buf为截取之后的数据
+            buf = buf[pos + len(newline):]
+        # 读取指定大小数据
+        chunk = f.read(4)
+        if not chunk:
+            # 文件结尾
+            yield buf
+            break
+        # 将读取到的数据与旧数据进行拼接
+        buf += chunk
+
+
+with open("input.txt") as f:
+    # 指定分隔符
+    for line in my_read_lines(f, "{|}"):
+        print(line)
+
+```
