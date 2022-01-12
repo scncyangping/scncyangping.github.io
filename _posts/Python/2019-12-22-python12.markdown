@@ -1,0 +1,98 @@
+---
+layout:     post
+title:      "Python系列(十二)socket编程"
+subtitle:   ""
+date:       2018-12-23 13:01:00
+author:     "YaPi"
+header-img: ""
+tags:
+    - Python
+---
+
+### socket实例
+
+#### 服务端
+
+```text
+import socket
+import threading
+
+# IPV4
+server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+server.bind(('0.0.0.0', 8000))
+server.listen()
+
+
+def handler_sock(sock, addr):
+    while True:
+        data = sock.recv(1024)
+        str = data.decode("utf8")
+        print(str)
+        if str == 'END':
+            break
+        re_data = input()
+        sock.send(re_data.encode("utf8"))
+    sock.close()
+
+
+# 获取从客户端发送的数据
+# 一次获取1k的数据
+while True:
+    sock, addr = server.accept()
+    # 用线程去处理新接受的连接(用户)
+    client_thread = threading.Thread(target=handler_sock, args=(sock, addr))
+    client_thread.start()
+```
+
+#### 客户端
+
+```text
+import socket
+
+# IPV4
+client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+client.connect(('127.0.0.1', 8000))
+while True:
+    re_data = input()
+    client.send(re_data.encode("utf8"))
+    data = client.recv(1024)
+    print(data.decode("utf8"))
+```
+
+#### 使用socket模拟http
+
+```text
+import socket
+# url解析包
+from urllib.parse import urlparse
+
+
+def get_url(url):
+    # 通过socket请求html
+    url = urlparse(url)
+    host = url.netloc
+    path = url.path
+    if path == "":
+        path = "/"
+    # 建立socket连接
+    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    client.connect((host, 80))
+
+    client.send("GET {} HTTP/1.1\r\nHost:{}\r\nConnection:close\r\n\r\n".format(path, host).encode("utf8"))
+    # byte类型接受
+    data = b""
+    while True:
+        d = client.recv(1024)
+        if d:
+            data += d
+        else:
+            break
+
+    data = data.decode("utf8")
+    print(data)
+    client.close()
+
+
+if __name__ == "__main__":
+    get_url("http://www.baidu.com")
+```
