@@ -1,0 +1,85 @@
+---
+layout:     post
+title:      "重学C++系列(三)容器"
+subtitle:   ""
+date:       2022-01-17 22:01:00
+author:     "YaPi"
+header-img: ""
+tags:
+    - C++
+---
+
+#### 数组
+表示一组相同类型的数据。长度从0开始，可以访问指定下标的数据。
+不可以超过数组长度。
+
+定义例：
+
+```text
+int name[10]
+```
+
+数组下标原则，从0开始，使用非对称区间。
+1. 此区间是一个非对称区间[, )
+2. 左闭（下界），右开（上界）
+3. 取值范围: 上界 - 下界
+4. 如取值范围为空，上界值 = 下界值
+5. 即使取值范围为空，上界值永远不可能小于下界值
+
+##### 二维数组
+定义
+
+```text
+int a[2][4] = {{1,2,3},{5,6,7}}
+```
+
+tips: 遍历循环时尽可能要满足 "空间局部性"
+1. 在一个小的时间窗口内，访问的遍历那个地址越近越好，这样执行速度快
+2. 一般来说，需要将最长的循环放最内层，最短的循环放最外层，以减少CPU跨切循环层的次数
+
+
+#### Vector
+vector是面向对象方式的动态数组
+
+它可以轻松实现动态扩容插入元素
+
+```text
+#include <iostream>;
+#include <vector>
+using namespace std;
+
+int main(){
+    vector<int> arr = {1,2,3,4,5,6,7};
+    cout << "start capacity()" << arr.capacity() << endl;
+    // 查看当前已存储元素个数
+    cout << "start size()" << arr.size() << endl;
+    // 尾部插入一个元素
+    arr.push_back(7);
+    // 在中间进行元素插入操作
+    arr.insert(--arr.end(),9);
+    // 删除指定位置
+    arr.erase(arr.end() - 1);
+    // 删除最后一个元素
+    arr.pop_back();
+    // 查看容量
+    cout << "end capacity()" << arr.capacity() << endl;
+    // 查看当前已存储元素个数
+    cout << "end size()" << arr.size() << endl;
+    for (int index=0;index < arr.size();++index)
+        cout << arr[index] << endl;
+    return 0;
+}
+
+// 输出
+start capacity()7
+start size()7
+end capacity()14
+end size()7
+1
+2
+3
+4
+5
+6
+7
+```
