@@ -1,0 +1,163 @@
+---
+layout:     post
+title:      "重学C++系列(二)预处理器"
+subtitle:   ""
+date:       2022-01-17 13:01:00
+author:     "YaPi"
+header-img: ""
+tags:
+    - C++
+---
+
+### C++ 预处理器
+预处理器是一些指令，指示编译器在实际编译之前所需完成的预处理。
+
+所有的预处理器指令都是以井号（#）开头，只有空格字符可以出现在预处理指令之前。
+
+C++ 还支持很多预处理指令，比如 #include、#define、#if、#else、#line 等
+
+
+#### #define 预处理
+
+define 预处理指令用于创建符号常量。该符号常量通常称为宏。
+
+```text
+#define macro-name replacement-text 
+```
+
+当这一行代码出现在一个文件中时，在该文件中后续出现的所有宏都将会在程序编译之前被替换为 replacement-text。
+
+```text
+#include <iostream>
+using namespace std;
+ 
+#define PI 3.14159
+ 
+int main ()
+{
+ 
+    cout << "Value of PI :" << PI << endl; 
+ 
+    return 0;
+}
+
+// gcc -E test.cpp > test.p
+// 执行后会将结果替换
+...
+int main ()
+{
+ 
+    cout << "Value of PI :" << 3.14159 << endl; 
+
+    return 0;
+}
+```
+
+
+##### 参数宏
+
+```text
+#include <iostream>
+using namespace std;
+ 
+#define MIN(a,b) (a<b ? a : b)
+ 
+int main ()
+{
+   int i, j;
+   i = 100;
+   j = 30;
+   cout <<"较小的值为：" << MIN(i, j) << endl;
+ 
+    return 0;
+}
+```
+
+##### 条件编译
+
+```text
+#include <iostream>
+using namespace std;
+#define DEBUG
+ 
+#define MIN(a,b) (((a)<(b)) ? a : b)
+ 
+int main ()
+{
+   int i, j;
+   i = 100;
+   j = 30;
+#ifdef DEBUG
+   cerr <<"Trace: Inside main function" << endl;
+#endif
+ 
+#if 0
+   /* 这是注释部分 */
+   cout << MKSTR(HELLO C++) << endl;
+#endif
+ 
+   cout <<"The minimum is " << MIN(i, j) << endl;
+ 
+#ifdef DEBUG
+   cerr <<"Trace: Coming out of main function" << endl;
+#endif
+    return 0;
+}
+```
+
+##### # 和 ## 运算符
+'#' 和 '##' 预处理运算符在 C++ 和 ANSI/ISO C 中都是可用的。
+
+'#' 运算符会把 replacement-text 令牌转换为用引号引起来的字符串
+
+```text
+#include <iostream>
+using namespace std;
+ 
+#define MKSTR( x ) #x
+ 
+int main ()
+{
+    cout << MKSTR(HELLO C++) << endl;
+ 
+    return 0;
+}
+
+// 输出 HELLO C++
+```
+
+'##' 运算符用于连接两个令牌。下面是一个实例：
+
+```text
+#define CONCAT( x, y )  x ## y
+```
+
+##### 预定义宏
+
+宏 | 描述
+--- | ---
+\__LINE\__ | 这会在程序编译时包含当前行号。
+\__FILE\__ | 这会在程序编译时包含当前文件名。
+\__DATE\__ | 这会包含一个形式为 month/day/year 的字符串，它表示把源文件转换为目标代码的日期。
+\__TIME\__ | 这会包含一个形式为 hour:minute:second 的字符串，它表示程序被编译的时间。
+
+```text
+#include <iostream>
+using namespace std;
+ 
+int main ()
+{
+    cout << "Value of __LINE__ : " << __LINE__ << endl;
+    cout << "Value of __FILE__ : " << __FILE__ << endl;
+    cout << "Value of __DATE__ : " << __DATE__ << endl;
+    cout << "Value of __TIME__ : " << __TIME__ << endl;
+ 
+    return 0;
+}
+
+// 输出
+Value of __LINE__ : 6
+Value of __FILE__ : /xxx/CLionProjects/untitled/main.cpp
+Value of __DATE__ : Jan 17 2022
+Value of __TIME__ : 17:04:36
+```
