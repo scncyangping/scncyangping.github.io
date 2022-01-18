@@ -40,3 +40,41 @@ cout << (*e) << endl;
    1.2 变量的类型
    
 2. 指针变量是一个专门用来记录变量的地址的变量；通过指针变量可以间接的操作另一个变量的值；
+
+#### 数组与指针
+
+```text
+int main() {
+    char strHelloWorld[] = {"hello"};
+    char* pStrHelloWorld = {"hello"};
+    // 指针变量的值允许改变
+    pStrHelloWorld = strHelloWorld;
+    // 数组变量的值不允许改变 报错
+    // strHelloWorld = pStrHelloWorld;
+
+    // strHelloWorld 不可变，strHelloWorld[index]的值可变
+    // pStrHelloWorld可变，pStrHelloWorld[index]的值可变取觉于所值区间的存储区域是否可变
+
+    return 0;
+}
+```
+
+指针的数据 T* t[]，数组中每一个元素都是一个指针
+数组的指针 T(*t) []，指向一个数组的指针
+
+```text
+int main() {
+    int c[4] = {15,25,35,45};
+    // 定义一个指针数组，每个元素都是一个指针
+    int* a[4];
+    // 定义一个指针，这个指针指向类型为int[4]的一个数组
+    int(*b)[4];
+    b = &c;
+    for (unsigned i=0; i<4;i++){
+        a[i] = &(c[i]);
+    }
+    cout << *(a[0]) << endl; // 15
+    cout << (*b)[3] << endl; // 45
+    return 0;
+}
+```
