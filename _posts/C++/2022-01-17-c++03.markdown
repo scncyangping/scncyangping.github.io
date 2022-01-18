@@ -83,3 +83,42 @@ end size()7
 6
 7
 ```
+
+#### 字符串
+
+- 字符串是以空字符（'\0'）结束的字符数组
+- 空字符'\0'自动添加到字符串的内部表示中
+- 在声明字符串变量时，应该为空结束符预留一个额外元素空间
+
+```
+char helloword[9] = {"helloworld"};
+
+// 报错
+// 需要预留一个字符的空间存储 '\0'
+// 也可以不设置长度
+char helloword[] = {"helloworld"};
+```
+
+##### char实现
+
+引入包的头文件
+```text
+#include <string.h>;
+```
+
+- strlen(s); 不包含 '\0'
+
+- strcmp(s1,s2); 相同为0，s1 > s2 返回大于0，否则小于0
+
+- strcpy(s1,s2); 复制s2到s1
+
+- strcat(s1,s2); 将字符串s2接到s1后面
+
+- strchr(s1, ch);查找字符串s1中字符ch第一次出现的位置
+
+- strstr(s1, s2);查找字符串s1中字符串s2第一次出现的位置
+
+这些函数有其安全版本，推荐使用安全版本
+
+strnlen_s, strcpy_s, strncpy_s, strcat_s
+
