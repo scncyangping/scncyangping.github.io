@@ -1,0 +1,21 @@
+---
+layout:     post
+title:      "go随笔-netpool"
+subtitle:   ""
+date:       2021-09-24 14:01:00
+author:     "YaPi"
+header-img: ""
+tags:
+    - go
+---
+
+#### 基础网络知识
+
+对于底层应用连接，每一个连接都会有一个send buffer和一个recv buffer
+
+在linux系统中可以使用以下命令查看相应连接
+```text
+netstat -anp | grep 80
+```
+
+![avatar](https://blog-1257627424.cos.ap-chengdu.myqcloud.com/golang/%E9%98%BB%E5%A1%9E%E9%9D%9E%E9%98%BB%E5%A1%9E.jpg)

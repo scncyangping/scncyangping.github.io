@@ -1,0 +1,56 @@
+---
+layout:     post
+title:      "云计算-主机虚拟化"
+subtitle:   ""
+date:       2021-12-14 13:01:00
+author:     "YaPi"
+header-img: ""
+tags:
+    - 云计算
+---
+
+#### CentOS8 主机虚拟化步骤
+
+1. 查看当前主机是否开启硬件虚拟化
+```shell
+grep --color --perl 'vmx|svm' /proc/cpuinfo
+```
+
+2. 安装虚拟化主机相关主键
+```shell
+yum groupinstall "Virtualization Host"
+```
+
+3. 查看libvirtd服务是否运行
+```shell
+# 查看启动状态
+systemctl status libvirtd
+# 若未运行，将其启动
+sudo systemctl start libvirtd
+# 设置未开机自启
+sudo systemctl enable libvirtd
+```
+4. 查看KVM/QEMU是否工作正常
+```shell
+sudo virsh version
+```
+5. 安装KVM/QEMU客户端
+```shell
+# virt-install
+sudo yum install virt-install
+# virt-manager
+sudo yum install virt-manager
+```
+
+#### 管理镜像
+使用virt-manager 和virsh命令都可以创建镜像，需注意使用版本，不同版本命令不一样。
+
+对于使用现有镜像创建差量镜像来说，centos8上命令为
+
+```shell
+qemu-img create -f 原始镜像格式 -b 原始镜像名称 -F 转换的差量镜像格式 转换的差量镜像名称
+# 如
+qemu-img create -f qcow2 -b cirros-0.3.3-x86_64-disk.img -F qcow2 cirros.front.img
+```
+
+
