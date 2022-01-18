@@ -20,6 +20,9 @@ tags:
 指针定义的基本形式：指针本身就是一个变量，其符合变量定义的基本形式，它存储的是值的地址。对类型T，T* 是
 到T的指针类型，一个类型为T*的变量能保存一个类型T的对象地址。
 
+* 号靠近变量和靠近类型是没有区别的
+
+
 ```text
 int a = 112; float c = 3.14;
 int* d = &a; float* e = &c;
@@ -75,6 +78,55 @@ int main() {
     }
     cout << *(a[0]) << endl; // 15
     cout << (*b)[3] << endl; // 45
+    return 0;
+}
+```
+
+#### const pointer 与 pointer to const
+ 
+```text
+int main() {
+    // const修饰看左边，左边没有再看右边
+    char strHelloWorld[] = {"helloworld strHelloWorld"};
+    // const 修改char,原数据不允许修改，但是指针的值可以修改
+    char const* pStr1 = "hellowrold pStr1"; // const char
+    // const 修改指针，指针的值可以修改
+    char* const pStr2 = strHelloWorld;
+    // 原始值和指针值都不允许修改
+    char const* const pStr3 = "helloworld pStr3"; // const char* const
+    // 不可改变
+    // pStr2 = strHelloWorld;
+    // 不可改变
+    // pStr3 = strHelloWorld;
+
+    for (unsigned index=0;index < strlen(pStr2); index++){
+        // 不允许改变
+        // pStr3[index] += 1;
+        // 不允许改变
+        // pStr1[index] += 1;
+        pStr2[index] += 1;
+    }
+
+    cout << pStr2 << endl;
+    cout << pStr1 << endl;
+    cout << pStr3 << endl;
+    cout << strHelloWorld << endl;
+    return 0;
+}
+```
+
+#### 指向指针的指针
+二级指针
+
+```text
+int main() {
+    int a = 123;
+    int* b = &a;
+    int** c = &b;
+    // *操作符具有从右到左的结合性
+    // **这个表达式相当于*(*c),必须从里向外层求值
+    // *c得到的是c指向的位置，即b；b里面存储的是a的地址
+    // **c相当于*b,得到变量a的值
     return 0;
 }
 ```
