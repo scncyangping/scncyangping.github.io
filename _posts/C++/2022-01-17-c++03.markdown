@@ -122,3 +122,44 @@ char helloword[] = {"helloworld"};
 
 strnlen_s, strcpy_s, strncpy_s, strcat_s
 
+##### string
+string 结合了c ++ 的新特性，使用起来比原始的c风格方法更安全和方便，对性能
+要求不是特别高的场景可以使用。
+
+引入头文件
+```text
+#include <string>
+```
+
+```text
+
+#include <iostream>
+#include <string>
+using namespace std;
+
+int main() {
+    string s;
+    string s1 = "hello world";
+    string s2 ("hello world2");
+    string s3 = string("hello wrold4");
+
+    cout << s1.length() << endl;
+    //本质和上述一样
+    cout << s1.size() << endl;
+    cout << s1.capacity() << endl;
+
+    s1 = "hello", s2 = "world";
+    // 字符串比较 == 、!= 、>、 >=、 <、 <=
+    cout << (s1 == s2) << endl;
+    cout << (s1 >= s2) << endl;
+
+    // 转换成c风格字符串
+    const char *c_str1 = s2.c_str();
+    cout << strlen(c_str1) << endl;
+    return 0;
+}
+```
+
+取值：可直接使用'[]'下标取值
+
+赋值：直接使用 = 、+= 等。扩容的时候会进行一个动态的操作。
