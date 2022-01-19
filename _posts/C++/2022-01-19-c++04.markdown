@@ -1,0 +1,156 @@
+---
+layout:     post
+title:      "重学C++系列(五)内存"
+subtitle:   ""
+date:       2022-01-19 13:01:00
+author:     "YaPi"
+header-img: ""
+tags:
+    - C++
+---
+
+### 内存分配
+栈内存分配，地址由高到低；由编译器去完成分配回收等操作
+堆内存分配，地址由低到高；在指定时机可由程序指定
+
+```text
+#include <iostream>
+using namespace std;
+int a =0;               // GVAR 全局初始化区
+int *p1;                // bss 全局未初始化区
+int main() { // text 代码区
+    int b =1;           // stack 栈区变量
+    char s[] = "abc";   // stack 栈区变量
+    int *p2 = NULL;     // stack 栈区变量
+    char *p3 = "123456";// 123456\0在常量区，p3在stack栈区
+    static int c = 0;   // GVAR 全局静态初始化区
+    p1 = new int(10);   // heap 堆区变量
+    p2 = new int(20);   // heap 堆区变量
+    char *p4 = new char[7]; // heap 堆区变量
+    strcpy(p4,"123456"); // text 代码区
+    
+    if (p1 != NULL){
+        delete p1;
+        p1 = NULL;
+    }
+
+    if (p2 != NULL){
+        delete p2;
+        p2 = NULL;
+    }
+    // 对数组的delete需要delete数组
+    if (p4 != NULL){
+        delete []p4;
+        p4 = NULL;
+    }
+    
+    return 0; // text 代码区
+}
+```
+
+![avatar](https://blog-1257627424.cos.ap-chengdu.myqcloud.com/c%2B%2B/c%2B%2B%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D.png)
+
+项 | 栈 | 堆
+--- | --- |---
+作用域| 函数体内，语句快{}作用域 | 整个程序范围内，由new、malloc开始，delete,free结束
+编译间大小确定 | 变量大小范围确定 | 不确定，运行时确定
+大小范围 | windows默认1M，linux默认8M或10M(使用ulimit -s)查看 | 所有系统堆空间接近虚拟内存上限，一部分被os占用
+内存分配 | 地址由高到低 | 地址由低到高
+内容是否可变 | 可变 | 可变
+
+项 | 全局静态存储区 | 常量存储区
+--- | --- | ---
+存储内容 | 全局变量 | 常量
+编译器见大小是否确定 | 确定 | 确定
+内容是否可变 | 可变 ｜ 不可变
+
+#### 堆 heap
+当在堆上分配内存的时候，很多语言会使用new这样的关键字，有些语言则是
+隐式分配。在c++中new对应的是delete。以便完全接管内存的分配和释放
+
+
+##### 资源管理方案 RALL
+RAII (Resource Acquisition is Initialization)
+
+- RAII是C++所持有的资源管理方式，有少量其他语言，如：D,Ada,Rust也采用了此方式，但
+主流的编程语言中，c++是唯一一个依赖RALL做资源管理的
+- RaII 依托栈和析构函数来对所有的资源包括堆内存在内进行管理。
+- RAII有些比较成熟的只能指针代表：如std:auto_ptr和boost:shared_ptr
+
+内存泄露(Memory Leak)
+指程序中已动态分配的堆内存由于某种原因程序未释放或无法释放。造成系统内存的浪费，
+导致程序运行速度减慢甚至系统崩溃等后果
+
+
+#### 比指针安全的操作
+
+两种方案
+
+- 使用智能指针
+- 使用引用
+
+##### 智能指针
+- unique_ptr
+![avatar](https://blog-1257627424.cos.ap-chengdu.myqcloud.com/c%2B%2B/uniq_ptr.png)
+
+```text
+#include <iostream>
+using namespace std;
+int a =0;               // GVAR 全局初始化区
+int *p1;                // bss 全局未初始化区
+int main() {
+    // unique_ptr
+    auto w = std::make_unique<int>(10);
+    cout << *(w.get()) << endl;
+
+    // auto w2 = w;// 编译错误，如果想要把w复制给w2,是不可以的。
+    // 因为复制从语义上来说，两个对象将共享同一内存
+
+    // unique_ptr 只支持移动语义
+
+    // w2获得内存所有权，w此时等于nullptr
+    auto w2 = std::move(w);
+
+    cout << ((w.get() != nullptr) ? *w.get():-1) << endl;
+
+    cout << ((w2.get() != nullptr) ? *w2.get():-1) << endl;
+
+    return 0; // text 代码区
+}
+```
+
+
+- shared_ptr
+
+shared_ptr 能够解决所有权的问题，但是引用计数会带来循环引用的问题，同样会造成内存泄露
+![avatar](https://blog-1257627424.cos.ap-chengdu.myqcloud.com/c%2B%2B/shared_ptr.png)
+
+
+```text
+#include <iostream>
+using namespace std;
+
+int main() {
+    // shared_ptr
+    {
+        // shared_ptr代表的是共享所有权，即多个shared_ptr可以共享
+        // 同一块内存
+        auto wA = shared_ptr<int>(new int(20));
+        {
+            auto wA2 = wA;
+            cout << ((wA2.get() != nullptr) ? (*wA2.get()) : -1) << endl;
+            cout << ((wA.get() != nullptr) ? (*wA2.get()) : -1) << endl;
+            cout << wA2.use_count() << endl;
+            cout << wA.use_count() <<endl;
+        }
+        // cout << wA2.use_cout() << endl;
+        cout << wA.use_count() << endl;
+        // shared_ptr 在复制时，引用计数会加1，当一个shared_ptr离开作用域时
+        // 会减1，当引用计数为0时，delete内存
+    }
+    return 0; // text 代码区
+}
+```
+- weak_ptr
+
+![avatar](https://blog-1257627424.cos.ap-chengdu.myqcloud.com/c%2B%2B/weak_ptr.png)
