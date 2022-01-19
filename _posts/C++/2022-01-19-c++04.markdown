@@ -154,3 +154,55 @@ int main() {
 - weak_ptr
 
 ![avatar](https://blog-1257627424.cos.ap-chengdu.myqcloud.com/c%2B%2B/weak_ptr.png)
+
+
+##### 引用
+引用是一种特殊的指针，不允许修改的指针。
+
+使用引用
+1. 不存在空引用
+2. 必须初始化
+3. 一个引用永远指向它初始化的那个对象
+
+```text
+#include <iostream>
+#include "assert.h"
+using namespace std;
+
+void swap (int &a, int &b){
+    int t = a;
+    a = b;
+    b = t;
+}
+
+void swap2 (int *a, int *b){
+    int t = *a;
+    *a = *b;
+    *b = t;
+}
+
+int main() {
+    int a = 3;
+    int b = 4;
+    swap(a,b);
+    cout << a << endl;
+    cout << b << endl;
+    assert(a == 4 && b == 3);
+
+    swap2(&a,&b);
+    cout << a << endl;
+    cout << b << endl;
+    assert(a == 3 && b == 4);
+    return 0; // text 代码区
+}
+```
+
+有了指针为什么还需要引用？
+Bjarne Stroustrup的解释： 为了支持函数运算符重载；
+
+有了引用为什么还需要指针？
+为了兼容c语言
+
+
+对于内置基础类型(如：int,double)而言，在函数中传递 value更高效
+对OO面向对象中自定义类型而言，在函数传递reference 更高效
