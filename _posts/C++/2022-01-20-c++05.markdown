@@ -1,0 +1,66 @@
+---
+layout:     post
+title:      "重学C++系列(六)流程控制"
+subtitle:   ""
+date:       2022-01-20 13:01:00
+author:     "YaPi"
+header-img: ""
+tags:
+    - C++
+---
+
+#### 分支、循环
+
+##### 枚举
+
+```text
+typedef enum __color{
+    RED,
+    GREEN,
+    UNDEFINED
+} color;
+
+里面的值默认从0开始
+```
+
+##### 分支
+if /else 
+```text
+if () {
+    
+}else if (){
+
+}
+```
+
+switch
+
+若不加break,后续所有case都会执行
+
+```text
+color c1;
+c1 = RED;
+switch (c1) {
+    case RED:
+        cout << RED << endl;
+        break;
+    case GREEN:
+        cout << GREEN << endl;
+    case UNDEFINED:
+        cout << UNDEFINED <<endl;
+    default:
+        cout << "cnm" << endl;
+}
+```
+
+使用场景
+
+1. switch 只支持常量值固定相等的分支判断；
+2. if还可以判断区间范围
+
+性能分析
+1. if的汇编中，类似于一棵树，层层向下寻找合适的匹配，查找就会做跳转
+2. switch的汇编，会在开始形成一个类似表格的数据，一个一个去匹配，合适的再做跳转
+3. 分支多时，switch性能更好
+4. switch所有case的速度几乎一样
+5. if开始几个分支的效率高，后续递减
