@@ -64,3 +64,56 @@ switch (c1) {
 3. 分支多时，switch性能更好
 4. switch所有case的速度几乎一样
 5. if开始几个分支的效率高，后续递减
+
+
+#### 结构体内存布局
+
+```text
+#include <iostream>
+using namespace std;
+// 设置内存为连续分配
+#pragma pack(1)
+
+int main() {
+    // 内存布局
+    // 联合体 union
+    union Score {
+        double sc;
+        char level;
+    };
+    // 结构体
+    //
+    struct Student{
+        char name[6];
+        int age;
+        Score s;
+    };
+    Score sc;
+    Student s;
+    strcpy(s.name,"name");
+    cout << sizeof (sc) << endl; // 8
+    cout << sizeof(s) << endl; // 24
+    return 0; // text 代码区
+}
+```
+
+32位cpu，4字节为一个单位存储
+char : 任何地址
+short : 偶数地址
+int : 4的整数倍地址
+double : 8的整数倍地址。
+
+当没有设置内存编译选项的时候，结构体内存会以最大变量的范围为单位，去进行扩充。
+
+比如：上述Student的内存，Score的大小为8，所以，虽然name的大小为6字节， age
+的大小为4字节，但是它们都会扩充为8的倍数大小，而后，name分配8字节空间，占据6字节，
+age分配8字节空间，占据4字节。所以整个大小为24字节
+
+有无办法让它们连续分配？
+
+- Visual C++ : # pragma pack(n)
+- g ++ : __attribute__(aligned(n)) 、__attribute__(__packed__)
+
+
+
+
