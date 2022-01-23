@@ -1,0 +1,74 @@
+---
+layout:     post
+title:      "重学C++系列(七)面向对象"
+subtitle:   ""
+date:       2022-01-23 13:01:00
+author:     "YaPi"
+header-img: ""
+tags:
+    - C++
+---
+
+### 函数
+#### 内联函数
+
+如果一个函数事内联得，那么在编译时，编译器会把函数的代码副本放置在每个调用该函数的地方。
+
+引入内联函数的目的事为了解决程序中函数调用效率的问题。内联函数内部不能有太复杂的逻辑，编译
+器有时会有自己的优化策略，所以内联不一定起作用。
+使用inline关键字创建
+
+```
+#include <iostream>
+
+
+inline int MaxValue(int a, int b){
+    return a +b;
+}
+
+int main() {
+    int a=2,b=3;
+    int c = MaxValue(a,b);
+    std::cout<< c << std::endl;
+    return 0;
+}
+```
+
+内联函数其实就是用空间换时间，函数调用对应很多操作，直接将被调用函数的内部逻辑拷贝到调用的地方。
+所以逻辑不能太复杂，不然还是会失效。
+
+### 类
+c++ 使用struct,class来定义一个类
+struct的默认成员权限事public,class的默认成员权限事private,除此之外，二者无差别
+
+
+```
+
+class complex {
+public:
+    complex(double r, double i);
+    virtual ~complex();
+    // 可以写在cpp文件内，但是简单的函数一般直接写这儿
+    // 编译器可能会做优化，优化成一个inline函数
+    double setReal(double d){
+        _real = d;
+    }
+    double getReal()const{
+        return _real;
+    }
+    double setImage(double i){
+        _image = i;
+    }
+    double getImage()const{
+        return _image;
+    }
+
+
+private:
+    double _real;
+    double _image;
+};
+```
+
+
+
