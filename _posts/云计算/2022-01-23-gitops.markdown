@@ -2,7 +2,7 @@
 layout:     post
 title:      "GitOps"
 subtitle:   ""
-date:       2021-01-23 16:01:00
+date:       2022-01-23 16:01:00
 author:     "YaPi"
 header-img: ""
 tags:
