@@ -1,0 +1,94 @@
+---
+layout:     post
+title:      "GitOps"
+subtitle:   ""
+date:       2021-01-23 16:01:00
+author:     "YaPi"
+header-img: ""
+tags:
+    - 云计算
+---
+
+### GitOps
+
+#### 定义
+GitOps 是使用开源版控制系统(常用Git)来管理基础架构和应用配置的实践，核心思想是将应用系统的声明性基础架构和应用程序存放在Git版本库中。开源版控制系统常使用Git，也可以是其他适用于自己的版本管理工具。
+
+GitOps 使用 Git 拉取请求来自动管理基础架构的置备和部署。Git 存储库包含系统的全部状态，因此可保留系统全部的修改痕迹。
+
+若需实现GitOps，需要遵循一些规则
+
+1. 整个系统以声明方式描述。
+2. 使用Git作为整个系统的可信源。
+3. Git中发生更改可快速应用。
+
+使用GitOps的好处
+1. 提高生产效率
+2. 提高稳定性
+3. 更高的可靠性
+4. 一致性和标准化
+5. 更强大的安全保障
+
+GitOps同样支持IaC相关的工具。
+
+#### 相关概念
+##### IaC 
+Infrastructure as code(基础架构即代码)是将所有基础架构配置存储为代码的做法。
+
+基础设施即代码 可通过编程的方式管理虚拟机，消除了手动配置、更新各个硬件的需要。
+这就使得基础设施极具“弹性”- 即可重复且可扩展。一位操作员使用同一组代码，即可部署并管理一台或 1,000 台计算机。
+基础设施即代码的自然回报包括速度提升、成本节约和风险降低。
+
+当前软件的开发及部署自动化已相当成熟，但是基础设施部分，任然需要大量的手动配置。基于此，实施基础设施自动化变得越来越重要。现代基础设施需要具有弹性，以便能够有效地管理持续部署所需的云资源。
+
+##### MRs
+GitOps使用merge requests (MRs)作为所有基础架构更新的触发点。当代码提交更新后，团队可对更新
+做相关的审计，决定是否将其作为最终状态更新到版本控制系统中。并且保留所有的更新日志。
+
+##### CI/CD
+GitOps 使用具有持续集成 (CI) 和持续交付 (CI/CD) 的 Git 工作流自动更新基础设施。
+
+CD过程中需考虑到的两种模式，推模式、拉模式。
+为推模式？
+
+以GitLab + kubernetes为例
+
+在镜像构建好，也已经推送到Container Registry后。定制一个 Gitlab CI 作业，通过脚本登录 Kubernetes 集群，使用命令运行镜像。
+
+整个过程由 Gitlab CI 发起，主动推送配置给 Kubernetes，这种模式就叫推模式
+
+这当中会有几个问题：
+1. 安全性问题。为了让 Gitlab CI 操作 Kubernetes，需要把 K8s ApiServer 的访问权开放到集群外的应用。
+2. 版本回滚。直接 Apply 的方式，脱离了 Git 控制。
+3. 集群重建。假如应用崩溃了，重建应用时，无法知道当前状态。
+
+拉模式？
+以Argo CD为例。
+
+Argo CD是用于Kubernetes的声明性GitOps连续交付工具。
+
+Argo CD被实现为kubernetes控制器，该控制器连续监视正在运行的应用程序， 并将当前的活动状态与所需的目标状态（在Git存储库中指定）进行比较。 其活动状态偏离目标状态的已部署应用程序被标记为OutOfSync。 Argo CD报告并可视化差异，同时提供了自动或手动将实时状态同步回所需目标状态的功能。 在Git存储库中对所需目标状态所做的任何修改都可以自动应用并反映在指定的目标环境中。
+
+![avatar](https://pic1.zhimg.com/80/v2-354e65bbe60f1eeee4c4a1bc46e18cd4_720w.jpg)
+
+
+#### 国外实践
+
+##### 红帽 OpenShift
+
+红帽® OpenShift® 是一个声明式 Kubernetes 平台，管理员可使用 GitOps 原则进行配置和管理。在基于 Kubernetes 的基础架构和应用中作业，可以跨集群和开发周期实现一致性。红帽 OpenShift 整合了对跨内部和公共云资源的应用的管理。
+
+红帽 OpenShift GitOps 是红帽 OpenShift 的一个附加组件，提供了 Argo CD 和其他工具，方便团队通过实现 GitOps 工作流来配置集群和交付应用
+
+##### 红帽 Ansible 自动化平台
+红帽 Ansible 自动化平台是一个理想的状态引擎，能够对系统进行声明式建模。用 YAML 编写的 Ansible Playbook 描述了系统的理想状态，其通常保留在源代码控制中。不管您的系统当前状态如何，红帽 Ansible 自动化平台都可使其进入理想状态。
+
+借助 Ansible 自动化平台，GitOps 实践除了可以应用于 Kubernetes，还可以应用于传统 IT 系统，如网络、云和裸机。Ansible 自动化平台中内置了自动化 Webhook，可以为开展 IaC 和 GitOps 实践提供支持
+
+##### Weaveworks
+在 Weaveworks，使用 Terraform 和 Ansible 来配置服务器。
+#### 引用
+
+RedHat(https://www.redhat.com/zh/topics/devops/what-is-gitops)
+GitLab(https://about.gitlab.com/topics/gitops/)
+https://zhuanlan.zhihu.com/p/144227339
