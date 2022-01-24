@@ -114,6 +114,76 @@ age分配8字节空间，占据4字节。所以整个大小为24字节
 - Visual C++ : # pragma pack(n)
 - g ++ : __attribute__(aligned(n)) 、__attribute__(__packed__)
 
+#### 函数重载
 
+```text
+#include <iostream>
+#include "math.h"
+using namespace std;
+
+int test(int a){
+    return a;
+}
+int test(double a){
+    return a;
+}
+// 默认值参数，在有默认值的参数之后的参数，必须有默认值
+int test(int a=10,double b = 10){
+    return a + b;
+}
+
+int main() {
+    // 直接调用报错 编译器不知道是哪一个方法
+    // int result = test(1);
+    // 改为用指针 代表一个参数为int的函数
+    int (*p)(int);
+    p = test;
+    int result = (*p)(1);
+    cout << result << endl;
+
+    return 0; // text 代码区
+}
+```
+
+##### 指向函数的指针与返回指针的函数
+指向函数的指针：
+
+每一个函数都占用一段内存单元，它们有一个起始地址，指向函数入口地址的指针称为函数指针。
+
+一般形式：数据类型 (*指针变量名)(参数表);
+例子：int(*p)(int);
+这里的数据类型是指向函数的返回类型
+
+返回指针的函数：
+
+int* p(int); // 是函数，返回的值是一个指针
+
+
+```text
+#include <iostream>
+#include "math.h"
+using namespace std;
+
+int MaxValue(int a, int b){
+    return (a > b) ? a:b;
+}
+
+int MinValue(int a, int b){
+    return (a < b) ? a:b;
+}
+
+// 回调函数
+bool ProcessNum(int a,int b,int(*p)(int a,int b)){
+    cout << p(a,b) <<endl;
+    return true;
+}
+int main() {
+    int a = 10, y =20;
+    ProcessNum(10,20,MaxValue); // 20
+    ProcessNum(10,20,MinValue); // 10
+
+    return 0; // text 代码区
+}
+```
 
 
