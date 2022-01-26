@@ -57,7 +57,7 @@ class A:
     def __init__(self):
         pass
     # 没有找到属性值的时候才调用此方法
-    # 若有返回值，则返回相应数据，若五返回值，则返回None     
+    # 若有返回值，则返回相应数据，若无返回值，则返回None     
     def __getattr__(self, iterm):
         return xxxx
         
