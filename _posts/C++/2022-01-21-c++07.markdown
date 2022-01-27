@@ -1,0 +1,134 @@
+---
+layout:     post
+title:      "重学C++系列(八)IO流及文件操作"
+subtitle:   ""
+date:       2022-01-27 13:01:00
+author:     "YaPi"
+header-img: ""
+tags:
+    - C++
+---
+
+#### 流操作
+
+传统I/O有printf、scanf、getch、gets等函数。它们的问题是：
+1. 不可编程，仅仅能识别固有的数据类型。
+2. 代码的可移植性差，有很多的坑。
+
+C++中的I/O流 istream，ostream
+
+![avatar](https://blog-1257627424.cos.ap-chengdu.myqcloud.com/c%2B%2B/IO.png)
+
+标准IO提供三种类型的缓存模式
+1. 按块缓存：如文件系统。
+2. 按行缓存：\n。
+3. 不缓存。
+
+```text
+#include <iostream>
+using namespace std;
+int main() {
+    int index=0;
+    char x ;
+    while(cin>> x){
+        cout<<"while "<< x << endl;
+        index ++;
+        if (index == 5){
+            break;
+        }
+    }
+    // 若不清空缓存区，前面直接输入 1 2 3 4 5 6，程序不会阻塞在cin >> xx
+    // 因为缓存区还有值，cin直接取缓存区的值了
+    cin.ignore(numeric_limits<std::streamsize>::max(),'\n');// 清空缓存区脏数据
+    char xx;
+    cin >> xx;
+    cout << " GG "<< xx << endl;
+    return 0; // text 代码区
+}
+```
+
+#### 文件操作
+最简单的文件例子。会将命令行输入数据写入到文件中。
+
+```text
+#include <iostream>
+#include <fstream>
+
+using namespace std;
+int main() {
+    int a ;
+    int index=0;
+    fstream fout;
+    fout.open("xxx/testBuffer.txt",ios::app);
+    if (fout.fail()){
+        cout << "open fail" << endl;
+    }
+    while(cin>> a){
+        fout <<"while "<< a << endl;
+        index ++;
+        if (index == 5){
+            break;
+        }
+    }
+    // 若不清空缓存区，前面直接输入 1 2 3 4 5 6，程序不会阻塞在cin >> xx
+    // 因为缓存区还有值，cin直接取缓存区的值了
+    cin.ignore(numeric_limits<std::streamsize>::max(),'\n');// 清空缓存区脏数据
+    char xx;
+    cin >> xx;
+    fout << " GG "<< xx << endl;
+    fout.close();
+    return 0; // text 代码区
+}
+```
+
+文件打开方式 | 描述
+--- | ---
+ios::in | 打开文件进行读操作(ifstream默认模式)
+ios::out | 打开文件进行写操作(ofstream默认模式)
+ios::ate | 打开一个已有输入或输出文件并查找到文件
+ios::app | 打开文件以便在文件的尾部添加数据
+ios::nocreate | 若文件不存在，则打开操作失败
+ios::trunc | 如文件存在，清楚文件原有内容
+ios::binary | 以二进制方式打开
+
+
+文件拷贝示例
+
+```text
+#include <iostream>
+#include <fstream>
+
+using namespace std;
+static const int bufferLen = 2048;
+bool CopyFile(const string& src, const string& dst){
+    // 打开源文件和目标文件
+    // 源文件以二进制读的方式打开
+    // 目标文件以二进制写的方式打开
+    ifstream in(src.c_str(),ios::in | ios::binary);
+    ofstream out(dst.c_str(), ios::out | ios::binary | ios::trunc);
+
+    // 判断文件是否打开
+    if (!(in || out)){
+        return false;
+    }
+    // 从源文件中读取数据，写到目标文件中
+    char temp[bufferLen];
+    // 通过读取源文件的EOF来判断读写是否结束
+    while(!in.eof()){
+        in.read(temp,bufferLen);
+        // 最后一次读取的长度
+        streamsize count = in.gcount();
+        out.write(temp,count);
+    }
+    //关闭源文件和目标文件
+    in.close();
+    out.close();
+    return true;
+}
+using namespace std;
+
+int main() {
+    cout << CopyFile("/xxx/testBuffer.txt","/xxx/testBuffer2.txt") << endl;
+    return 0; // text 代码区
+}
+```
