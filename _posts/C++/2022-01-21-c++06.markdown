@@ -70,5 +70,130 @@ private:
 };
 ```
 
+#### 基础构造
 
+```text
+class Complex {
+private:
+    int _a;
+    int _b;
+protected:
+    // 输出重载 const关键修饰 不允许改变
+    friend std::ostream& operator<<(std::ostream& os, const Complex &x);
+    // 输入重载
+    friend std::istream& operator>>(std::istream& is,Complex &x);
+public:
+    void setA(const int a){_a = a;}
+    int getA(){return _a;}
+    void setB(const int b){_b = b;}
+    int getB(){return _b;}
+    // 默认构造函数
+    Complex();
+    // 构造函数
+    Complex(int a,int b);
+    // 拷贝构造
+    Complex(const Complex& x);
+    // 析构函数
+    virtual ~Complex();
+    // + 操作符重载
+    Complex operator+(const Complex& x);
+    // = 操作符重载
+    Complex operator=(const Complex& x);
+    // 前置 ++ 操作符
+    Complex& operator++();
+    // 后置 ++ 操作符
+    Complex operator++(int);
+};
+
+
+Complex::Complex() {
+    _a = 0;
+    _b = 0;
+}
+Complex::Complex(int a, int b) {
+    _a = a;
+    _b = b;
+}
+
+Complex::~Complex() {
+    cout << "~Complex" << endl;
+}
+Complex Complex::operator+(const Complex & x) {
+    // 会产生临时对象
+//    Complex tmp;
+//    tmp._a = x._a + _a;
+//    tmp._b = x._b + _b;
+    return Complex(_a + x._a,_b+x._b);
+}
+// 复制
+Complex Complex::operator=(const Complex & x) {
+    if (this != &x){
+        _a = x._a;
+        _b = x._b;
+    }
+    return *this;
+}
+// 拷贝构造函数 防止产生副本
+Complex::Complex(const Complex& x) {
+    _a = x._a;
+    _b = x._b;
+}
+
+// 前置 ++
+Complex& Complex::operator++() {
+    _a++;
+    _b++;
+    return *this;
+}
+
+// 后置++
+Complex Complex::operator++(int) {
+    Complex tmp(*this);
+    _a++;
+    _b++;
+    return tmp;
+}
+// 输出重载
+std::ostream& operator<<(std::ostream& os, const Complex &x){
+    os << "a value is " << x._a << "b value is "<< x._b <<endl;
+    return os;
+}
+
+// 输入重载
+std::istream& operator>>(std::istream& is,Complex &x){
+    // 使用空格或换行来赋值多个
+    is >> x._a >> x._b;
+    return is;
+}
+```
+
+具体调用
+
+```text
+int main() {
+    Complex a(1,2);
+    std::cout<< a.getA() << std::endl; // 1
+    std::cout<< a.getB() << std::endl; // 2
+    a.setA(2);
+    a.setB(1);
+    std::cout<< a.getA() << std::endl; // 2
+    std::cout<< a.getB() << std::endl; // 1
+    Complex b(2,3);
+    Complex c ;
+    c = a + b; // 若操作符 + 重载函数中使用了临时对象，就会有拷贝的过程
+    // Complex c = a + b; // 直接创建对象会少一个拷贝的步骤
+    // Complex d(c);// 使用存在对象创建一个新对象也会调用拷贝构造方法
+    // 输出重载
+    std::cout<< a << std::endl;
+    // 接受输入的值 并赋值
+//    int cc;
+//    std::cin >> cc;
+//    std::cout << cc <<std::endl;
+    // 输入重载
+    Complex e;
+    std::cin >> e;
+    std::cout << e << std::endl;
+    return 0; // text 代码区
+}
+```
 
