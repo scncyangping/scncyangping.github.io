@@ -1,0 +1,84 @@
+---
+layout:     post
+title:      "重学C++系列(十)C++高级编程"
+subtitle:   ""
+date:       2022-01-28 13:01:00
+author:     "YaPi"
+header-img: ""
+tags:
+    - C++
+---
+
+### STL
+Standard Template Library
+
+- STL算法是泛型的(generic),不与任何特定数据结构和对象绑定，不必在环境类似的情况下重写代码
+- STL算法可以量身定做，并且具有很高的效率
+- STL可以进行扩充，可以编写自己的组建并且能与STL标准的组建进行很好的配合
+
+
+![avatar](https://blog-1257627424.cos.ap-chengdu.myqcloud.com/c%2B%2B/stl%E6%A0%87%E5%87%86%E5%BA%93.png)
+
+#### 容器
+STL的容器分为两大类：
+序列式容器：其中的元素都是可排序的，STL提供了vector、list、deque等序列式容器。
+stack、queue、priority_queue是容器适配器，即是说它们是根据deque进行修改产生的。
+
+关联式容器： 每个元素都是由一个键、一个值组成。常见的关联容器如：set、multiset、map、multimap
+set中key、value唯一，若想重复需使用multiset。
+
+```text
+#include <iostream>
+#include "vector"
+#include "list"
+#include "queue"
+#include "stack"
+using namespace std;
+struct Display{
+    void operator()(int i){
+        cout << i << " ";
+    }
+};
+
+int main() {
+    int iArr[] = {1,2,3,4,5};
+    vector<int> iVector(iArr,iArr + 4);
+    list<int> iList(iArr,iArr + 4);
+    deque<int> iDeque(iArr,iArr + 4);
+
+    for_each(iVector.begin(),iVector.end(),Display());
+    cout<< endl;
+    for_each(iList.begin(),iList.end(),Display());
+    cout<< endl;
+    for_each(iDeque.begin(),iDeque.end(),Display());
+
+    // 队列 先进显出
+    queue<int> iQueue(iDeque);
+    // 栈 先进后出
+    stack<int> iStack(iDeque);
+    // 优先队列，按优先权
+    priority_queue<int> iPQueue(iArr,iArr + 4);
+    cout<< endl;
+    while(!iQueue.empty()){
+        cout << "iQueue " << iQueue.front() << " ";
+        // 出队
+        iQueue.pop();
+    }
+    cout<< endl;
+    while(!iPQueue.empty()){
+        // 栈顶
+        cout << "iPQueue " << iPQueue.top() << " ";
+        // 出队
+        iPQueue.pop();
+    }
+    cout<< endl;
+    while(!iStack.empty()){
+        // 栈顶
+        cout << "iStack " << iStack.top() << " ";
+        // 出队
+        iStack.pop();
+    }
+    return 0; // text 代码区
+}
+```
+
