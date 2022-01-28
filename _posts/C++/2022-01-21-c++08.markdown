@@ -1,0 +1,142 @@
+---
+layout:     post
+title:      "重学C++系列(九)C++软件设计"
+subtitle:   ""
+date:       2022-01-27 13:01:00
+author:     "YaPi"
+header-img: ""
+tags:
+    - C++
+---
+
+#### 软件设计模式
+面向对象常见有23中设计模式。
+
+
+##### 单例模式
+实现思路
+
+1. Singleton拥有一个私有构造函数，确保用户无法通过new直接实例它。
+2. 包含一个静态私有成员变量instance与静态公有方法Instance()。
+
+```text
+#include <iostream>
+
+class Singleton {
+public:
+    // 静态的方法才能访问静态的变量
+    // 所以需要static修饰
+    static const Singleton* getInstance();
+    static void DoSomething(){
+        std::cout<< "doSomething" << std::endl;
+    }
+// 将构造函数和析构函数私有化，防止外部访问
+private:
+    Singleton();
+    ~Singleton();
+    // 使用静态变量来帮助解决资源分配和释放
+    // static修饰的变量存放在全局区域
+    // 不使用此变量就需要考虑分配到栈上还是堆上，同时也需要考虑分配和释放的问题
+    static Singleton* This;
+};
+```
+
+
+```text
+#include "Singleton.h"
+// 先定义一下，不然编译会报错
+Singleton* Singleton::This = NULL;
+
+// 饿汉式
+//Singleton* Singleton::This = new Singleton();
+
+Singleton::Singleton() {
+    std::cout << "Singleton" << std::endl;
+}
+
+Singleton::~Singleton() {
+
+}
+
+// 实现的时候不需要加static
+const Singleton *Singleton::getInstance() {
+    if (!This){
+        std::cout<< "getInstance" << std::endl;
+       This = new Singleton();
+    }
+    return This;
+}
+```
+
+##### void*，NULL和nullptr
+在c语言中用来标记NULL，void *表示任意类型的指针
+```text
+#define NULL ((void *) 0)
+```
+
+在c++中
+```text
+#ifdef NULL
+    #if def __cplusplus
+        #define NULL 0
+    #else
+        #define NULL ((void *)0)
+    #endif
+#endif
+```
+
+在c++ 11中，nullptr用来替代(void*)0, NULL则只表示0
+
+#### 类型转换
+C类型转换
+隐式转换：
+double f = 1.0 / 2;
+
+显示类型转换：
+(类型说明符)(表达式)
+比如：double f = double(1) / double(2)
+
+
+C的类型转换，任意类型之间都可以转换，比那一期无法判断其正确性
+
+C++类型转换
+
+- const_cast: 用于转换指针或引用强制转换, 去掉类型的const属性
+
+```text
+cont int a = 10;
+int *A = const_cast<int*>(&a);
+```
+
+- reinterpret_cast: 重新解释类型，即不检查指向的内容，也不检查指针类型本身。但要求转换前后的类型所占内存大小一致，否则会引编译错误。
+
+```text
+char Test(){
+    char i = 1;
+    cout<< i << " xxx "<< endl;
+    return i;
+}
+
+int main() {
+    typedef void(*FuncPtr)(int ,double );
+    FuncPtr  funcPtr;
+    funcPtr = reinterpret_cast<FuncPtr>(&Test);
+
+    funcPtr(1,1.0);
+    return 0; // text 代码区
+}
+```
+
+- static_cast: 用于基本类型转换，有继承关系类对象和类指针之间转换，由程序员来确保转换是安全的，它不会产生动态转换的类型安全检查的开销
+
+```text
+int i = 5;
+double d = static_cast<double>(i);
+double d2 = 5.6;
+int i2 = static_cast<int>(d2);
+cout << d <<endl; // 5
+cout << i2 <<endl; // 5
+```
+
+- dynamic_cast: 只能用于含有虚函数的类，必须用在多态体系中，用于类
+层次间的向上和向下转化；向下转化时，如果是非法的,返回NULL；
