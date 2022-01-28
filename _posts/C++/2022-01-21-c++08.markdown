@@ -140,3 +140,41 @@ cout << i2 <<endl; // 5
 
 - dynamic_cast: 只能用于含有虚函数的类，必须用在多态体系中，用于类
 层次间的向上和向下转化；向下转化时，如果是非法的,返回NULL；
+
+
+
+#### 泛型编程
+```text
+#include <iostream>
+using namespace std;
+
+template<class T>
+T Max(T a, T b){
+    return a >b ? a:b;
+}
+int main() {
+    cout << Max(1,2) << endl;
+    cout << Max(5.4,2.3) << endl;
+    return 0; // text 代码区
+}
+```
+
+递推
+
+```text
+#include <iostream>
+using namespace std;
+// 递推 计算的过程在编译期完成
+template<int n>
+struct Sum{
+    enum Value {N = Sum<n-1>::N +n};
+};
+template<>
+struct Sum<1>{
+    enum Value {N = 1}; // n =1
+};
+int main() {
+    cout << Sum<100>::N << endl;
+    return 0; // text 代码区
+}
+```
