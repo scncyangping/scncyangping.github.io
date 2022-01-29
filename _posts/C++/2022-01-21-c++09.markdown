@@ -100,6 +100,9 @@ int main() {
     map<string,double> studentScore;
     studentScore["LiMing"] = 95.0;
     studentScore["LiHong"] = 89.5;
+    // map 中key的值是唯一的 若有值是修改
+    studentScore["LiHong"] = 99.5;
+
     studentScore.insert(pair<string,double>("zhang",100));
     studentScore.insert(map<string,double>::value_type("wang",94.5));
 
@@ -107,13 +110,102 @@ int main() {
     cout<< endl;
 
     map<string,double>::iterator  iter;
-    iter = studentScore.find("zhang1");
+    iter = studentScore.find("zhang");
     // 找得到就返回，找不到iter就会遍历到尾部
     if (iter != studentScore.end()){
         cout << "Fount the score is : " << iter ->second << endl;
     }else {
         cout << "Not find" << endl;
     }
+    iter = studentScore.begin();
+    // 迭代器遍历删除问题：不能直接删除
+    while(iter != studentScore.end()){
+        if (iter->second < 95.0){
+            // 去除不是小于95.0的元素
+            // 这里不应该是iter,而应该是iter++
+            studentScore.erase(iter++);
+        }else {
+            iter ++;
+        }
+    }
+    cout << endl;
+    for_each(studentScore.begin(),studentScore.end(),Display());
+
+    // 迭代器遍历删除问题：不能直接删除
+    for(iter = studentScore.begin();iter != studentScore.end();iter ++){
+        if (iter ->second < 95){
+            // 直接删除当前结果是错误的
+            //studentScore.erase(iter);
+
+            // erase删除一个迭代器会返回一个新的迭代器
+            iter = studentScore.erase(iter);
+        }
+    }
+    for_each(studentScore.begin(),studentScore.end(),Display());
+
+    // 通过find得到并删除元素
+    iter = studentScore.find("zhang");
+    studentScore.erase(iter);
+
+    for_each(studentScore.begin(),studentScore.end(),Display());
+
+
+    // 删除指定元素
+    int n = studentScore.erase("zhang");
+    cout << n << endl;
+    for_each(studentScore.begin(),studentScore.end(),Display());
+
+    // 删除所有元素
+    studentScore.erase(studentScore.begin(),studentScore.end());
+    for_each(studentScore.begin(),studentScore.end(),Display());
+
+    return 0;
+}
+```
+
+#### 仿函数
+仿函数一般不会单独使用，主要是为了搭配STL算法使用。
+
+本质就是类重载类一个operator(),创建一个行为类似函数的对象。
+
+
+```text
+#include <iostream>
+#include "algorithm"
+using namespace std;
+template<class T>
+inline void Display(T const &a){
+    cout << a << " " <<endl;
+};
+template<class T>
+bool MySort(T const &a, T const &b){
+    return a > b;
+};
+
+
+template<class T>
+struct SortF{
+    inline bool operator()(T const &a ,T const &b)const{
+        return a > b;
+    }
+};
+
+template<class T>struct DisplayF{
+    inline void operator()(T const &a)const{
+        cout << a << " ";
+    }
+};
+
+int main() {
+    int arr[] = {4,3,2,1,7};
+    sort(arr,arr+5, MySort<int>);
+    for_each(arr,arr+5,Display<int>);
+
+    // C++放函数模版
+    int arr2[] = {4,3,2,1,77};
+    sort(arr2,arr2+5, SortF<int>());
+    for_each(arr2,arr2+5,DisplayF<int>());
+
     return 0;
 }
 ```
