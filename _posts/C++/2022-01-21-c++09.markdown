@@ -209,3 +209,33 @@ int main() {
     return 0;
 }
 ```
+
+#### 算法 algorithm
+STL中算法大致分为四类
+1. 非可变序列算法：指不可以修改它们所操作的容器内容的算法
+2. 可变序列算法：指可以修改它们所操作的容器内容的算法
+3. 排序算法：包括对序列进行排序和合并的算法、搜索算法、及有序序列上的集合操作
+4. 数值算法：对容器内容进行数值计算
+
+主要在algorithm、functional、numeric包中
+
+```text
+#include <iostream>
+#include "algorithm"
+#include "functional"
+using namespace std;
+
+int main() {
+    int arr[] = {1,2,3,4,5};
+    int arr2[] = {10,20,30,40,50};
+    int results[5];
+    transform(arr,arr+5,arr2,results,std::plus<int>());
+    // lambda 表达式 [外部传入参数](使用参数) -> void {}
+    for_each(results,results+5,[](int a){ cout << a <<" ";});
+
+    return 0;
+}
+```
+
+
+
