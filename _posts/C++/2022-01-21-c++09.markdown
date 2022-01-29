@@ -27,6 +27,8 @@ stack、queue、priority_queue是容器适配器，即是说它们是根据deque
 关联式容器： 每个元素都是由一个键、一个值组成。常见的关联容器如：set、multiset、map、multimap
 set中key、value唯一，若想重复需使用multiset。
 
+##### 序列容器
+
 ```text
 #include <iostream>
 #include "vector"
@@ -82,3 +84,36 @@ int main() {
 }
 ```
 
+##### 关联式容器
+
+```text
+#include <iostream>
+#include "map"
+using namespace std;
+struct Display{
+    void operator()(pair<string,double> info){
+        cout << info.first << " "<< info.second << endl;
+    }
+};
+
+int main() {
+    map<string,double> studentScore;
+    studentScore["LiMing"] = 95.0;
+    studentScore["LiHong"] = 89.5;
+    studentScore.insert(pair<string,double>("zhang",100));
+    studentScore.insert(map<string,double>::value_type("wang",94.5));
+
+    for_each(studentScore.begin(),studentScore.end(),Display());
+    cout<< endl;
+
+    map<string,double>::iterator  iter;
+    iter = studentScore.find("zhang1");
+    // 找得到就返回，找不到iter就会遍历到尾部
+    if (iter != studentScore.end()){
+        cout << "Fount the score is : " << iter ->second << endl;
+    }else {
+        cout << "Not find" << endl;
+    }
+    return 0;
+}
+```
