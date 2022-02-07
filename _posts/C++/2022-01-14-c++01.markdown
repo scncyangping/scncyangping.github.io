@@ -101,6 +101,7 @@ pointer | NULL
 
 
 ##### #define 预处理器
+预处理器，在编译之前对代码进行处理。
 
 ```text
 #include <iostream>
