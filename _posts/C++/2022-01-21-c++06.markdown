@@ -43,6 +43,19 @@ struct的默认成员权限事public,class的默认成员权限事private,除此
 
 
 ```
+struct A {
+    string a;
+    string b;
+    union {
+        char aa;
+        int bb;
+    };
+};
+
+使用union来表示 aa 或 bb 只能有一个有值
+```
+
+```
 
 class complex {
 public:
