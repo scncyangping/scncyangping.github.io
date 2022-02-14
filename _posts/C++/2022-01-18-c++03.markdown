@@ -82,6 +82,30 @@ int main() {
 }
 ```
 
+当需要使用指针来描述一个数组时，直接使用 数组类型 * 变量名来定义，如int类型则为 int * p。
+同时指针变量p直接可看作数组c变量的别名进行操作。
+
+```text
+int main() {
+    int c[4] = {15,25,35,45};
+    int * p;
+    int * q;
+    p = c;
+    q = &(c[2]);
+    cout << "&c = " << &c << endl;// 0x7ff7b3a378b0
+    cout << "p = " << p << endl; // 0x7ff7b3a378b0，指针变量名为对应数组第一个元素的地址
+    cout << "*p = " << *p << endl;// 指向数组第一个元素 15
+    cout << "p[1] = " << p[1] << endl; // 25，直接类似数组操作[index]
+    cout << "p+1 = " << p+1 << endl; // 地址 0x7ff7b3a378b4
+    cout << "*(p+1) = " << *(p+1) << endl; // 25 加 1 则等同于数组操作[index+1],取后一个数组位置的值
+    cout << "q = " << q << endl;// 多了两个int元素，则 加 8，地址为0x7ff7b3a378b8
+    cout << "*q = " << *q << endl;// 35
+    cout << "*(q+1) = " << *(q+1) << endl;// 45
+    return 0;
+}
+```
+
+
 #### const pointer 与 pointer to const
  
 ```text
