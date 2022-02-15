@@ -1,0 +1,116 @@
+---
+layout:     post
+title:      "Rust系列(一)变量、常量及基础数据类型"
+subtitle:   ""
+date:       2022-02-15 13:01:00
+author:     "YaPi"
+header-img: ""
+tags:
+    - C++
+---
+
+#### Rust变量
+rust中变量用let定义，区别于其他编程语言，rust的变量是不可变的。比如：
+
+```text
+fn main(){
+    let x=5;
+    x=6; // ERROR 
+}
+```
+
+若需要定义一个可变的变量，需要使用关键字 'mut'
+
+```text
+fn main(){
+    let mut x = 5;
+    x = 6;
+}
+```
+
+同时，rust中变量具有'隐藏'的特性，后定义的同名变量会覆盖前一个变量的值。
+
+```text
+fn main(){
+    let x = 5;
+    let x = 6;
+    print!(x); // 6
+}
+```
+
+可在定义时指定类型
+
+```text
+fn main(){
+    let x:i32 = 5;
+}
+```
+
+#### 常量
+rust中常量使用关键字 const定义，定义后不允许修改。
+
+```text
+const A_CONST:i32 = 42;
+```
+
+#### 基础上数据类型
+
+##### 整数
+长度 | 有符号 | 无符号
+---|---|---
+8 |  i8 | u8
+16 |  i16 | u16
+32 |  i32 | u32
+64 |  i64 | u64
+128 |  i128 | u128
+arch |  isize | usize 
+
+对于未明确标注类型的整数，Rust默认采用i32。同时
+isize和usize根据系统不同而有不同的长度。
+
+##### 浮点数
+Rust有两种浮点类型为 f32 和 f64。默认采用 f64
+
+```text
+fn main(){
+    let x = 2.0;
+    let y:f32 = 4.0;
+}
+```
+
+##### bool
+bool与其他语言一样，true和false。不能转换为0或1。
+
+```text
+fn main(){
+    let mut x:bool = false;
+}
+```
+
+
+#### 元组
+元组是将多个具有各种类型的值组合成一个符合类型的通用方法。元组有固定长度，一旦声明它们的大小
+就不能增长或收缩。
+
+```text
+fn main() {
+    let a:i32 = 10;
+    let b:char = 'A';
+    // 元组定义
+    // 可以类型不相同
+    let myTuple:(i32,char) = (a,b);
+    // 解元组
+    let (c,d) = myTuple;
+    println!("c = {} d = {}",c ,d); // c = 10 d = A
+    // 使用下标获取具体值
+    println!("myTuple.0 = {}",myTuple.0); // myTuple.0 = 10
+    println!("myTuple.1 = {}",myTuple.1); // myTuple.1 = A
+
+    let (result,is_overflow) = a.overflowing_add(10);// 20 false
+    println!("{} {}",result, is_overflow);
+}
+```
+
+
+
+
