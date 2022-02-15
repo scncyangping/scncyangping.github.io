@@ -105,6 +105,17 @@ int main() {
 }
 ```
 
+定义：由四个指向int的指针组成的数组
+
+```text
+int sum(int *ar2[4],int size);
+```
+
+定义：指向一个由4个int组成的数组的指针
+
+```text
+int sum(int (*ar2)[4],int size);
+```
 
 #### const pointer 与 pointer to const
  
