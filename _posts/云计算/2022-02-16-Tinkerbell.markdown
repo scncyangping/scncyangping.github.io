@@ -1,6 +1,6 @@
 ---
 layout:     post
-title:      "Tinkerbell"
+title:      "tinkerbell"
 subtitle:   ""
 date:       2022-02-16 16:01:00
 author:     "YaPi"
@@ -28,7 +28,8 @@ Tinkerbell使用微服务的方式部署。内部可分为5个组件。
 - NGINX - 在工作流执行过程中，提供引导文件和操作系统镜像
 
 #### 架构
-![avatar](https://docs.tinkerbell.org/images/architecture-diagram.png)
+
+![avatar](https://blog-1257627424.cos.ap-chengdu.myqcloud.com/cloud/tinkerbell.png)
 
 分为控制服务和worker服务。其中，控制服务包含Tinkerbell主要业务逻辑，如：DHCP和iPxe服务、元数组服务、工作流引擎。
 
