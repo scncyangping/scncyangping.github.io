@@ -19,7 +19,7 @@ Tinkerbell使用微服务的方式部署。内部可分为5个组件。
 - Boots - DHCP服务。相应DHCP请求，分发IP，并且提供iPXE服务
 - OSIE - 默认的裸金属内存安装环境，可安装操作系统
 - Hegel - 元数据服务，从Tinkerbell和OSIE中收集数据，并转化为JSON数据
-- Hook - OSIE的替代方案
+- Hook - OSIE（Operating System Installation Environment）的替代方案
 - PBnj - 可选的服务，可与BMCs通信管理电源与启动配置
 
 另还包含3个基础组件
@@ -73,6 +73,22 @@ worker节点
    控制节点中的Boots是一个 DHCP 服务器，它处理DHCP请求并使用iPXE脚本回复包含操作系统安装环境的数据。
 2. 在OSIE环境中，安装了tink-worker。tink-worker中会根据当前机器ip去tink-server查询配置的工作流，若查询到可执行的工作流，则执行相关任务完成初始化。
 
+具体流程解析：
+
+- 控制节点
+控制节点是整个tinkerbell业务逻辑主要节点。在此节点运行的服务有：tink-server、tink-cli、Hegel、Boots服务。
+其中tink-server管理创建工作流。tink-cli提供与用户交互的功能。如硬件信息录入、任务录入、工作流录入的基础功能。Hegel是元数据
+服务，获取tinkerbell、OSIE的数据，并供其使用。Boots是DHCP服务及iPxe服务。
+
+- worker节点
+当worker启动的时候，引导进入ipxe模式，并广播DHCP消息，建立与Boots的联系，而后，通过iPxe提供给worker一个操作系统安装环境(OSIE)。
+此环境默认是Apline Linux 3.7 包含一个kernel及ramdisk。并且，ramdisk包含了Docker环境，其中运行tink-worker服务，它会与tink-server建立联系并获取可以执行的工作流。
+
+- 工作流
+
+工作流及即worker节点需要执行的任务。每一个任务在tink-server被打包成一个docker镜像。在worker几点导入了OSIE过后，内部运行的tink-worker(docker服务)会
+拉取需要执行的工作流。然后执行一些列任务。如：磁盘分区、实际操作系统安装等任务。在这个过程中，可以执行自定义的一些任务，达到可扩展操作的目的。工作流可以用户自定义，
+实现用户自定义的一些基础设施创建的需求，比如安装一些监控任务、日志服务等。同时，整个OSIE环境也支持用户自定义，按照自己的需求去创建。
 
 
 #### 参考
