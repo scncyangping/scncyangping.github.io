@@ -133,3 +133,23 @@ fn main() {
 
 }
 ```
+
+#### 切片
+切片类型是对一个数组(包括固定大小的数组和动态数组的引用片段)，有利于安全有效地访问数组的一部分。
+而不需要拷贝数组或数组中的内容，切片在编译的时候其长度是未知的，在底层实现上，一个切片保存着两个
+usize成员，第一个usize成员指向切片起始未知的指针，第二个usize成员表示切片长度。创造切片的的两个参数不能是负数。
+
+```
+fn main() {
+    let arr:[u32;5] = [1,2,3,4,5];
+    // .. 是rust的 Range语法 & 是引用符号
+    // 切片取值为左闭右开
+    let slice = &arr[0..3];
+    println!("slice[0]= {} length = {}",slice[0],slice.len());
+    let last = &arr[3..arr.len()];
+    println!("last[0]= {} last = {}",last[0],last.len());
+    // slices是否为空
+    // slice.is_empty();
+}
+```
+
