@@ -153,3 +153,44 @@ fn main() {
 }
 ```
 
+#### 结构体
+结构体是多种不同数据类型的组合，可以为每个成员命名，可以使用struct关键字创建三种类型的结构。
+
+- 元组结构
+- 经典c结构
+- 无字段的单元结构
+
+结构体使用驼峰命名
+
+```text
+// 元组
+struct Pair(i32, f32);
+// 标准c结构
+#[derive(Debug)] // 派生属性 加上此代码，以便于可以直接在println中打印
+struct Person{
+    name: String,
+    age: u8,
+}
+
+// 单元结构
+struct Unit;
+
+fn main() {
+    let pari = Pair(10,10.0);
+    // 使用 . 获取值
+    println!("{} {}",pari.0,pari.1);
+
+    let tom = Person{
+        name: String::from("jack"),
+        age: 18,
+    };
+    println!("{} {}",tom.name,tom.age);
+    // 直接打印tom会报错，println!("{}",tom)
+    println!("{:?}",tom)
+}
+
+// out
+// 10 10
+// jack 18
+// Person { name: "jack", age: 18 }
+```
