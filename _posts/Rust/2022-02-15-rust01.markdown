@@ -194,3 +194,36 @@ fn main() {
 // jack 18
 // Person { name: "jack", age: 18 }
 ```
+
+#### 枚举
+
+- 无参枚举
+- 带枚举值的枚举
+- 带参数的枚举
+
+```text
+// 无参枚举
+enum T {A,B,C}
+// 带枚举值的枚举
+enum B {
+    A = 1,
+    B = 3,
+    D = 4
+}
+// 带参数的枚举
+enum IPAddr {
+    IPv4(u8,u8,u8,u8),
+    IPv6(u8,u8,u8,u8,u8,u8,u8,u8,u8,u8,u8,u8,u8,u8,u8,u8)
+}
+fn main() {
+    let localhost:IPAddr = IPAddr::IPv4(127,0,0,1);
+    // 模式匹配
+    // 相当于解封装
+    match localhost{
+        IPAddr::IPv4(a,b,c,d) => {
+            println!("{} {} {} {}",a,b,c,d)
+        }
+        _ => {}
+    }
+}
+```
