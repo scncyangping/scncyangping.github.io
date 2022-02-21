@@ -6,7 +6,7 @@ date:       2022-02-15 13:01:00
 author:     "YaPi"
 header-img: ""
 tags:
-    - C++
+    - Rust
 ---
 
 #### Rust变量
@@ -224,6 +224,26 @@ fn main() {
             println!("{} {} {} {}",a,b,c,d)
         }
         _ => {}
+    }
+}
+```
+
+#### 类型强制转换
+rust是强类型语言，无默认类型转换(c++中可以)。在需要类型转换的时候有两种方法。
+第一种是as关键字，这种方式可允许安全的转化。另一种是transmute关键字。
+
+```
+use std::mem;
+fn main() {
+    // 报错
+    // let a = [0u8,1u8,0u8,0u8];
+    // let b:u32 = a as u32;
+    // println!("{}",b);
+    
+    unsafe {
+        let a = [0u8,1u8,0u8,0u8];
+        let b:u32 = mem::transmute(a);
+        println!("{}",b);
     }
 }
 ```
