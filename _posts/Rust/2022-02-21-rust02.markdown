@@ -1,0 +1,163 @@
+---
+layout:     post
+title:      "Rust系列(二)分支、函数"
+subtitle:   ""
+date:       2022-02-21 13:01:00
+author:     "YaPi"
+header-img: ""
+tags:
+    - Rust
+---
+
+#### 流程控制
+Rust是一个基于表达式的语言，大多数代码都有一个返回值。除了一些声明语法。
+条件与循环也是表达式，所以它们可以有返回值。
+
+```text
+let cond = true;
+let a = if cond {
+    32
+}else {
+    23
+};
+
+
+```
+
+##### if  else 
+
+```text
+let n = 5;
+if n > 0 {
+    println!("{} is positive",n);
+}else if n < 0 {
+    println!("{} is negative",n);
+}else {
+    println!("{} is zero",n);
+}
+
+// 作为表达式
+// 返回值各个分支的值必须相同
+let b = if n < 0 {
+                2.0
+            }else {
+                3.0
+            };
+println!("{}",b);
+```
+
+
+##### loop 
+
+```text
+fn main() {
+    // 1 + 2 + 3 ... 100
+    let mut sum = 0;
+    let mut index = 1;
+    
+    // 可以将loop的值赋给一个变量
+    let result = loop {
+                    sum += index;
+                    index += 1;
+                    if index > 100 {
+                        break sum * 2
+                    }
+                };
+    println!("sum = {}, index = {}, result : {}",sum,index,result);
+}
+```
+
+##### for range
+Rust中的for...in...语法可以用来遍历一个迭代器，有多种方式可以创建一个迭代器。
+
+- a..b 将创建一个包含a而不包含b，步长为1的迭代器。
+- a..=b 将创建一个包含a且包含b，步长为1的迭代器。
+
+```text
+for i in 0..5 {
+    println!("{}",i);
+}
+println!("-----");
+for i in 0..=5{
+    println!("{}",i);
+}
+```
+
+for range 遍历数组
+
+```text
+fn main() {
+    let  array = ["a","b","c","d"];
+    for i in array.iter() {
+        println!("{:?}",i)
+    }
+    // 使用 iter_mut() 可以修改元素，前提是数组定义的时候需要是 mut
+    // for i in array.iter_mut() {
+    //     println!("{:?}",i)
+    // }
+}
+```
+
+##### 模式匹配
+// 模式匹配 类似于其他语言中的switch
+
+```text
+let opcode:u8 = 42;
+match opcode {
+    42 => {
+        println!("123");
+    }
+    // default 
+    _ => {
+        println!("321");
+    }
+}
+```
+
+##### if let语法糖
+可用来简化模式匹配的代码。只关心满足条件的操作。
+
+```text
+let opcode:u8 = 42;
+
+if let 42 = opcode {
+        println!("123");
+    }
+```
+
+也可以匹配枚举，包括枚举内的参数
+
+```text
+enum Symbol {
+    Char(char),
+    Num
+}
+fn main() {
+    let f = Symbol::Char('A');
+    if let Symbol::Char(x) = f {
+        println!("{}",x)
+    }
+}
+
+// output
+// A
+```
+
+##### while let语法糖
+while let定义当满足条件时，while会一直执行下去
+
+```text
+#[derive(Debug)]
+enum Symbol {
+    A,
+    B
+}
+fn main() {
+    let mut letter = Symbol::A;
+    while let Symbol::A = letter {
+        println!("{:?}",letter);
+        letter = Symbol::B
+    }
+}
+```
+
