@@ -147,6 +147,7 @@ fn main() {
 while let定义当满足条件时，while会一直执行下去
 
 ```text
+// 加上此语句将Symbol声明为可打印类型，println才能打印
 #[derive(Debug)]
 enum Symbol {
     A,
@@ -161,3 +162,146 @@ fn main() {
 }
 ```
 
+#### 函数
+
+```text
+
+#[derive(Debug)]
+struct Point {
+    x: u64,
+    y: u64,
+}
+// 方法
+impl Point {
+    fn new(x:u64,y:u64)->Point{
+        Point{x,y}
+    }
+
+    fn get_x(&self) -> u64{
+        self.x
+    }
+
+    fn set_x(&mut self,x:u64){
+        self.x = x
+    }
+}
+
+fn main() {
+    let mut p = Point::new(10,20);
+    println!("{:?}",p);
+    println!("{:?}",p.x);
+    println!("{:?}",p.get_x());
+
+    p.set_x(30);
+    println!("{:?}",p.get_x());
+    //println!("{}",fibonacci(10))
+}
+
+// 函数
+fn fibonacci(n: u64) ->u64 {
+    if n < 2 {
+        n
+    }else {
+        fibonacci(n - 1) + fibonacci(n-2)
+    }
+}
+
+```
+
+move语法
+
+```text
+
+use std::thread;
+
+fn main() {
+    let hm = "hello world";
+    // move : 将环境中的值移到闭包内部
+    // 使用场景-多线程：从主线程移动到子线程
+    thread::spawn(move || {
+        // hm是主线程中的值
+        println!("{}",hm);
+    }).join();
+
+}
+```
+
+#### 高阶函数
+满足以下条件即是一个高阶函数
+
+- 接受一个或多个函数作为输入
+- 输出一个函数
+
+```text
+fn main() {
+    let a = 5;
+    let b = 4;
+    println!("{}",calc(add,a,b));
+    println!("{}",calc(sub,a,b));
+    // 使用函数作为返回值
+    println!("{}",calc2("add")(a,b));
+    println!("{}",calc2("sub")(a,b));
+
+
+}
+
+fn add(a:u32,b:u32)->u32{
+    a+b
+}
+
+fn sub(a:u32,b:u32)->u32{
+    a-b
+}
+
+type Method = fn(u32,u32)->u32;
+
+fn calc(method: Method,a:u32,b:u32)->u32{
+    method(a,b)
+}
+
+fn calc2(method: &str)->Method{
+    match method {
+        "add" => add,
+        "sub" => sub,
+        _ => unimplemented!()
+    }
+}
+```
+
+#### 示例
+
+```text
+extern crate rand;
+// 引入随机数生成函数
+use rand::Rng;
+use std::io;
+use std::io::Read;
+
+fn main(){
+    let secret_number = rand::thread_rng().gen_range(1..101);
+    loop {
+        // 获取用户输入
+        println!("input :");
+        let mut guess = String::new();
+        // 读取用户输入
+        io::stdin().read_line(&mut guess).unwrap();
+
+        let guess_number: u32 = match guess.trim().parse() {
+            Ok(num) => num,
+            Err(_err) => continue
+        };
+
+        println!("You guessed: {}",guess_number);
+
+        // 判断大小
+        if guess_number > secret_number {
+            println!("too big");
+        }else if guess_number < secret_number {
+            println!("too small");
+        }else {
+            println!("You are 666");
+            break;
+        }
+    }
+}
+```
