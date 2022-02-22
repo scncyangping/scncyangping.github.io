@@ -92,3 +92,36 @@ fn main(){
 // 4
 ```
 
+结构体可见性
+
+```text
+mod mod1{
+    pub struct Person {
+        pub name: String,
+        // 模块外无法访问，模块内可以被访问
+        nickname: String,
+    }
+    impl Person{
+        pub fn new(name: &str)->Self{
+            Person{
+                name: String::from(name),
+                nickname: String::new(),
+            }
+        }
+        pub fn get_nick_name(&self){
+            println!("{}",self.nickname);
+        }
+
+        pub fn set_nickname(&mut self, nickname:&str){
+            self.nickname = String::from(nickname)
+        }
+    }
+}
+fn main(){
+    let mut p = mod1::Person::new("Tom");
+    println!("{}",p.name);
+    p.set_nickname("dog");
+    p.get_nick_name();
+}
+```
+
