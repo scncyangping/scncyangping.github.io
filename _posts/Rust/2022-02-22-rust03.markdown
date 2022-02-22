@@ -1,0 +1,94 @@
+---
+layout:     post
+title:      "Rust系列(三)模块化编程"
+subtitle:   ""
+date:       2022-02-22 13:01:00
+author:     "YaPi"
+header-img: ""
+tags:
+    - Rust
+---
+
+#### 模块
+
+- Package
+
+```text
+Package 用于管理一个或多个Crate,创建一个Package的方式是使用cargo new。
+
+当输入命令时，Cargo创建了一个目录以及一个Cargo.toml文件。这就是一个Package。
+默认情况下，src/main.rs是与Package同名的二进制Crate的入口文件。如果在创建Package
+的时候带上 -- lib参数，那么src/lib.rs将是它的Crate入口文件，且它是一个库Crate。
+
+如果我们的src目录中同时包含main.rs和lib.rs，那么我们将在这个Package中同时得到一个
+二进制Crate和一个库Crate。库Crate可一让别人引用。
+```
+
+- Crate
+  
+```text
+Crate是Rust的最小编译单元，即Rust编译器是以Crate为最小单元进行编译的。Crate在一个范围内
+将相关的功能组合在一起，并最终通过编译生成一个二进制或库文件。
+```
+- Module
+
+```text
+Module允许我们将一个Crate中的代码组织成独立的代码块，以便于增强可读性和代码复用。同时，Module
+还控制代码的可见性，即将代码分为公开代码和私有代码。公开代码可以在项目外使用，私有代码则至于项目
+内部的代码才可以访问。定义一个模块最基本的方式是使用mod关键字
+
+
+
+mod mod1 {
+    pub mod mod2 {
+        pub const MESSAGE: &str = "Hello World!"
+    }
+}
+
+fn main(){
+    println!(mod1::mod2::MESSAGE);
+}
+```
+
+##### 可见性
+Rust中模块内部的代码，结构体，函数等类型默认是私有的，但是可以通过pub关键字来改变它们的可见性。
+
+比较常用的pub写法：
+- pub: 成员对模块可见
+- pub(self): 成员对模块内的子模块可见
+- pub(crate): 成员对整个crate可见
+
+```text
+mod mod1{
+    pub const MESSAGE:&str = "Hello world";
+    const NUMBER: u32 = 4;
+    // 对本模块及本模块下的所有子模块都是可见的
+    // 偏标记性质的语法。
+    pub(self) const SELF_MESSAGE:&str = "self message";
+
+    pub mod mod2 {
+        pub const MESSAGE:&str = "Hello";
+
+        pub fn say(){
+            println!("{}",super::NUMBER);
+        }
+    }
+
+    pub(crate) enum CreateEnum{
+        Item = 4
+    }
+
+}
+fn main(){
+    println!("{}",mod1::MESSAGE);
+    println!("{}",mod1::mod2::MESSAGE);
+    println!("{}",mod1::CreateEnum::Item as u32);
+    mod1::mod2::say();
+}
+// output
+// Hello world
+// Hello
+// 4
+// 4
+```
+
