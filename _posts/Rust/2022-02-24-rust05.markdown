@@ -1,0 +1,124 @@
+---
+layout:     post
+title:      "Rust系列(五)所有权及生命周期注解"
+subtitle:   ""
+date:       2022-02-23 13:05:00
+author:     "YaPi"
+header-img: ""
+tags:
+    - Rust
+---
+
+#### 所有权规则
+
+- Rust中每个值都绑定有一个变量，称为该值的所有者。
+- 每个值只有一个所有者，而且每个值都有它的作用域。
+- 一旦这个值离开作用域，这个值占用的内存将被回收。
+
+作用域就是一个大括号。
+
+```text
+fn main(){
+    // 创建在堆里的字符串
+    let s1 = String::from("hello world");
+    // 所有权进行转移，转移给了s2
+    let s2 = s1;
+    // 打印s1就会报错
+    // println!("{} {}",s1, s2);
+    println!("s2 = {}", s2); // s2 = hello world
+
+    let s3:String;
+    {
+        let s4 = String::from("hello world");
+        s3 = s4;
+        // 所有权转移 打印s4报错
+        // println!("s4 = {}",s4);
+        println!("one s3 = {}",s3); // one s3 = hello world
+    }
+    println!("two s3 = {}",s3); // two s3 = hello world
+}
+```
+
+##### 借用
+当需要传入函数或给其他变量赋值，但是不希望改变所有权时，可以使用借用。即采用取地址符 & 。获取值，但是
+不获取所有权。
+
+```text
+fn echo(a :&mut String){
+    a.push_str("world");
+    println!("a  = {}",a);
+}
+
+// 同一时间内至多只能有一个可变引用(普通引用可以有任意多个),防止数据竞争。
+// let mut s = String::from("xx");
+// let s1 = &s;
+// let s2 = &s;
+fn main(){
+    let mut a = String::from("hello");
+    echo(&mut a);
+    println!("main a = {}",a);
+}
+```
+
+#### 生命周期注解
+结构体生命周期注解
+
+```text
+// 使用 'a 这个标记来表示生命周期。
+#[derive(Debug)]
+struct Person<'a>{
+    // 声明变量name 和 结构体 Person拥有相同的生命周期
+    name: &'a str,
+}
+
+fn main(){
+    let p = Person{name: "x"};
+    println!("{:?}",p);
+}
+```
+
+函数生命周期注解
+
+```text
+// 不是借用的方式可以不设置生命周期
+// fn large(a:String, b:String) ->String{
+//     if a > b {
+//         a
+//     }else {
+//         b
+//     }
+// }
+
+// 使用了借用的方式，就需要设置变量及返回值的生命周期
+// fn large<'a>(a:&'a String, b:&'a String) ->&'a String{
+//     if a > b {
+//         a
+//     }else {
+//         b
+//     }
+// }
+
+// 错误 可以返回a，也可以返回b，但是a和b的生命周期不一样
+// 需要将返回值的生命周期与参数设置为一致
+// fn large(a:&str, b:&str) ->&str{
+//     if a > b {
+//         a
+//     }else {
+//         b
+//     }
+// }
+
+fn large<'a>(a:&'a str, b:&'a str) ->&'a str{
+    if a > b {
+        a
+    }else {
+        b
+    }
+}
+fn main(){
+    println!("{}",large("a","b"));
+    // let a = String::from("a");
+    // let b = String::from("b");
+    // println!("{}",large(&a,&b));
+}
+```

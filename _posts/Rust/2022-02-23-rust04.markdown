@@ -77,6 +77,7 @@ fn main(){
     let x = Point{x:5,y :10};
     // 直接打印会报错，需要实现接口
     println!("{}",x);
+    // 这里直接传入x的时候，会将x的所有权传递给函数show
     // show(x);
     show2(x);
 }
