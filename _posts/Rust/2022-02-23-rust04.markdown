@@ -1,0 +1,130 @@
+---
+layout:     post
+title:      "Rust系列(四)泛型"
+subtitle:   ""
+date:       2022-02-22 13:01:00
+author:     "YaPi"
+header-img: ""
+tags:
+    - Rust
+---
+
+#### 函数中的泛型
+```text
+// T 后面加冒号加上泛型特征的绑定
+fn large<T: std::cmp::PartialOrd>(a:T , b:T)-> T{
+    if a > b {
+        a
+    }else {
+        b
+    }
+}
+fn main(){
+    println!("{}",large(1,2));
+    println!("{}",large(3.2,2.5));
+}
+```
+
+#### 结构体中的泛型
+
+```text
+struct Point<T,U>{
+    x: T,
+    y: T,
+    z: U
+}
+fn main(){
+    // 结构体赋值每个字段都需要赋值
+    let x = Point{x:5,y :10,z:15.0};
+    let y = Point{
+        x: 1.0,
+        y: 2.0,
+        z: 5
+    };
+    println!("{} {} {}",x.x,x.y,x.z);
+    println!("{} {} {}",y.x,y.y,y.z);
+}
+```
+
+#### Traits
+使用Traits定义一些共同的行为。类似与其他语言中的接口。
+
+```text
+struct Point<T>{
+    x: T,
+    y: T,
+}
+
+// 类型于实现std::fmt::Display接口
+impl<T:std::fmt::Display> std::fmt::Display for Point<T>{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "({},{})",self.x,self.y)
+    }
+}
+
+// 原生写法
+// 指定调用的类型为std::fmt::Display类型
+fn show<T:std::fmt::Display>(a:T){
+    println!("show: {}",a);
+}
+// 语法糖写法
+fn show2(a: impl std::fmt::Display){
+    println!("show: {}",a);
+}
+
+fn main(){
+    // 结构体赋值每个字段都需要赋值
+    let x = Point{x:5,y :10};
+    // 直接打印会报错，需要实现接口
+    println!("{}",x);
+    // show(x);
+    show2(x);
+}
+```
+
+#### 自动派生
+Rust编译器可以自动为结构体实现一些Traits，这种自动化技术被称作派生。例如，在
+编写代码的过程中最常见的需求就是将结构体输出到屏幕上，除了使用上述Display，
+也可以采用自动派生技术让Rust编译器自动添加代码：
+
+```text
+#[derive(Debug)]
+struct Point<T>{
+    x: T,
+    y: T,
+}
+fn main(){
+    // 结构体赋值每个字段都需要赋值
+    let x = Point{x:5,y :10};
+    println!("{:?}",x);
+}
+```
+
+Debug Trait允许将数据结构使用 (:?) 格式进行格式化。
+
+自动派生的前提是结构体中全部字段都实现了指定的Trait。
+
+
+```text
+#[derive(Debug,PartialEq,Default)]
+// Debug => 可以使用 {:?}进行打印
+// PartialEq => 可以用于比较运算 == 
+// Default => 为每个属性生成默认值
+struct Point{
+    x: i32,
+    y: i64,
+}
+fn main(){
+    // 结构体赋值每个字段都需要赋值
+    let x = Point{x:5,y :10};
+    let x2 = Point{x:5,y :10};
+    // if x.x == x2.x && x.y == x2.y {
+    //
+    // }
+    println!("{:?}",x); // Point { x: 5, y: 10 }
+    println!("{}",x == x2); // true
+
+    let x3 = Point::default();
+    println!("{:?}",x3); // Point { x: 0, y: 0 }
+}
+```
