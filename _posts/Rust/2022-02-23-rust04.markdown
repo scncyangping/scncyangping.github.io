@@ -2,7 +2,7 @@
 layout:     post
 title:      "Rust系列(四)泛型"
 subtitle:   ""
-date:       2022-02-22 13:01:00
+date:       2022-02-23 13:01:00
 author:     "YaPi"
 header-img: ""
 tags:
