@@ -1,0 +1,142 @@
+---
+layout:     post
+title:      "Rust系列(六)错误"
+subtitle:   ""
+date:       2022-02-24 13:05:00
+author:     "YaPi"
+header-img: ""
+tags:
+    - Rust
+---
+
+#### 不可恢复错误
+使用 panic! 宏来创建不可恢复的错误。
+
+还有一些常见其他的方式可导致不可恢复的错误
+
+断言
+
+```text
+assert!(1 == 2)
+assert_eq!(1,2)
+```
+
+未实现代码
+
+```text
+// 先设计程序框架，后续再去写具体实现的时候会用到
+fn add(a:u32,b:u32)->u32{
+    unimplementd!()
+}
+```
+
+不应该被访问到的代码
+
+```text
+unreachable!()
+```
+
+#### 可恢复的错误 Result
+可恢复的错误类型是result.rs中的Result。
+定义：
+
+```text
+#[derive(Copy, PartialEq, PartialOrd, Eq, Ord, Debug, Hash)]
+#[must_use = "this `Result` may be an `Err` variant, which should be handled"]
+#[rustc_diagnostic_item = "Result"]
+#[stable(feature = "rust1", since = "1.0.0")]
+pub enum Result<T, E> {
+    /// Contains the success value
+    #[lang = "Ok"]
+    #[stable(feature = "rust1", since = "1.0.0")]
+    Ok(#[stable(feature = "rust1", since = "1.0.0")] T),
+
+    /// Contains the error value
+    #[lang = "Err"]
+    #[stable(feature = "rust1", since = "1.0.0")]
+    Err(#[stable(feature = "rust1", since = "1.0.0")] E),
+}
+```
+
+例子
+
+```
+fn main(){
+    // std::fs::read 返回的类型是 io::Result<Vec<u8>>
+    // io::Result 类型是 pub type Result<T> = result::Result<T, Error>
+    // 也就是Result类型
+    let r = std::fs::read("/temp");
+    match r {
+        // 返回正确 则打印读取的数据
+        Ok(data) => println!("{:?}",std::str::from_utf8(&data).unwrap()),
+        // 捕获错误，打印错误
+        Err(err) => println!("{:?}",err),
+    }
+}
+```
+
+#### 自定义错误与问号表达式
+##### 问号表达式
+若遇到错误的时候不希望处理，仅仅希望将错误抛出去，可以使用问号表达式。当函数的错误
+类型与当前错误的类型相同时，使用 ？ 可以直接将错误传递到函数外并终止函数执行。
+
+```text
+fn foo() -> Result<T, E> {
+    let x = bar()?;// bar 的错误类型需要与foo的错误类型相同
+}
+```
+
+? 的作用是将 Result枚举的正常的直接去除，如果有错误就将错误返回出去
+
+```text
+
+fn bar() -> Result<u32, &'static str> {
+    Ok(0)
+}
+
+fn foo()-> Result<i32, &'static str>{
+    // 不用 ? 运算符
+    // match bar() {
+    //     Ok(n) => Ok(a as i32),
+    //     Err(e) => Err(e)
+    // }
+    let a = bar()?;
+    Ok(a as i32)
+}
+
+
+fn main(){
+    println!("{:?}",foo())
+}
+```
+
+自定义错误类型
+
+```text
+#[derive(Debug)]
+pub enum MyError {
+    IO(std::io::ErrorKind),
+}
+
+// 设置从std::io::Error到自己写的Error的转化
+impl From<std::io::Error> for MyError {
+    fn from(err: std::io::Error) -> Self {
+        Error::IO(err.kind())
+    }
+}
+
+fn do_read_file() -> Result<(),MyError>{
+    // 此处返回的是result.rs中的Result的类型
+    // 需要将起转化为自定义的MyError类型才能使用 ？表达式
+    let data = std::fs::read("/Users/yapi/WorkSpace/RustWorkSpace/test1/src/test.txt")?;
+    let data_str = std::str::from_utf8(&data).unwrap();
+    println!("{:?}",data_str);
+    Ok(())
+}
+
+fn main()-> Result<(),MyError>{
+    //do_read_file().unwrap();
+    do_read_file()?;
+    Ok(())
+}
+```
