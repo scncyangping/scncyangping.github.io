@@ -183,6 +183,7 @@ impl Interpreter {
 
 
 fn main()-> Result<(),Box<dyn std::error::Error>>{
+    // 命令行参数常用获取方式
     // let args:Vec<String> = std::env::args().collect();
     // let data = std::fs::read(&args[1])?;
     let data = std::fs::read("/Users/yapi/WorkSpace/RustWorkSpace/bf/res/hello_world.bf")?;
