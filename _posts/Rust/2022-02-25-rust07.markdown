@@ -1,0 +1,202 @@
+---
+layout:     post
+title:      "Rust系列(八)实战编译器"
+subtitle:   ""
+date:       2022-02-25 13:10:00
+author:     "YaPi"
+header-img: ""
+tags:
+    - Rust
+---
+
+#### BF
+Brainfuck是一种极小化的计算机语言，它是由Urban Müller在1993年创建的。由于fuck在英语中是脏话，这种语言有时被称为brainf*ck或brainf**k，甚至被简称为BF。
+
+这种语言，是一种按照“Turing complete（图灵完备）”思想设计的语言，它的主要设计思路是：用最小的概念实现一种“简单”的语言，BrainF**k 语言只有八种符号，所有的操作都由这八种符号的组合来完成
+
+字符 | 含义
+---|---
+> | 指针加一
+< | 指针减一
++ | 指针指向的字节的值加一
+- | 指针指向的字节的值减一
+. | 输出指针指向的单元内容（ASCⅡ码）
+, | 输入内容到指针指向的单元（ASCⅡ码）
+[ | 如果指针指向的单元值为零，向后跳转到对应的]指令的次一指令处
+] | 如果指针指向的单元值不为零，向前跳转到对应的[指令的次一指令处
+
+#### 示例代码
+opcode.rs
+
+```text
+#[derive(Debug,PartialEq)]
+pub enum Opcode {
+    // >
+    SHR = 0x3E,
+    // <
+    SHL = 0x3C,
+    // +
+    ADD = 0x2B,
+    // -
+    SUB = 0x2D,
+    // .
+    PUTCHAR = 0x2E,
+    // ,
+    GETCHAR = 0x2C,
+    // [
+    LB = 0x5B,
+    // ]
+    RB = 0x5D
+}
+
+impl From<u8> for Opcode {
+    fn from(u: u8) -> Self {
+        match u {
+            0x3E => Opcode::SHR,
+            0x3C => Opcode::SHL,
+            0x2B => Opcode::ADD,
+            0x2D => Opcode::SUB,
+            0x2E => Opcode::PUTCHAR,
+            0x2C => Opcode::GETCHAR,
+            0x5B => Opcode::LB,
+            0x5D => Opcode::RB,
+            _ => unreachable!()
+        }
+    }
+}
+
+pub struct Code {
+    pub instrs: Vec<Opcode>,
+    pub jtable: std::collections::HashMap<usize,usize>
+}
+
+impl Code {
+    pub fn from(data:Vec<u8>)->Result<Self,Box<dyn std::error::Error>>{
+        let dict:Vec<u8> = vec![
+            Opcode::SHR as u8,
+            Opcode::SHL as u8,
+            Opcode::ADD as u8,
+            Opcode::SUB as u8,
+            Opcode::PUTCHAR as u8,
+            Opcode::GETCHAR as u8,
+            Opcode::LB as u8,
+            Opcode::RB as u8,
+        ];
+        let instrs:Vec<Opcode> = data
+            .iter()
+            .filter(|x| dict.contains(x))
+            .map(|x| Opcode::from(*x)).collect();
+
+        let mut jstack:Vec<usize> = Vec::new();
+        let mut jtabel:std::collections::HashMap<usize,usize> =
+            std::collections::HashMap::new();
+
+        for (i, e) in instrs.iter().enumerate(){
+            if Opcode::LB == *e {
+                jstack.push(i);
+            }
+            if Opcode::RB == *e{
+                let j = jstack.pop().ok_or("pop empt")?;
+                jtabel.insert(i,j);
+            }
+        }
+
+        Ok(Self {
+            instrs: instrs,
+            jtable: jtabel
+        })
+    }
+}
+```
+
+main.rs
+
+```text
+mod opcode;
+use opcode::{Opcode,Code};
+use std::io::{Write, Read};
+
+struct Interpreter{
+    stack: Vec<u8>
+}
+impl Interpreter {
+    fn new() ->Self {
+        Self {
+            stack: vec![0;1]
+        }
+    }
+
+    fn run(&mut self, data:Vec<u8>)-> Result<(),Box<dyn std::error::Error>> {
+        let code = Code::from(data)?;
+        let code_len = code.instrs.len();
+        let mut pc = 0;
+        let mut sp = 0;
+
+        loop {
+            if pc >= code_len {
+                break;
+            }
+            match code.instrs[pc] {
+                Opcode::SHR => {
+                    sp += 1;
+                    if sp == self.stack.len() {
+                        self.stack.push(0);
+                    }
+                },
+                Opcode::SHL  => {
+                    if sp != 0 {
+                        sp -= 1;
+                    }
+                },
+                Opcode::ADD  => {
+                    self.stack[sp] = self.stack[sp].overflowing_add(1).0;
+                },
+                Opcode::SUB  => {
+                    self.stack[sp] = self.stack[sp].overflowing_sub(1).0;
+                },
+                Opcode::PUTCHAR  => {
+                    std::io::stdout().write_all(&[self.stack[sp]])?;
+                },
+                Opcode::GETCHAR  => {
+                    let mut buf = vec![0;1];
+                    std::io::stdin().read_exact(&mut buf)?;
+                    self.stack[sp] = buf[0];
+                },
+                Opcode::LB  => {
+                    if self.stack[sp] == 0x00{
+                        pc = code.jtable[&pc];
+                    }
+                },
+                Opcode::RB  => {
+                    if self.stack[sp] != 0x00{
+                        pc = code.jtable[&pc];
+                    }
+                },
+            }
+            pc += 1;
+        }
+
+        Ok(())
+    }
+}
+
+
+
+fn main()-> Result<(),Box<dyn std::error::Error>>{
+    // let args:Vec<String> = std::env::args().collect();
+    // let data = std::fs::read(&args[1])?;
+    let data = std::fs::read("/Users/yapi/WorkSpace/RustWorkSpace/bf/res/hello_world.bf")?;
+    //let code = Code::from(data)?;
+    // println!("{:?}",code.instrs);
+    // Ok(())
+
+    let mut interpreter = Interpreter::new();
+    interpreter.run(data);
+    Ok(())
+}
+```
+
+BF代码: hello_world.bf
+```text
+++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++.
+```
