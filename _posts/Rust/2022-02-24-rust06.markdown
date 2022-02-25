@@ -164,4 +164,60 @@ fn main(){
 }
 ```
 
+#### 字符串类型 str, &str 与String的区别
 
+```text
+fn main(){
+    // "Hello World" 字面量 存储在二进制文件中，被保存在数据段的区域
+    // str类型几乎不会被用到，总是会使用&str
+    // &str 代表的是在内存中(数据段、代码段、堆、栈...)字符串数据
+    // &str 可以引用数据段中的内容，也可以是堆里面的内容
+    let s:&str = "Hello World";
+    let ss:&'static str = "Hello World";
+    // String类型它拥有自己的数据，可以修改
+    // String 类型是存储在堆里面的
+    let mut t:String = String::from(ss);
+    t.push_str("!!");
+    println!("{}",t);
+    echo(s);
+    echo(&t);
+}
+
+struct Foo {
+    // 结构体内部一般使用String
+    name: String,
+}
+
+// 函数参数定义字符串一般使用 &str这种格式
+fn echo(s:&str){
+    println!("{:?}",s);
+}
+```
+
+#### SystemTime
+
+```text
+use std::time::{SystemTime,Duration};
+use std::thread::sleep;
+
+// 若需要更完善的时间操作，可使用 chrono 库
+fn main(){
+    // 系统时间
+    // 通过系统调用请求操作系统返回的系统时间
+    let now = SystemTime::now();
+    println!("{:?}",now);
+
+    // timeStamp 是自从1970年1月1日到现在的秒数
+    let timeStamp = now.duration_since(SystemTime::UNIX_EPOCH);
+    println!("{:?}",timeStamp.unwrap());
+
+    // sleep 5 s
+    sleep(Duration::from_secs(5));
+    // ela 程序休眠的时间
+    println!("ela ={:?}", now.elapsed().unwrap());
+
+    // 获取一分钟之后的时间
+    let future = now.checked_add(Duration::from_secs(60));
+    println!("future = {:?}",future);
+}
+```
