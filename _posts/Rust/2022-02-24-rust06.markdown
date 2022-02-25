@@ -59,3 +59,32 @@ fn main()-> Result<(),Box<dyn std::error::Error>>{
 }
 ```
 
+#### Rc 引用计数
+你可以将Rc看作Box的高级版本：它是带引用计数的智能指针。只有当它的引用计数为0时，数据才会
+被清理。
+
+```text
+// 需要先引入 Rc
+use std::rc::Rc;
+use List::Cons;
+
+enum List{
+    //Cons(i32,List),
+    // 修改为List地址类型
+    Cons(i32,Rc<List>),
+    Nil
+}
+
+fn main(){
+    // Rc 使一个值可以有多个所有者
+    let four = Rc::new(Cons(4,Rc::new(List::Nil)));
+    // 调用clone方法后，引用计数会加1, 不是说将原来的数据复制一份儿
+    let zero = List::Cons(0,Rc::new(List::Cons(1,four.clone())));
+    // 使用 Rc::clone(&four)一样的可以复制
+    let two = List::Cons(2,Rc::new(List::Cons(3,Rc::clone(&four))));
+    let three = List::Cons(2,Rc::new(List::Cons(4,Rc::clone(&four))));
+}
+```
+
+
+
