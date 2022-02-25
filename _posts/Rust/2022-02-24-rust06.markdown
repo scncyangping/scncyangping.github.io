@@ -86,5 +86,50 @@ fn main(){
 }
 ```
 
+#### Vector
+Vector是动态大小的数组，与切片一样，它们的大小在编译时是未知的，但它们可以随时增长或收缩。
+有三个重要属性：
+- 指向数据的指针
+- 长度
+- 容量
+
+容量表示为向量预留了多少内存，一旦长度大于容量，向量将申请更大的内存进行重新分配。
+
+```text
+fn main(){
+    // 使用宏创建
+    // let v : Vec<i32> = vec![0,1,2,3];
+    let mut v = Vec::new();
+    for i in 0..10{
+        v.push(i);
+    }
+    println!("{:?}",v);
+    println!("v.len = {:?}",v.len());
+    // 预留容量
+    println!("v.capacity = {:?}",v.capacity());
+    // 抛出最末尾数据
+    println!("抛出末尾数据: {:?}",v.pop());
+
+    // for i in 0..v.len(){
+    //     println!("index = {}, value = {}",i,v[i])
+    // }
+
+    // for e in v.iter() {
+    //     println!("{:?}",e)
+    // }
+    
+    // 可修改元素的遍历
+    for e in v.iter_mut() {
+        *e *= 2;
+    }
+    
+    // 遍历
+    for e in v.iter() {
+        println!("修改后 : {:?}",e)
+    }
+
+    // v.copy_from_slice()
+}
+```
 
 
