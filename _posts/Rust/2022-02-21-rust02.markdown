@@ -99,7 +99,7 @@ fn main() {
 ```
 
 ##### 模式匹配
-// 模式匹配 类似于其他语言中的switch
+模式匹配 类似于其他语言中的switch
 
 ```text
 let opcode:u8 = 42;
