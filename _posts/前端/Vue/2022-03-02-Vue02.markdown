@@ -1,0 +1,274 @@
+---
+layout:     post
+title:      "Vue3起步"
+subtitle:   ""
+date:       2022-03-02 12:05:00
+author:     "YaPi"
+header-img: ""
+tags:
+    - Vue3
+---
+
+#### 起步
+Vue3 中的应用是通过使用 createApp 函数来创建的，语法格式如下：
+
+```text
+<div id="hello-vue" class="demo">
+  {{ message }}
+</div>
+<script>
+const HelloVueApp = {
+  data() {
+    return {
+      message: 'Hello Vue!!'
+    }
+  }
+}
+Vue.createApp(HelloVueApp).mount('#hello-vue')
+</script>
+```
+
+createApp 的参数是根组件（HelloVueApp），在挂载应用时，该组件是渲染的起点。
+
+一个应用需要被挂载到一个 DOM 元素中，以上代码使用 mount('#hello-vue') 将 Vue 应用 HelloVueApp 挂载到 <div id="hello-vue"></div> 中。
+
+
+##### data函数
+data 选项是一个函数。Vue 在创建新组件实例的过程中调用此函数。它应该返回一个对象，然后 Vue 会通过响应性系统将其包裹起来，并以 $data 的形式存储在组件实例中
+
+```text
+const app = Vue.createApp({
+  data() {
+    return { count: 4 }
+  }
+})
+
+const vm = app.mount('#app')
+
+document.write(vm.$data.count) // => 4
+document.write("<br>")
+document.write(vm.count)       // => 4
+document.write("<br>")
+// 修改 vm.count 的值也会更新 $data.count
+vm.count = 5
+document.write(vm.$data.count) // => 5
+document.write("<br>")
+// 反之亦然
+vm.$data.count = 6
+document.write(vm.count) // => 6
+```
+
+
+##### 赋值
+
+count的值会渲染到页面中 {{ count }}处。当其改变时，页面的值也会发生改变，若需要其只赋值一次不做改变需要添加v-once指令
+
+```text
+<span v-once>这个将不会改变: {{ count }}</span>
+```
+
+若需要输出html代码到页面，需要使用 v-html标签
+
+```text
+<div id="example1" class="demo">
+    <p>使用双大括号的文本插值: {{ rawHtml }}</p>
+    <p>使用 v-html 指令: <span v-html="rawHtml"></span></p>
+</div>
+ 
+<script>
+const RenderHtmlApp = {
+  data() {
+    return {
+      rawHtml: '<span style="color: red">这里会显示红色！</span>'
+    }
+  }
+}
+ 
+Vue.createApp(RenderHtmlApp).mount('#example1')
+</script>
+```
+
+HTML属性中的值绑定应使用v-bind指令。
+
+```text
+<div v-bind:id="dynamicId"></div>
+<button v-bind:disabled="isButtonDisabled">按钮</button>
+```
+dynamicId 和 isButtonDisabled应该是data里面的设置的属性值
+
+
+```text
+<div id="app">
+    {{5+5}}<br>
+    {{ ok ? 'YES' : 'NO' }}<br>
+    {{ message.split('').reverse().join('') }}
+    <div v-bind:id="'list-' + id">123</div>
+</div>
+    
+<script>
+const app = {
+  data() {
+    return {
+      ok: true,
+      message: '123!!',
+      id: 1
+    }
+  }
+}
+ 
+Vue.createApp(app).mount('#app')
+</script>
+
+输出：
+10
+YES
+!!321
+123
+```
+
+
+##### 添加方法
+可以在组件中添加方法，使用 methods 选项，该选项包含了所需方法的对象。
+
+以下实例我们添加了 methods 选项，选项中包含了 add() 方法
+
+```text
+const app = Vue.createApp({
+  data() {
+    return { count: 4 }
+  },
+  methods: {
+    add() {
+      // `this` 指向该组件实例
+      this.count++
+    }
+  }
+})
+
+const vm = app.mount('#app')
+
+document.write(vm.count) // => 4
+document.write("<br>")
+vm.add()
+
+document.write(vm.count) // => 5
+```
+
+#### 指令
+指令是带有 v- 前缀的特殊属性。指令用于在表达式的值改变时，将某些行为应用到 DOM 上。
+
+```text
+<div id="app">
+    <p v-if="seen">现在你看到我了</p>
+</div>
+    
+<script>
+const app = {
+  data() {
+    return {
+      seen: true  /* 改为false，信息就无法显示 */
+    }
+  }
+}
+ 
+Vue.createApp(app).mount('#app')
+</script>
+```
+
+v-for 指令可以绑定数组的数据来渲染一个项目列表
+
+```text
+<div id="app">
+  <ol>
+    <li v-for="site in sites">
+      {{ site.text }}
+    </li>
+  </ol>
+</div>
+<script>
+const app = {
+  data() {
+    return {
+      sites: [
+        { text: 'Google' },
+        { text: 'Runoob' },
+        { text: 'Taobao' }
+      ]
+    }
+  }
+}
+
+Vue.createApp(app).mount('#app')
+</script>
+```
+
+参数在指令后以冒号指明。例如， v-bind 指令被用来响应地更新 HTML 属性：
+
+```text
+<div id="app">
+    <p><a v-bind:href="url">菜鸟教程</a></p>
+</div>
+    
+<script>
+const app = {
+  data() {
+    return {
+      url: 'https://www.runoob.com'
+    }
+  }
+}
+ 
+Vue.createApp(app).mount('#app')
+</script>
+```
+
+在这里 href 是参数，告知 v-bind 指令将该元素的 href 属性与表达式 url 的值绑定。
+另一个例子是 v-on 指令，它用于监听 DOM 事件
+
+```text
+<!-- 完整语法 -->
+<a v-on:click="doSomething"> ... </a>
+
+<!-- 缩写 -->
+<a @click="doSomething"> ... </a>
+
+<!-- 动态参数的缩写 (2.6.0+) -->
+<a @[event]="doSomething"> ... </a>
+```
+
+v-model 指令用来在 input、select、textarea、checkbox、radio 等表单控件元素上创建双向数据绑定，根据表单上的值，自动更新绑定的元素的值
+
+```text
+<div id="app">
+    <p>{{ message }}</p>
+    <input v-model="message">
+</div>
+ 
+<script>
+const app = {
+  data() {
+    return {
+      message: 'Runoob!'
+    }
+  }
+}
+ 
+Vue.createApp(app).mount('#app')
+</script>
+```
+
+Vue.js 为两个最为常用的指令提供了特别的缩写
+
+```text
+<!-- 完整语法 -->
+<a v-bind:href="url"></a>
+<!-- 缩写 -->
+<a :href="url"></a>
+
+
+
+<!-- 完整语法 -->
+<a v-on:click="doSomething"></a>
+<!-- 缩写 -->
+<a @click="doSomething"></a>
+```

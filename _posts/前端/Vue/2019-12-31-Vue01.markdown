@@ -1,0 +1,95 @@
+---
+layout:     post
+title:      "Vue3安装"
+subtitle:   ""
+date:       2022-03-02 12:00:00
+author:     "YaPi"
+header-img: ""
+tags:
+    - Vue3
+---
+
+#### 什么是Vue.js？
+一款渐进式的javascript框架
+
+#### 优点
+
+1. 体积小，压缩后只有33k
+2. 更高的运行效率。基于虚拟dom,一种可以预先通过javaScript进行各种计算，把最终的DOM操作计算出来并优化的技术，由于这个DOM操作属于预处理操作，并没有真实的操作DOM，所以叫做虚拟DOM。
+3. 双向数据绑定
+4. 生态丰富，学习成本低
+
+#### 安装
+
+1. 下载Vue.js文件，并引入
+> 		<script src="https://unpkg.com/vue@next"></script>
+
+2. 使用cdn自动引入
+
+```
+Staticfile CDN（国内） : https://cdn.staticfile.org/vue/3.0.5/vue.global.js
+
+unpkg：https://unpkg.com/vue@next, 会保持和 npm 发布的最新的版本一致。
+
+cdnjs : https://cdnjs.cloudflare.com/ajax/libs/vue/3.0.5/vue.global.js
+```
+
+3. NPM
+
+```text
+npm install cnpm -g
+
+cnpm install vue@next
+```
+
+4. 命令行工具
+
+```text
+# 全局安装 vue-cli
+yarn global add @vue/cli
+# 或
+cnpm install -g @vue/cli
+
+#使用 vue init 命令来创建一个项目：
+vue init webpack runoob-vue3-test
+```
+
+5. Vite
+
+```text
+Vite 是一个 web 开发构建工具，由于其原生 ES 模块导入方式，可以实现闪电般的冷服务器启动。
+通过在终端中运行以下命令，可以使用 Vite 快速构建 Vue 项目，语法格式如下
+
+npm init @vitejs/app <project-name>
+
+cnpm init @vitejs/app runoob-vue3-test2
+```
+#### 简单的开始
+
+```
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Vue 测试实例 - 菜鸟教程(runoob.com)</title>
+<script src="https://unpkg.com/vue@next"></script>
+</head>
+<body>
+<div id="hello-vue" class="demo">
+  {{ message7 }}
+</div>
+
+<script>
+const HelloVueApp = {
+  data() {
+    return {
+      message7: 'Hello Vue!l !'
+    }
+  }
+}
+
+Vue.createApp(HelloVueApp).mount('#hello-vue')
+</script>
+</body>
+</html>
+```
