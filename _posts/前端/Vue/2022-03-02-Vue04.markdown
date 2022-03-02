@@ -1,0 +1,310 @@
+---
+layout:     post
+title:      "Vue3属性、样式、事件绑定"
+subtitle:   ""
+date:       2022-03-02 12:07:00
+author:     "YaPi"
+header-img: ""
+tags:
+    - Vue3
+---
+
+#### 计算属性
+声明了一个计算属性 reversedMessage,提供的函数将用作属性 vm.reversedMessage 的 getter。
+vm.reversedMessage 依赖于 vm.message，在 vm.message 发生改变时，vm.reversedMessage 也会更新
+
+```text
+<div id="app">
+  <p>原始字符串: {{ message }}</p>
+  <p>计算后反转字符串: {{ reversedMessage }}</p>
+</div>
+    
+<script>
+const app = {
+  data() {
+    return {
+      message: 'RUNOOB!!'
+    }
+  },
+  computed: {
+    // 计算属性的 getter
+    reversedMessage: function () {
+      // `this` 指向 vm 实例
+      return this.message.split('').reverse().join('')
+    }
+  }
+}
+ 
+Vue.createApp(app).mount('#app')
+</script>
+```
+
+##### 设置getter/setter
+计算属性可以设置setter和getter方法
+
+```text
+var vm = new Vue({
+  el: '#app',
+  data: {
+    name: 'Google',
+    url: 'http://www.google.com'
+  },
+  computed: {
+    site: {
+      // getter
+      get: function () {
+        return this.name + ' ' + this.url
+      },
+      // setter
+      set: function (newValue) {
+        var names = newValue.split(' ')
+        this.name = names[0]
+        this.url = names[names.length - 1]
+      }
+    }
+  }
+})
+// 调用 setter， vm.name 和 vm.url 也会被对应更新
+vm.site = '菜鸟教程 http://www.runoob.com';
+document.write('name: ' + vm.name);
+```
+
+#### 监听属性
+Vue3 监听属性 watch，我们可以通过 watch 来响应数据的变化
+
+```text
+<div id = "app">
+    <p style = "font-size:25px;">计数器: {{ counter }}</p>
+    <button @click = "counter++" style = "font-size:25px;">点我</button>
+</div>
+    
+<script>
+const app = {
+  data() {
+    return {
+      counter: 1
+    }
+  }
+}
+vm = Vue.createApp(app).mount('#app')
+vm.$watch('counter', function(nval, oval) {
+    alert('计数器值的变化 :' + oval + ' 变为 ' + nval + '!');
+});
+</script>
+```
+
+千米/米转换
+
+```text
+<div id = "app">
+    千米 : <input type = "text" v-model = "kilometers">
+    米 : <input type = "text" v-model = "meters">
+</div>
+<p id="info"></p>    
+<script>
+const app = {
+  data() {
+    return {
+      kilometers : 0,
+      meters:0
+    }
+  },
+  watch : {
+      kilometers:function(val) {
+          this.kilometers = val;
+          this.meters = this.kilometers * 1000
+      },
+      meters : function (val) {
+          this.kilometers = val/ 1000;
+          this.meters = val;
+      }
+  }
+}
+vm = Vue.createApp(app).mount('#app')
+
+// 也可以使用$watch进行绑定
+vm.$watch('kilometers', function (newValue, oldValue) {
+    // 这个回调将在 vm.kilometers 改变后调用
+    document.getElementById ("info").innerHTML = "修改前值为: " + oldValue + "，修改后值为: " + newValue;
+})
+</script>
+```
+
+#### 样式绑定
+class 与 style 是 HTML 元素的属性，用于设置元素的样式，我们可以用 v-bind 来设置样式属性。
+v-bind 在处理 class 和 style 时， 表达式除了可以使用字符串之外，还可以是对象或数组。
+v-bind:class 可以简写为 :class。
+
+
+```text
+<div :class="{ 'active': isActive }"></div>
+
+// 渲染过后 isActive若为true
+<div class="active"></div>
+```
+
+也可以同时绑定多个属性
+
+```text
+<div class="static" :class="{ 'active' : isActive, 'text-danger' : hasError }"></div>
+```
+
+可以根据当前属性进行动态绑定
+
+```text
+<div id="app">
+    <div class="static" :class="classObject"></div>
+</div>
+
+<script>
+const app = {
+   data() {
+      return {
+         isActive: true,
+         error: null
+      }
+   },
+   computed: {
+      classObject() {
+         return {
+            active: this.isActive && !this.error,
+            'text-danger': this.error && this.error.type === 'fatal'
+         }
+      }
+   }
+}
+
+Vue.createApp(app).mount('#app')
+</script>
+```
+
+可以把一个数组传给 v-bind:class
+
+```text
+<div class="static" :class="[activeClass, errorClass]"></div>
+
+// 渲染结果
+<div class="active text-danger"></div>
+```
+
+以使用三元表达式来切换列表中的 class
+
+```text
+<div id="app">
+    <div class="static" :class="[isActive ? activeClass : '', errorClass]"></div>
+</div>
+```
+
+##### 内联样式
+我们可以在 v-bind:style 直接设置样式，可以简写为 :style：
+
+```text
+<div id="app">
+    <div :style="{ color: activeColor, fontSize: fontSize + 'px' }">菜鸟教程</div>
+</div>
+
+// 渲染结果
+<div style="color: red; font-size: 30px;">菜鸟教程</div>
+```
+
+#### 时间绑定
+以使用 v-on 指令来监听 DOM 事件，从而执行 JavaScript 代码。v-on 指令可以缩写为 @ 符号
+
+```text
+v-on:click="methodName"
+或
+@click="methodName"
+```
+
+可定义在methods中
+
+```text
+const app = {
+  data() {
+    return {
+      name: 'Runoob'
+    }
+  },
+  methods: {
+    greet(event) {
+      // `methods` 内部的 `this` 指向当前活动实例
+      alert('Hello ' + this.name + '!')
+      // `event` 是原生 DOM event
+      if (event) {
+        alert(event.target.tagName)
+      }
+    }
+  }
+}
+Vue.createApp(app).mount('#app')
+```
+
+也可以用内联 JavaScript 语句
+
+```text
+<div id="app">
+  <button @click="say('hi')">Say hi</button>
+  <button @click="say('what')">Say what</button>
+</div>
+```
+
+也可绑定多个事件处理
+
+```text
+<div id="app">
+  <!-- 这两个 one() 和 two() 将执行按钮点击事件,这里不能省略$-->
+  <button @click="one($event), two($event)">
+  点我
+  </button>
+</div>
+ 
+<script>
+const app = {
+  data() {
+  },
+  methods: {
+    one(event) {
+      alert("第一个事件处理器逻辑...")
+    },
+    two(event) {
+      alert("第二个事件处理器逻辑...")
+    }
+  }
+}
+ 
+Vue.createApp(app).mount('#app')
+</script>
+```
+
+##### 事件修饰符
+
+```text
+<!-- 阻止单击事件冒泡 -->
+<a v-on:click.stop="doThis"></a>
+<!-- 提交事件不再重载页面 -->
+<form v-on:submit.prevent="onSubmit"></form>
+<!-- 修饰符可以串联  -->
+<a v-on:click.stop.prevent="doThat"></a>
+<!-- 只有修饰符 -->
+<form v-on:submit.prevent></form>
+<!-- 添加事件侦听器时使用事件捕获模式 -->
+<div v-on:click.capture="doThis">...</div>
+<!-- 只当事件在该元素本身（而不是子元素）触发时触发回调 -->
+<div v-on:click.self="doThat">...</div>
+
+<!-- click 事件只能点击一次，2.1.4版本新增 -->
+<a v-on:click.once="doThis"></a>
+```
+
+Vue 允许为 v-on 在监听键盘事件时添加按键修饰符：
+
+```text
+<!-- 只有在 keyCode 是 13 时调用 vm.submit() -->
+<input v-on:keyup.13="submit">
+
+
+<!-- 同上 -->
+<input v-on:keyup.enter="submit">
+<!-- 缩写语法 -->
+<input @keyup.enter="submit">
+```
