@@ -1,0 +1,197 @@
+---
+layout:     post
+title:      "Vue3路由"
+subtitle:   ""
+date:       2022-03-02 12:09:00
+author:     "YaPi"
+header-img: ""
+tags:
+    - Vue3
+---
+
+#### 路由
+Vue 路由允许我们通过不同的 URL 访问不同的内容。
+
+##### 下载
+1. 直接下载 / CDN
+> https://unpkg.com/vue-router@4
+2. NPM
+> npm install -g cnpm --registry=https://registry.npmmirror.com  &
+> cnpm install vue-router@4
+
+
+#### 实例
+Vue.js + vue-router 可以很简单的实现单页应用,<router-link> 是一个组件，该组件用于设置一个导航链接，切换不同 HTML 内容,
+to 属性为目标地址，即要显示的内容。
+
+```text
+<script src="https://unpkg.com/vue@3"></script>
+<script src="https://unpkg.com/vue-router@4"></script>
+ 
+<div id="app">
+  <h1>Hello App!</h1>
+  <p>
+    <!--使用 router-link 组件进行导航 -->
+    <!--通过传递 `to` 来指定链接 -->
+    <!--`<router-link>` 将呈现一个带有正确 `href` 属性的 `<a>` 标签-->
+    <router-link to="/">Go to Home</router-link>
+    <router-link to="/about">Go to About</router-link>
+  </p>
+  <!-- 路由出口 -->
+  <!-- 路由匹配到的组件将渲染在这里 -->
+  <router-view></router-view>
+</div>
+```
+
+##### router-view
+
+```text
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Vue</title>
+<script src="https://unpkg.com/vue@next"></script>
+<script src="https://unpkg.com/vue-router@4"></script>
+</head>
+<body>
+<div id="app">
+  <h1>Hello App!</h1>
+  <p>
+    <!--使用 router-link 组件进行导航 -->
+    <!--通过传递 `to` 来指定链接 -->
+    <!--`<router-link>` 将呈现一个带有正确 `href` 属性的 `<a>` 标签-->
+    <router-link to="/">Go to Home</router-link>
+    <router-link to="/about">Go to About</router-link>
+  </p>
+  <!-- 路由出口 -->
+  <!-- 路由匹配到的组件将渲染在这里 -->
+  <router-view></router-view>
+</div>
+
+<script>
+// 1. 定义路由组件.
+// 也可以从其他文件导入
+const Home = { template: '<div>Home</div>' }
+const About = { template: '<div>About</div>' }
+ 
+// 2. 定义一些路由
+// 每个路由都需要映射到一个组件。
+// 我们后面再讨论嵌套路由。
+const routes = [
+  { path: '/', component: Home },
+  { path: '/about', component: About },
+]
+ 
+// 3. 创建路由实例并传递 `routes` 配置
+// 你可以在这里输入更多的配置，但我们在这里
+// 暂时保持简单
+const router = VueRouter.createRouter({
+  // 4. 内部提供了 history 模式的实现。为了简单起见，我们在这里使用 hash 模式。
+  history: VueRouter.createWebHashHistory(),
+  routes, // `routes: routes` 的缩写
+})
+ 
+// 5. 创建并挂载根实例
+const app = Vue.createApp({})
+//确保 _use_ 路由实例使
+//整个应用支持路由。
+app.use(router)
+ 
+app.mount('#app')
+ 
+// 现在，应用已经启动了！
+</script>
+</body>
+</html>
+```
+
+##### router-link
+
+- to 
+
+表示目标路由的链接。 当被点击后，内部会立刻把 to 的值传到 router.push()，所以这个值可以是一个字符串或者是描述目标位置的对象。
+
+```text
+<!-- 字符串 -->
+<router-link to="home">Home</router-link>
+<!-- 渲染结果 -->
+<a href="home">Home</a>
+
+<!-- 使用 v-bind 的 JS 表达式 -->
+<router-link v-bind:to="'home'">Home</router-link>
+
+<!-- 不写 v-bind 也可以，就像绑定别的属性一样 -->
+<router-link :to="'home'">Home</router-link>
+
+<!-- 同上 -->
+<router-link :to="{ path: 'home' }">Home</router-link>
+
+<!-- 命名的路由 -->
+<router-link :to="{ name: 'user', params: { userId: 123 }}">User</router-link>
+
+<!-- 带查询参数，下面的结果为 /register?plan=private -->
+<router-link :to="{ path: 'register', query: { plan: 'private' }}">Register</router-link>
+```
+
+- replace
+
+设置 replace 属性的话，当点击时，会调用 router.replace() 而不是 router.push()，导航后不会留下 history 记录。
+
+```text
+<router-link :to="{ path: '/abc'}" replace></router-link>
+```
+
+- append
+
+设置 append 属性后，则在当前 (相对) 路径前添加其路径。例如，我们从 /a 导航到一个相对路径 b，如果没有配置 append，则路径为 /b，如果配了，则为 /a/b
+
+```text
+<router-link :to="{ path: 'relative/path'}" append></router-link>
+```
+
+- tag
+
+有时候想要 <router-link> 渲染成某种标签，例如 <li>。 于是我们使用 tag prop 类指定何种标签，同样它还是会监听点击，触发导航
+
+```text
+<router-link to="/foo" tag="li">foo</router-link>
+<!-- 渲染结果 -->
+<li>foo</li>
+```
+
+- active-class
+
+设置 链接激活时使用的 CSS 类名。可以通过以下代码来替代。
+
+```text
+<style>
+   ._active{
+      background-color : red;
+   }
+</style>
+<p>
+   <router-link v-bind:to = "{ path: '/route1'}" active-class = "_active">Router Link 1</router-link>
+   <router-link v-bind:to = "{ path: '/route2'}" tag = "span">Router Link 2</router-link>
+</p>
+```
+
+- exact-active-class
+
+配置当链接被精确匹配的时候应该激活的 class。可以通过以下代码来替代。
+
+```text
+<p>
+   <router-link v-bind:to = "{ path: '/route1'}" exact-active-class = "_active">Router Link 1</router-link>
+   <router-link v-bind:to = "{ path: '/route2'}" tag = "span">Router Link 2</router-link>
+</p>
+```
+
+- event
+
+声明可以用来触发导航的事件。可以是一个字符串或是一个包含字符串的数组
+
+```text
+<router-link v-bind:to = "{ path: '/route1'}" event = "mouseover">Router Link 1</router-link>
+```
+以上代码设置了 event 为 mouseover ，及在鼠标移动到 Router Link 1 上时导航的 HTML 内容会发生改变
