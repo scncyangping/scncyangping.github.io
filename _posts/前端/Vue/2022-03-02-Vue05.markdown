@@ -1,0 +1,196 @@
+---
+layout:     post
+title:      "Vue3表单、自定义指令"
+subtitle:   ""
+date:       2022-03-02 12:08:00
+author:     "YaPi"
+header-img: ""
+tags:
+    - Vue3
+---
+
+#### 表单值绑定及事件
+v-model 会忽略所有表单元素的 value、checked、selected 属性的初始值，使用的是 data 选项中声明初始值。
+
+- text 和 textarea 元素使用 value 属性和 input 事件
+- checkbox 和 radio 使用 checked 属性和 change 事件
+- select 字段将 value 作为属性并将 change 作为事件
+
+在文本区域 textarea 插值是不起作用，需要使用 v-model 来代替
+
+```text
+<!-- 错误 -->
+<textarea>{{ text }}</textarea>
+
+<!-- 正确 -->
+<textarea v-model="text"></textarea>
+```
+
+复选框
+
+```text
+<div id="app">
+  <p>单个复选框：</p>
+  <input type="checkbox" id="checkbox" v-model="checked">
+  <label for="checkbox">{{ checked }}</label>
+    
+  <p>多个复选框：</p>
+  <input type="checkbox" id="runoob" value="Runoob" v-model="checkedNames">
+  <label for="runoob">Runoob</label>
+  <input type="checkbox" id="google" value="Google" v-model="checkedNames">
+  <label for="google">Google</label>
+  <input type="checkbox" id="taobao" value="Taobao" v-model="checkedNames">
+  <label for="taobao">taobao</label>
+  <br>
+  <span>选择的值为: {{ checkedNames }}</span>
+</div>
+ 
+<script>
+const app = {
+  data() {
+    return {
+      checked : false,
+      checkedNames: []
+    }
+  }
+}
+ 
+Vue.createApp(app).mount('#app')
+</script>
+```
+
+单选框
+
+```text
+<div id="app">
+  <input type="radio" id="runoob" value="Runoob" v-model="picked">
+  <label for="runoob">Runoob</label>
+  <br>
+  <input type="radio" id="google" value="Google" v-model="picked">
+  <label for="google">Google</label>
+  <br>
+  <span>选中值为: {{ picked }}</span>
+</div>
+ 
+<script>
+const app = {
+  data() {
+    return {
+      picked : 'Runoob'
+    }
+  }
+}
+ 
+Vue.createApp(app).mount('#app')
+</script>
+```
+
+select 列表绑定
+
+```text
+<div id="app">
+  <select v-model="selected" name="fruit">
+    <option value="">选择一个网站</option>
+    <option value="www.runoob.com">Runoob</option>
+    <option value="www.google.com">Google</option>
+  </select>
+ 
+  <div id="output">
+      选择的网站是: {{selected}}
+  </div>
+</div>
+ 
+<script>
+new Vue({
+  el: '#app',
+  data: {
+    selected: '' 
+  }
+})
+</script>
+```
+
+#### 自定义指令
+除了默认设置的核心指令( v-model 和 v-show ), Vue 也允许注册自定义指令。
+下面我们注册一个全局指令 v-focus, 该指令的功能是在页面加载时，元素获得焦点
+
+```text
+<div id="app">
+    <p>页面载入时，input 元素自动获取焦点：</p>
+    <input v-focus>
+</div>
+ 
+<script>
+const app = Vue.createApp({})
+// 注册一个全局自定义指令 `v-focus`
+app.directive('focus', {
+  // 当被绑定的元素挂载到 DOM 中时……
+  mounted(el) {
+    // 聚焦元素
+    el.focus()
+  }
+})
+app.mount('#app')
+</script>
+```
+
+我们也可以在实例使用 directives 选项来注册局部指令，这样指令只能在这个实例中使用：
+
+```text
+<div id="app">
+    <p>页面载入时，input 元素自动获取焦点：</p>
+    <input v-focus>
+</div>
+ 
+<script>
+const app = {
+   data() {
+      return {
+      }
+   },
+   directives: {
+      focus: {
+         // 指令的定义
+         mounted(el) {
+            el.focus()
+         }
+      }
+   }
+}
+ 
+Vue.createApp(app).mount('#app')
+```
+
+##### 钩子函数
+
+```text
+import { createApp } from 'vue'
+const app = createApp({})
+ 
+// 注册
+app.directive('my-directive', {
+  // 指令是具有一组生命周期的钩子：
+  // 在绑定元素的 attribute 或事件监听器被应用之前调用
+  created() {},
+  // 在绑定元素的父组件挂载之前调用
+  beforeMount() {},
+  // 绑定元素的父组件被挂载时调用
+  mounted() {},
+  // 在包含组件的 VNode 更新之前调用
+  beforeUpdate() {},
+  // 在包含组件的 VNode 及其子组件的 VNode 更新之后调用
+  updated() {},
+  // 在绑定元素的父组件卸载之前调用
+  beforeUnmount() {},
+  // 卸载绑定元素的父组件时调用
+  unmounted() {}
+})
+ 
+// 注册 (功能指令)
+app.directive('my-directive', () => {
+  // 这将被作为 `mounted` 和 `updated` 调用
+})
+ 
+// getter, 如果已注册，则返回指令定义
+const myDirective = app.directive('my-directive')
+```
