@@ -65,7 +65,7 @@ var vm = new Vue({
   }
 })
 // 调用 setter， vm.name 和 vm.url 也会被对应更新
-vm.site = '菜鸟教程 http://www.runoob.com';
+vm.site = 'xx教程 http://www.xxx.com';
 document.write('name: ' + vm.name);
 ```
 
@@ -200,11 +200,11 @@ Vue.createApp(app).mount('#app')
 
 ```text
 <div id="app">
-    <div :style="{ color: activeColor, fontSize: fontSize + 'px' }">菜鸟教程</div>
+    <div :style="{ color: activeColor, fontSize: fontSize + 'px' }">xx教程</div>
 </div>
 
 // 渲染结果
-<div style="color: red; font-size: 30px;">菜鸟教程</div>
+<div style="color: red; font-size: 30px;">xx教程</div>
 ```
 
 #### 时间绑定

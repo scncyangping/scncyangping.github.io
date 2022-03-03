@@ -206,14 +206,14 @@ Vue.createApp(app).mount('#app')
 
 ```text
 <div id="app">
-    <p><a v-bind:href="url">菜鸟教程</a></p>
+    <p><a v-bind:href="url">xx教程</a></p>
 </div>
     
 <script>
 const app = {
   data() {
     return {
-      url: 'https://www.runoob.com'
+      url: 'https://www.xxx.com'
     }
   }
 }
