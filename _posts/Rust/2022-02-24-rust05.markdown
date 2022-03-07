@@ -107,7 +107,7 @@ fn main(){
 //         b
 //     }
 // }
-
+// 用 ' 符号来将声明周期标志为和返回值一样
 fn large<'a>(a:&'a str, b:&'a str) ->&'a str{
     if a > b {
         a
