@@ -60,6 +60,34 @@ kubectl exec -it nginx-pod-xxxxxx /bin/bash
 ```
 
 
+#### 节点相关
+```text
+kind: Node
+apiVersion: v1
+metadata:
+  name: "10.240.79.157"
+  labels:
+    name: "my-first-k8s-node"
+```
+Kubernetes 在 APIServer 上创建一个节点 API 对象（节点的描述），并且基于 metadata.name 字段对节点进行健康检查。
+如果节点有效（节点组件正在运行），则可以向该节点调度 Pod；否则，该节点 API 对象将被忽略，直到节点变为有效状态
+
+若想将节点标记为不可调度（unschedulable），阻止新的Pod调度到节点，同时已有的Pod不受影响，可以使用如下命令
+
+```text
+kubectl cordon $NODENAME
+```
+
+此方式在重启节点之前很有效，但是，需要注意的是DaemonSet Controller 创建的 Pod 将绕过 Kubernetes 调度器
+并且忽略节点的 unschedulable 属性。因为我们假设 Daemons 守护进程属于节点，尽管该节点在准备重启前，已经排空了上面所有的应用程序
+
+
+节点API对象中描述了节点的容量（Capacity），例如，CPU数量、内存大小等信息。通常，节点在向 APIServer 注册的同时，在节点API对象里汇报了其容量（Capacity）。如果您 手动管理节点，您需要在添加节点时自己设置节点的容量。
+
+Kubernetes 调度器在调度 Pod 到节点上时，将确保节点上有足够的资源。具体来说，调度器检查节点上所有容器的资源请求之和不大于节点的容量。此时，只能检查由 kubelet 启动的容器，不包括直接由容器引擎启动的容器，更不包括不在容器里运行的进程
+
+
+
 #### deployment
 
 ```text
