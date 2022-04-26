@@ -48,6 +48,9 @@ helm package mychart
 
 # 查找chart的格式或信息问题
 helm lint mychart
+
+# 若只是想测试渲染而不安装任何实际应用
+helm install --debug --dry-run yapi-serval ./mychart
 ```
 
 #### chart
@@ -200,3 +203,58 @@ annotations:
 before-hook-creation	| 新钩子启动前删除之前的资源 (默认)
 hook-succeeded	 | 钩子成功执行之后删除资源
 hook-failed	| 如果钩子执行失败，删除资源
+
+
+### template
+#### 默认资源
+对象可以通过模板引擎传递到模板中。 当然你的代码也可以传递对象。
+对象可以是非常简单的:仅有一个值。或者可以包含其他对象或方法。比如，Release对象可以包含其他对象（比如：Release.Name）和Files对象有一组方法。
+在上一部分中，我们用{{ .Release.Name }}在模板中插入版本名称。Release是你可以在模板中访问的顶层对象之一。
+
+```
+Release： Release对象描述了版本发布本身。包含了以下对象：
+    Release.Name： release名称
+    Release.Namespace： 版本中包含的命名空间(如果manifest没有覆盖的话)
+    Release.IsUpgrade： 如果当前操作是升级或回滚的话，该值将被设置为true
+    Release.IsInstall： 如果当前操作是安装的话，该值将被设置为true
+    Release.Revision： 此次修订的版本号。安装时是1，每次升级或回滚都会自增
+    Release.Service： 该service用来渲染当前模板。Helm里始终Helm
+
+Values： Values对象是从values.yaml文件和用户提供的文件传进模板的。默认为空
+
+Chart： Chart.yaml文件内容。 Chart.yaml里的所有数据在这里都可以可访问的。比如 {{ .Chart.Name }}-{{ .Chart.Version }} 会打印出 mychart-0.1.0
+
+Files： 在chart中提供访问所有的非特殊文件的对象。你不能使用它访问Template对象，只能访问其他文件。 请查看这个 文件访问部分了解更多信息
+    Files.Get 通过文件名获取文件的方法。 （.Files.Getconfig.ini）
+    Files.GetBytes 用字节数组代替字符串获取文件内容的方法。 对图片之类的文件很有用
+    Files.Glob 用给定的shell glob模式匹配文件名返回文件列表的方法
+    Files.Lines 逐行读取文件内容的方法。迭代文件中每一行时很有用
+    Files.AsSecrets 使用Base 64编码字符串返回文件体的方法
+    Files.AsConfig 使用YAML格式返回文件体的方法
+
+Capabilities： 提供关于Kubernetes集群支持功能的信息
+    Capabilities.APIVersions 是一个版本列表
+    Capabilities.APIVersions.Has $version 说明集群中的版本 (比如,batch/v1) 或是资源 (比如, apps/v1/Deployment) 是否可用
+    Capabilities.KubeVersion 和Capabilities.KubeVersion.Version 是Kubernetes的版本号
+    Capabilities.KubeVersion.Major Kubernetes的主版本
+    Capabilities.KubeVersion.Minor Kubernetes的次版本
+    Capabilities.HelmVersion 包含Helm版本详细信息的对象，和 helm version 的输出一致
+    Capabilities.HelmVersion.Version 是当前Helm语义格式的版本
+    Capabilities.HelmVersion.GitCommit Helm的git sha1值
+    Capabilities.HelmVersion.GitTreeState 是Helm git树的状态
+    Capabilities.HelmVersion.GoVersion 是使用的Go编译器版本
+
+Template： 包含当前被执行的当前模板信息
+    Template.Name: 当前模板的命名空间文件路径 (e.g. mychart/templates/mytemplate.yaml)
+    Template.BasePath: 当前chart模板目录的路径 (e.g. mychart/templates)
+```
+
+传值可以被覆盖
+
+- hart中的values.yaml文件
+- 如果是子chart，就是父chart中的values.yaml文件
+- 使用-f参数(helm install -f myvals.yaml ./mychart)传递到 helm install 或 helm upgrade的values文件
+- 使用--set (比如helm install --set foo=bar ./mychart)传递的单个参数
+
+默认使用values.yaml，可以被父chart的values.yaml覆盖，继而被用户提供values文件覆盖， 最后会被--set参数覆盖，优先级为values.yaml最低，--set参数最高
+
