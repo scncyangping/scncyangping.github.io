@@ -25,6 +25,8 @@ tags:
 例:
 
 ```text
+是直接匹配字符，不是查找字符，比如 "abc",使用 ${var1:#b},不会删除b,需要全部匹配
+
 value="I love you , Do you love me"
 value1=${value#*ve} # you,Do you love me
 value2=${value##*ve} # me
@@ -40,3 +42,100 @@ value6=${value//love/fuck}  # I f you,Do you f me
 ![avatar](https://blog-1257627424.cos.ap-chengdu.myqcloud.com/shell/shell-%E5%8F%98%E9%87%8F%E6%B5%8B%E8%AF%95.png)
 
 
+#### 有类型变量
+declare 和 typeset命令
+
+- declare和typeset两者等价
+- declare和typeset都是用来定义变量类型的
+
+| 参数  | 含义                      |
+|-----|-------------------------|
+| -r  | 将变量设为只读                 |
+| -i  | 将变量设为整数                 |
+| -a  | 将变量定义为数组                |
+| -f  | 显示此脚本前定义过的所有函数及内容       |
+| -F  | 仅显示此脚本前定义过的函数名          |
+| -x  | 将变量声明为环境变量,任何脚本内就都可以是用了 |
+
+
+如果需要取消，把 '-' 号变为 '+' 号就行了
+
+
+```shell
+# 定义为只读
+declare -r var1="hello world"
+
+# 设置为整数 不设置加号默认是字符串相加
+declare -i num2
+num2=$num1+10
+
+# 设置数组 中间以空格分割，不是逗号
+declare -a array1=("jones" "mike" "kobe" "jordan")
+
+# 输出数组内容 下标从0开始
+echo ${array1[@]} # 输出全部内容
+echo ${array1[1]} # 输出下标索引为1的内容
+# 获取数组长度
+echo ${#array1}  # 数组内元素个数
+echo ${#array1[2} # 数组内下标索引为2的元素的长度
+# 给数组某个下标赋值
+array1[0]="123"  
+array1[20]="123" # 在数组尾部添加一个新元素
+# 删除元素
+unset array1[2] # 清除元素
+unset array1   # 清空整个数组
+# 分片访问
+${array1[@]:1:2} # 显示数组下标索引从1开始到3个元素
+# 内容替换
+${array1[@]/an/AN} # 替换元素an为AN
+# 数组遍历
+for v in ${array1[@]}
+do
+  echo $v
+done
+```
+
+
+#### 变量运算
+推荐 运算使用$(()), 比较大小时使用 expr 使用转译字符转译。expr只能对整数进行运算
+
+- expr $num1 operator $num2
+    - echo `expr $num1 \< $num2`
+- $(($num1 operator $num2))
+
+输入一个整数，然后计算1+2+3...的合
+```shell
+#!/bin/bash
+
+while [ true ]; do
+  read -p "pls input a num: " num
+  # 判断是否为数字的小技巧
+  # 进行相加运算，返回0则不是数字
+  # 并将结果舍弃
+  expr $num + 1 &> /dev/null
+  # 判断上次返回是否为0
+  if [ $? -eq 0 ]; then
+      # 判断是否大于0
+      # 若expr执行大于0会返回1
+      if [ `expr $num \> 0` -eq 1 ]; then
+          for((i=1;i<=$num;i++))
+          do
+            # $sum要在前面
+            # = 号左右不能有空格
+            sum=`expr $sum + $i`
+          done 
+          echo "1+2+3... + $num = $sum  "
+          exit
+      fi
+  fi
+  echo "pls input num!"
+  continue 
+done
+```
+
+##### bc
+可以进行浮点数运算
+
+- echo "23.3+35" | bc
+- 指定保留小数位数
+    - echo "scale=4;1/3" | bc
