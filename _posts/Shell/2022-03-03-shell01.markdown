@@ -9,23 +9,34 @@ tags:
     - Shell
 ---
 
+### 变量
 #### 变量替换
 将变量按照匹配规则进行匹配，匹配到则删除前面的数据
 
-规则 | 解释
----|---
-${变量#匹配规则} | 从头开始匹配，非贪婪模式
-${变量##匹配规则} | 从头开始匹配，贪婪模式
-${变量%匹配规则} | 从尾开始匹配，非贪婪模式
-${变量%%匹配规则} | 从尾开始匹配，贪婪模式
-${变量/旧字符串/新字符串} | 替换变量中旧字符串为新字符串，非贪婪模式
-${变量//旧字符串/新字符串} | 替换变量中旧字符串为新字符串，贪婪模式
+| 规则               | 解释                   |
+|------------------|----------------------|
+| ${变量#匹配规则}       | 从头开始匹配，非贪婪模式         |
+| ${变量##匹配规则}      | 从头开始匹配，贪婪模式          |
+| ${变量%匹配规则}       | 从尾开始匹配，非贪婪模式         |
+| ${变量%%匹配规则}      | 从尾开始匹配，贪婪模式          |
+| ${变量/旧字符串/新字符串}  | 替换变量中旧字符串为新字符串，非贪婪模式 |
+| ${变量//旧字符串/新字符串} | 替换变量中旧字符串为新字符串，贪婪模式  |
 
 例:
 
 ```text
-value = "I love you , Do you love me"
-var1 = 
+value="I love you , Do you love me"
+value1=${value#*ve} # you,Do you love me
+value2=${value##*ve} # me
+value3=${value%%ve*} # I lo
+value4=${value%ve*} # I love you,Do you lo
+value5=${value/love/f} # I f you,Do you love me
+value6=${value//love/fuck}  # I f you,Do you f me
 ```
 
+#### 变量测试
+用的较少 一般用if/else替换
+
 ![avatar](https://blog-1257627424.cos.ap-chengdu.myqcloud.com/shell/shell-%E5%8F%98%E9%87%8F%E6%B5%8B%E8%AF%95.png)
+
+
