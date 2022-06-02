@@ -1,0 +1,88 @@
+---
+layout:     post
+title:      "Shell(字符串操作)"
+subtitle:   ""
+date:       2022-06-02 12:11:00
+author:     "YaPi"
+header-img: ""
+tags:
+    - Shell
+---
+
+### 变量
+#### 计算字符串长度
+expr 索引下标从1开始
+
+- ${#变量名} 获取字符串长度
+- expr length "$变量名"  (string有空格，则必须加双引号)
+- expr index "$变量名" 子串 (获取子串位置,切割成每一个字符,匹配最新匹配到的字符)
+- expr match "$字符串" 字串  (获取字串长度,只能从头开始匹配,不符合就匹配不到后续的字符)
+
+抽取子串
+
+position索引下标从0开始,
+
+- ${string:position} 从string中的position开始
+- ${string:position:length} 从position开始，匹配长度为length
+- ${string: -position:length} 从右边开始向后匹配,注意中间空格
+- ${string:(position)} 从左边开始向后匹配
+- expr substr "$变量名" $position $length 从position开始，匹配长度为length (索引从1开始)
+
+```
+var1="abcde fg hijk"
+substr1=${var1:5}
+echo $substr1
+
+fg hijk
+```
+
+#### 命令替换
+将某一段shell的执行结果作为另一个脚本的输入
+
+- \`command\`
+- $(command)
+
+```shell
+#!/bin/bash
+
+index=1
+
+echo "cut -d 指定分隔符为冒号，-f指定取第一个数据"
+
+for user in `cat /etc/passwd | cut -d ":" -f 1`
+do
+  echo "This is $index user: $user"
+  index=$(($index + 1))
+done
+```
+
+``和$()两者是等价的，但推荐初学者使用$()，易于掌握，缺点是极少数unix可能不支持
+
+$(())主要用来进行整数运算，包括加减乘除，括号内引用变量前面可以加$，也可以不加$
+
+- $(((100+30)/13))
+- ((num++))
+- ((num--))
+- $(($num1+$num2*2))
+- $((num1+num2*2))
+
+
+```shell
+# 明年是哪一年
+echo "This next year is $(($(date +%Y) + 1)) year "
+
+# 今年已经过了多少个星期
+echo "This year have passed $(($(date +%j) / 7)) weak "
+```
+
+判断是否有nginx进程，没有就拉起来
+
+```shell
+#!/bin/bash
+# 过滤掉本身，并统计行数，每一行就是一个nginx进程
+nginx_process_num=$(ps -ef| grep nginx | grep -v grep | wc -l)
+
+if [nginx_process_num -eq 0];then
+  systemctl start nginx
+```
+
