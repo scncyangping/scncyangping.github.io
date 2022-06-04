@@ -1,0 +1,76 @@
+---
+layout:     post
+title:      "Shell(文件查找)"
+subtitle:   ""
+date:       2022-06-04 16:11:00
+author:     "YaPi"
+header-img: ""
+tags:
+    - Shell
+---
+
+### 文件查找
+- find
+    - 默认全部匹配，可以使用正则进行模糊匹配
+- locate
+    - 在数据库文件中查找(系统的文件会被定时任务更新到数据库中)
+    - 默认部分匹配
+- whereis
+    - -b 只返回二进制文件
+    - -m 只返回帮助文档文件
+    - -s 只返回源代码文件
+- which
+    - 仅查找二进制文件
+
+#### find
+- find 路径 选项 操作
+
+| 选项                  | 含义                         |
+|---------------------|----------------------------|
+| -name               | 根据文件名查找                    |
+| -perm               | 根据文件权限查找                   |
+| -prune              | 排除某些查找目录                   |
+| -user               | 根据文件属主查找                   |
+| -group              | 根据文件数组查找                   |
+| -nogroup            | 查找无有效属组的文件                 |
+| -nouser             | 查找无有效属主的文件                 |
+| -newer file1 !file2 | 查找更改时间比file1新但比file2旧IDE文件 |
+| -type               | 按文件类型查找                    |
+| -size -n 或 +n       | 按文件大小查找                    |
+| -mindepth n         | 从n级子目录开始搜索                 |
+| -maxdepth n         | 最多搜索到n级子目录                 |
+| -mtime -n或 +n       | 根据文件更改时间查找，天为单位            |
+| -mmin -n或 +n        | 根据文件更改时间查找，分钟为单位           |
+
+
+```shell
+# -name 匹配大小写
+find /etc -name '*.conf'
+# 忽略大小写
+find /etc/ -iname '*.conf'
+# 查找文件大小大于1M的文件
+find /etc/ -size +1M
+# 查找文件大小小于100k的文件
+find /etc/ -size -100K
+# 查找文件大小等于100k的文件，等于不能精确到M，K是可以的
+find /etc/ -size 100K
+# 查找5天之类修改的以conf结尾的文件， +5 则表示5天之前
+find /etc/ -mtime -5 -name '*.conf'
+
+# 查询目录下文件，排除 test_1和test_2目录
+find . -path ./test_1 -prune -o -path ./test2 -prune -o -type f
+
+# 找到目录下conf文件，并且删除
+find ./etc -name '*.conf' -exec rm -rf {} \;
+
+# 找到目录下conf文件，并且复制到test_2目录
+find /var/log -name '*.conf' -exec copy {} ./test_2 \;
+
+# 找到目录下7天前的的log文件，并且删除
+find ./etc -type f -name "*.log" -mtime +7 -exec rm -rf {} \;
+```
+
+find 命令中间可以使用逻辑运算符
+- -a  表示与
+- -o  表示或
+- -not 或者 ! 符号表示 非
