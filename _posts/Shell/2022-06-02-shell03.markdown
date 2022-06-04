@@ -1,0 +1,119 @@
+---
+layout:     post
+title:      "Shell(函数)"
+subtitle:   ""
+date:       2022-06-02 16:11:00
+author:     "YaPi"
+header-img: ""
+tags:
+    - Shell
+---
+
+### 函数
+定义方式
+- function name{}
+- name(){}
+
+调用方式
+
+- 函数内部可以直接使用参数$1 $2 ... $n 
+- function_name $1 $2 $3
+
+返回值
+
+- return
+    - 只能返回1-255的整数
+    - 通常用来返回 0 成功 1 失败，后续可以使用$?获取返回值
+- echo 返回任意数据
+
+#### 函数库
+使用 . 库文件绝对路径 引入，引入后可直接调用函数名
+
+- 库文件名的后缀是任意的，一般是.lib
+- 库文件通常没有可执行选项
+- 第一行一般使用#!/bin/echo，输出警告信息，避免用户执行
+
+#### 简单示例
+##### nginx
+检测nginx是否存在，不存在则拉起
+
+```shell
+#!/bin/bash
+# $$ 符号会获取当前进程的pid，可用于后续过滤
+this_pid = $$
+
+# 过滤掉grep的进程信息
+# 过滤掉当前执行进程信息(当前文件名若包含nginx，则也会返回1)
+`ps -ef|grep nginx | grep -v grep | grep -v $this_pid &> /dev/null`
+
+# 没数据返回就是1，有数据返回就是0
+if [ $? -eq 0 ]; then
+    echo "nginx is running well"
+else 
+    systemctl start nginx
+    echo "nginx is down"
+fi
+```
+
+
+##### 数字操作
+```shell
+#!/bin/bash
+
+string="a b c d e f g a b c "
+function print_tips() {
+    echo "*************************"
+    echo "(1) 替换第一个a为A"
+    echo "(2) 替换所有a为A"
+    echo "(3) 删除第一个a"
+    echo "(4) 删除所有的a"
+    echo "(5) 长度"
+    echo "(q|Q) 退出"
+    echo "*************************"
+}
+
+function replace_a_all() {
+    echo "${string//a/A}"
+}
+
+function replace_a() {
+    echo "${string/a/A}"
+}
+function del_a_aa() {
+   echo "${string/a/}"
+}
+
+function del_a() {
+   echo "${string//a/}"
+}
+
+function len() {
+    echo "${#string}"
+}
+
+while [ true ]; do
+    echo "[string=$string]"
+    print_tips
+    echo
+    # 读取命令行输入
+    read -p "pls input your choice(1|2|3|4|q|Q)" choice
+    
+    case $choice in
+        1) replace_a
+          ;;
+        2) replace_a_all
+          ;;
+        3) del_a
+          ;;
+        4) del_a_aa
+          ;;
+      q|Q) exit
+          ;;
+        5) len
+          ;;
+      *)
+        echo "input error"
+    esac
+    
+done
+```
