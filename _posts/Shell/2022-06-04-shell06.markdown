@@ -1,0 +1,122 @@
+---
+layout:     post
+title:      "Shell(sed)"
+subtitle:   ""
+date:       2022-06-04 19:11:00
+author:     "YaPi"
+header-img: ""
+tags:
+    - Shell
+---
+
+### sed
+sed(Stream Editor),流编辑器。对标准输出或文件进行处理
+#### 使用
+用pattern匹配每一行,匹配到则执行command
+- stdout | sed option "/pattern/command"
+- sed option "/pattern/command" file
+
+#### 选项
+
+| 选项  | 含义                 |
+|-----|--------------------|
+| -n  | 只打印模式匹配行           |
+| -e  | 直接在命令行进行sed编辑，默认选项 |
+| -f  | 编辑动作保存在文件中，指定文件执行  |
+| -r  | 支持扩展正则表达式          |
+| -i  | 直接修改文件内容           |
+
+```shell
+# 每一行都会打印两次，第一次本身，第二次为处理过后(其实p命令就是打印)
+sed 'p' sed.txt
+# 只打印匹配到的行
+sed -n '/python/p' sed.txt
+# 匹配文件中python和PYTHON的行
+sed -n -e '/python/p' -e '/PYTHON/p' sed.txt
+# 指定文件匹配
+sed -n -f edit.sed sed.txt
+# 使用正则匹配
+sed -n -r '/python|PYTHON/p' sed.txt
+# 修改文件中所有love为like
+# mac 中报错 sed -i -e 's/love/like/g' sed.txt
+sed -i 's/love/like/g' sed.txt
+```
+
+##### pattern
+
+![parttern](https://blog-1257627424.cos.ap-chengdu.myqcloud.com/shell/sed-pattern.png)
+
+
+
+| 命令           | 含义                    |
+|--------------|-----------------------|
+| p            | 打印                    |
+| a            | 行后追加                  |
+| i            | 行前追加                  |
+| r            | 外部文件                  |
+| w            | 匹配行写入外部文件             |
+| d            | 删除                    |
+| s/old/new    | 行内第一个old替换为new        |
+| s/old/new/g  | 行内全部old替换为new         |
+| s/olg/new/2  | 替换第二个old为new          |
+| s/olg/new/2g | 替换第二个old到后面所有的old为new |
+| s/old/new/ig | 将行内old全部替换为new，忽略大小写  |
+| =            | 显示行号                  |
+
+```shell
+# 打印file文件的第17行
+sed -n '17p' sed.txt
+# 打印file文件的第10到20行
+sed -n '10,20p' sed.txt
+# 打印第2到3行
+sed -n '2,+1p' sed.txt
+# 匹配以go开头的行
+sed -n '/^go/p' sed.txt
+# 匹配包含go的行到以Ha开头的行
+sed -n '/go/,/^Ha/p' sed.txt
+# 从第二行到以Ha开头的行
+sed -n '2,/^Ha/p' sed.txt
+```
+
+```shell
+# 匹配到的行，换行，添加this is 
+sed -i '/python/a this is' sed.txt
+# 行前追加
+sed -i '/python/i this is' sed.txt
+# 将文件内容追加到匹配到的行后面
+sed -i '/python/r rep.txt' sed.txt
+# 将匹配到的行写入到另一个文件
+sed -i '/python/w to.txt' sed.txt
+# 显示行号
+sed -i '/python/=' sed.txt
+# 将匹配到的: 以had开头 + 两个字符 + p，这样一个字符串后面加上一个s，&符号表示前面匹配到的数据
+sed -i 's/had..p/&s/g' sed.txt
+# 功能同上
+sed -i 's/\(had..p\)/\1s/g' sed.txt
+# 部分替换 hadAAp -> hadoop
+sed -i 's/\(had\)..p/\1oop/g' sed.txt
+```
+
+- sed中存在变量时使用双引号，如果使用单引号需要用单 引号引起来
+
+#### 替换
+![](https://blog-1257627424.cos.ap-chengdu.myqcloud.com/shell/5301654404064_.pic_hd.jpg)
+
+![](https://blog-1257627424.cos.ap-chengdu.myqcloud.com/shell/5311654404620_.pic.jpg)
+#### 示例
+匹配mysql配置文件
+```shell
+# 提取每一个[]符号包含的数据
+sed -n '/\[.*]/p' my.conf | sed -e 's/\[//g' -e 's/\]//g'
+# 提取每一个[]中间的元素数据
+# 过滤掉注释、过滤掉空行
+sed -n '/\[server]/,/\[.*\]/p' my.conf | grep -v "^#" | grep -v "^$" | grep -v "\[.*\]"
+```
+
+```shell
+# 删除配置文件中的所有注释行和空行
+sed -i '/[:blank:]*#/d;/^$/d' nginx.conf
+
+# 配置文件中所有不以#开头的行前面添加*号
+sed -i 's/^[^#]/\*$/g'
+```
