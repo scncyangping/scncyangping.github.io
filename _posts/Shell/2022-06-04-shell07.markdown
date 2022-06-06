@@ -1,0 +1,224 @@
+---
+layout:     post
+title:      "Shell(awk)"
+subtitle:   ""
+date:       2022-06-06 10:11:00
+author:     "YaPi"
+header-img: ""
+tags:
+    - Shell
+---
+
+### awk
+- awk是一个文本处理工具，通常用于处理数据并生成结果报告
+- 三个创始人名称首字母
+- awk 'BEGIN{}pattern{command}END' file_name
+- standard output |awk 'BEGIN{}pattern{command}END'
+- BEGIN{}: 正式处理数据之前执行
+- END{}: 处理匹配之后执行
+
+参数：
+
+- -v 参数传递
+    - awk -v var1="$num1" -v var2="$num2" 'BEGIN{print var1,var2}'
+- -f 指定脚本文件
+    - awk -f  test.txt /etc/passwd
+- -F 指定分割符
+- -V 查看awk的版本
+#### 内置变量
+![](https://blog-1257627424.cos.ap-chengdu.myqcloud.com/shell/5321654405960_.pic.jpg)
+
+- FILENAME
+- ARGC
+- ARGV
+
+```shell
+# awk 'BEGIN{}pattern{command}END' file_name
+# 输出每一行的数据,$0 代表一行数据，默认以空格或tab分割
+awk '{print $1}' sed.txt
+# 以冒号分割数据，取第二个元素，$0代表整行
+awk 'BEGIN{FS=":"}{print $1}' passwd
+
+# NF 表示每一行的元素个数
+awk '{print NF}' sed.txt
+
+# NR 表示行号,一起计数
+awk '{print NR}' sed.txt test.txt
+
+# FNR 表示行号,单独计数
+awk '{print FNR}' sed.txt test.txt
+
+# 指定列分隔符，java|python|go, 以|分割
+awk 'BEGIN{FS="|"}{print $2}' test.txt
+
+# 同时指定行分隔符，不指定默认以\n分割
+awk 'BEGIN{FS="|";RS="---"}{print $2}' test.txt
+
+# ORS="&" 指定输出换行符为&
+awk 'BEGIN{FS="|";RS="---";ORS="&";OFS=":"}{print $1,$3}' test.txt
+
+# 输出文件名
+awk '{print FILENAME}' test.txt
+
+# 输出参数个数
+awk '{print ARGC}' test.txt # 2
+
+# 命令行数组
+awk '{print ARGV}' test.txt
+```
+
+#### printf
+
+| 符号  | 意义                    |
+|-----|-----------------------|
+| %s  | 打印字符串                 |
+| %d  | 打印10进制数               |
+| %f  | 打印浮点数                 |
+| %x  | 打印16进制数               |
+| %o  | 打印8进制数                |
+| %e  | 打印数字的科学计数法格式          |
+| %c  | 打印单个字符ASSCII码         |
+| -   | 左对齐                   |
+| +   | 右对齐                   |
+| #   | 显示8进制前面加0，显示16进制前面加0x |
+
+```shell
+awk 'BEGIN{FS=":"}{printf "%s  %s\n ",$1,$2}' passwd
+```
+
+#### 模式匹配的用法
+- RegExp
+- 关系运算匹配  >、<、>=、<=、!=、==、～匹配正则表达式、!~不匹配正则表达式
+
+```shell
+# 找到文件中包含root的行，并打印整行信息
+awk 'BEGIN{FS=":"}/root/{print $0}' passwd
+# 找到文件中以nobo开头的行
+awk 'BEGIN={FS=":"}/^nobo/{print $0}' passwd
+# 找到文件中以冒号分割第三个参数小于10的行
+awk 'BEGIN{FS=":"}$3<10{print $0}' passwd
+# 找到文件中以冒号分割，第三个参数是3个数字的行信息
+# 匹配正则表达式需要 ～/ / 包含起来,固定写法
+awk 'BEGIN{FS=":"}$3~/[0-9]{3,}/{print $0}' passwd
+# 找到文件中第三个参数小于50或第四个参数大于50
+# || 、&& 、!
+awk 'BEGIN{FS=":"}$3<50 || $4>50 {print $0}' passwd
+# 找到文件中的空白行，输出行数
+awk '/^$/{sum++}END{print sum}' /etc/services
+# 为每一行添加一个平均分字段，并添加表头
+awk 'BEGIN{printf "%-5s%-5s%-5s%-5s%-5s%-5s\n","NAME","YW","MATH","EN","WL","AVG"}{total=$2+$3+$4+$5;AVG=total/4;printf "%-5s%-5d%-5d%-5d%-5d%0.2f\n",$1,$2,$3,$4,$5,AVG}' jc.txt
+```
+
+#### 内置函数
+![](https://blog-1257627424.cos.ap-chengdu.myqcloud.com/shell/5331654486337_.pic_hd.jpg)
+![](https://blog-1257627424.cos.ap-chengdu.myqcloud.com/shell/5341654486414_.pic.jpg)
+
+#### 分之循环
+if 语句
+```
+if () {
+    ...
+}else if () {
+    ...
+}else {
+    ...
+}
+
+
+```
+
+while语句
+```
+do
+{    
+    动作
+}
+while(i<100 )
+
+或
+
+while(i<100){
+
+}
+```
+
+for
+```
+for (i=0;i<100;i++){
+    动作
+}
+```
+##### 例1
+使用冒号分割/etc/passwd文件，并计算每一个元素的长度
+```shell
+BEGIN{
+  FS=":"
+}
+{
+  i=1
+  while (i<=NF){
+    printf "(%s,%d) ",$i,length($i)
+    i++
+  }
+  print "\n"
+}
+```
+
+##### 例2
+```shell
+# 查找ea的位置
+awk 'BEGIN{str="I have a dream";location=index(str,"ea");print location}'
+# match也可以实现，同时match可以指定正则表达式
+awk 'BEGIN{str="I have a dream";location=match(str,"ea");print location}'
+# 数组下标从1开始
+awk 'BEGIN{str="A B C D E F G";split(str,arr," "); for(a in arr) print arr[a]}'
+# 正则匹配
+awk 'BEGIN{str="I have a dre123am";location=match(str,/[0-9]/);print location}'
+# 从第4个位置开始，提取5位
+awk 'BEGIN{str="I have a dre123am";print substr(str,4,5)}'
+# 将数字替换为$符号，只替换一次
+awk 'BEGIN{str="I have 123 a dre123am";sub(/[0-9]+/,"%",str);print str}'
+# 全部替换,返回替换次数
+awk 'BEGIN{str="I have 123 a dre123am";count=gsub(/[0-9]+/,"%",str);print str,count}'
+awk '{if ($3>=70 && $3<=80) print $0}' jc.txt
+```
+
+##### 例3
+文件
+```
+2020-09-10	A  insert 1890, sucess 1000, fail 100
+2020-09-10	B  insert 2890, sucess 1100, fail 200
+2020-09-10	C  insert 3890, sucess 1200, fail 300
+2020-09-10	D  insert 4890, sucess 1300, fail 400
+2020-09-10	E  insert 5890, sucess 1400, fail 500
+2020-09-10	F  insert 6890, sucess 1500, fail 600
+2020-09-10	B  insert 2890, sucess 1100, fail 200
+2020-09-10	C  insert 3890, sucess 1200, fail 300
+2020-09-10	D  insert 4890, sucess 1300, fail 400
+2020-09-10	E  insert 5890, sucess 1400, fail 500
+```
+
+- 统计每个人插入了多少条
+- 统计每个人分别成功，失败多少
+
+```shell
+BEGIN{
+  printf "%-20s%-20s%-20s%-20s\n","NAME","TOTAL_RECORD","TOTAL_SUCCESS","TOTAL_FAILED"
+}
+{
+  USER[$2]+=$4
+  SUCCESS[$2]+=$6
+  FAILED[$2]+=$8
+}
+
+END{
+    for (user in USER){
+      all_total+=USER[user]
+      all_sucess+=SUCCESS[user]
+      all_failed+=FAILED[user]
+      
+      printf "%-20s%-20d%-20d%-20d\n",user,USER[user],SUCCESS[user],FAILED[user]
+    }
+    printf "%-20s%-20d%-20d%-20d\n","",all_total,all_sucess,all_failed
+}
+```
