@@ -1,0 +1,1053 @@
+---
+layout:     post
+title:      "Rust系列(八)总结"
+subtitle:   ""
+date:       2022-10-25 13:10:00
+author:     "YaPi"
+header-img: ""
+tags:
+   - Rust
+---
+
+### 变量、分支、循环
+- 常量使用const声明，是不可变的，并且只能呗设置为常量表达式而不是其他任何运行中的值
+- 数字变量，可以使用类型后缀如：57u8, 同时允许使用`_`作为分隔符
+- 复合类型：元组()、数组 [u32;5]
+
+#### 语句和表达式
+语句是执行一些操作但不返回值的指令。表达式计算并产生一个值
+
+使用let if构建三元
+
+```
+let number = if condition {5} else {6};
+```
+
+循环标签: 'xxx 一个符号
+
+```
+let mut count = 0;
+'counting_up: loop {
+    println!("count = {}", count);
+    let mut remaining = 10;
+    loop {
+        println!("remaining = {}", remaining);
+        if remaining == 9 {
+            break;
+        }
+        if count == 2 {
+            break 'counting_up;
+        }
+        remaining -= 1;
+    }
+    count += 1;
+}
+```
+
+循环返回值:
+```
+let mut counter = 0;
+let result = loop {
+    counter += 1;
+    if counter == 10 {
+        break counter * 2;
+    }
+};
+```
+
+### 所有权规则
+1. Rust 中的每一个值都有一个被称为其 所有者（owner）的变量。
+2. 值在任一时刻有且只有一个所有者。
+3. 当所有者（变量）离开作用域，这个值将被丢弃。
+
+#### 对于可变和不可变引用
+在同一时间内，不能同时拥有不可变引用和可变引用。不能拥有多个可变引用。需要注意的事，这并不意味着是在变量的作用域内，而是在引用的作用域内的规则。在同一个变量的作用域内，若定义了一个可变引用A，之后仍然可以定义一个可变引用B，只需要满足：若再次定义了可变引用B，则在B之后的代码内不会再使用A，或者定义B之前，虽然定义了A，但是并没有使用A。
+
+但是，一个引用的作用域从声明的地方开始一直持续到最后一次使用它。
+
+不可变引用 r1 和 r2 的作用域在 println! 最后一次使用之后结束。创建可变引用 r3 后。它们的作用域没有重叠，所以代码是可以编译的。编译器在作用域结束之前判断不再使用的引用的能力被称
+为 非词法作用域生命周期(Non−Lexical Lifetimes，简称 NLL)
+
+```
+fn main() {
+    let mut s = String::from("hello");
+    let r1 = &s; // 没问题
+    let r2 = &s; // 没问题
+    println!("{} and {}", r1, r2); // 此位置之后 r1 和 r2 不再使用
+    let r3 = &mut s; // 没问题
+    // println!("{} and {}", r1, r2); // 若再次打印，则会报错，因为r3的作用域包含了不可变的引用
+    println!("{}", r3);
+}
+```
+### 结构体
+- 元组结构体 struct Color(i32,i32);
+- 类单元结构体 struct Aaa;
+
+#### 方法
+使用 &self 来替代结构体，&self 实际上是 self : &Self 的缩写。在 一个 impl 块中，Self 类型是 impl 块的类型的别名。方法的第一个参数必须有一个名为 self 的Self 类型 的参数，所以 Rust 让你在第一个参数位置上只用 self 这个名字来缩写。注意，我们仍然需要在 self 前面 使用 & 来表示这个方法借用了 Self 实例。方法可以选 择获得 self 的所有权，或者像我们这里一样不可变地借用 self，或者可变地借用 self，就跟其他参数一样，使用&mut self。
+
+
+所有在 impl 块中定义的函数被称为 关联函数(associated functions)，因为它们与 impl 后面命名的类 型相关。我们可以定义不以 self 为第一参数的关联函数(因此不是方法)，因为它们并不作用于一个结构体的实例。我们已经使用了一个这样的函数:在 String 类型上定义的 String :: from 函数。
+#### Print打印
+println!宏打印
+- {:?}
+- {:#?}
+
+dbg!宏打印
+
+```
+#[derive(Debug)]
+struct xxx;
+println!("{:?}",xxx)
+```
+#### 结构体更新语法
+.. user1 必须放在最后
+
+结构更新语法就像带有 = 的赋值，因为它移动了数据。我们在创建 user2 后不能再使用 user1，因为 user1 的 username 字段中的 String 被移到 user2 中。
+```
+let user2 = User{
+    email: String::from("aaa@qq.com"),
+    ..user1
+};
+```
+
+### 枚举
+
+```
+enum Message {
+    Quit,
+    Move { x: i32, y: i32 },
+    Write(String),
+    ChangeColor(i32, i32, i32),
+}
+// 可以为枚举定义方法
+impl Message {
+    fn call(&self){
+        // todo
+    }
+}
+```
+
+- Quit 没有关联任何数据。
+- Move 类似结构体包含命名字段。
+- Write 包含单独一个 String。
+- ChangeColor 包含三个 i32。
+
+
+### crate
+
+Cargo 会给我们的包创建一个 Cargo.toml 文件。查看 Cargo.toml 的内容，会 发现并没有提到 src∕main.rs，因为 Cargo 遵循的一个约定:src∕main.rs 就是一个与包同名的二进制 crate 的 crate 根。同样的，Cargo 知道如果包目录中包含 src∕lib.rs，则包带有与其同名的库 crate，且 src∕lib.rs 是 crate 根。crate 根文件将由 Cargo 传递给 rustc 来实际构建库或者二进制项目。
+在此，我们有了一个只包含 src∕main.rs 的包，意味着它只含有一个名为 my−project 的二进制 crate。如 果一个包同时含有 src∕main.rs 和 src∕lib.rs，则它有两个 crate:一个二进制的和一个库的，且名字都与 包相同。通过将文件放在 src∕bin 目录下，一个包可以拥有多个二进制 crate:每个 src∕bin 下的文件都 会被编译成一个独立的二进制 crate。
+
+- use 关键字省略通用路径
+- as 关键字提供新的名称
+- pub use 重导出名称
+- 使用 * 符号引入所有公有定义
+
+#### 加载
+
+- 在与模块同名的文件里加载
+
+```
+// src/lib.rs
+mod tttt;
+pub use crate::tttt;
+
+
+// src/tttt.rs
+pub fn test(){}
+```
+
+- 目录结构
+
+```
+// src/lib.rs
+mod front;
+pub use crate::tttt;
+
+
+// src/front/hosting.rs
+
+pub fn tttt(){}
+```
+
+#### String的遍历
+
+iter 方法返回集合中的每一个元素，而 enumerate 包装了 iter 的结果，将这些元素作为元组的一部分来返回。enumerate 返回的元组中，第一个元素是 索引，第二个元素是集合中元素的引用
+```
+fn first_word(s: &String) -> usize {
+    let bytes = s.as_bytes();
+    for (i, &item) in bytes.iter().enumerate() { 
+        if item == b' ' {
+            return i;
+        }
+    }
+    s.len() 
+}
+```
+
+#### 字段可见性
+结构体需要对字段声明pub才是可见的，而枚举只需要对整体声明为公有即可
+
+
+#### 导入包
+use std::collections:HashMap as map;
+use std::{cpm::Ordering,io};
+
+use std::collections::*;// glob运算符引入所有公有项
+
+
+#### 集合类型
+常见的集合类型
+
+- vector
+- 字符串
+- 哈希map
+
+##### vec
+插入
+
+```
+let mut v = Vec::new();
+v.push(5);
+v.push(6);
+```
+
+读取
+```
+let tt:&i32 = &v[2]; // 索引对应值不存在会panic
+
+...
+
+// Option<&T>
+match v.get(2){
+    Some(t) => t,
+    None => xxx
+}
+```
+
+引用加索引的方式读取数据时候会获得不可变引用，同样会被所有权规则限制
+
+```
+fn main() {
+    let mut v = vec![1,2,3];
+    let x = &v[0];
+    v.push(2);// panic
+    // 原因是push的时候内存地址可能发生变化，那么x的地址就会错误
+    println!("{}",x);
+}
+```
+
+```
+fn main() {
+    let mut v = vec![1,2,3];
+    //for x in v   直接遍历v，调用的是 into_iter(self)方法，会转移所有权，后续就无法在使用v
+    // 所以这里使用v.iter(&self)方法，也可以使用 直接遍历 &v
+    for x in v.iter() {
+        println!("{}",x)
+    }
+
+    //for x in &mut v 同样的效果
+    for x in v.iter_mut() {
+        *x += 10
+    }
+    // pop()返回最后一个元素，Option类型
+    println!("{}",v.pop().unwrap())
+
+}
+```
+
+##### 字符串
+rust核心语言中只有一种字符串类型：str,它通常以被借用的形式出现 &str。字符串slice,它是一些存储在别处的UTF-8编码字符串数据的引用。
+字符串字面值被存储在程序的二进制输出中，字符串slice也是如此。
+
+常用方法
+
+- "".to_string()
+- String::from("")
+- s.push_str("abc")
+- s.push('a')
+
+```
+fn main() {
+    let s1 = String::from("Hello, ");
+    let s2 = String::from("world!");
+    let s3 = s1 + &s2; // 注意 s1 被移动了，不能继续使用
+}
+```
+
+##### hashMap
+常用方法
+- insert(k,v)
+- get(k)
+
+我们经常会检查某个特定的键是否有值，如果没有就插入一个值。为此哈希 map 有一个特有的 API，叫 做 entry，它获取我们想要检查的键作为参数。entry 函数的返回值是一个枚举，Entry，它代表了可能 存在也可能不存在的值
+
+```
+fn main() {
+    use std::collections::HashMap;
+    let mut scores = HashMap::new();
+    scores.insert(String::from("Blue"), 10);
+    scores.entry(String::from("Yellow")).or_insert(50);
+    scores.entry(String::from("Blue")).or_insert(50);
+    println!("{:?}", scores);
+}
+```
+
+#### 错误
+当出现 panic 时，程序默认会开始 展开(unwinding)，这意味着 Rust 会回溯栈并清理它遇到的每 一个函数的数据，不过这个回溯并清理的过程有很多工作。另一种选择是直接 终止(abort)，这会 不清理数据就退出程序。
+
+```
+[profile.release]
+panic = 'abort'
+```
+
+错误处理
+```
+use std::fs::File;
+use std::io::ErrorKind;
+fn main() {
+    let f = File::open("hello.txt");
+    let f = match f {
+        Ok(file) => file,
+        Err(error) => match error.kind() {
+            ErrorKind::NotFound => match File::create("hello.txt") { Ok(fc) => fc,
+                Err(e) => panic!("Problem creating the file: {:?}", e),
+            },
+            other_error => {
+                panic!("Problem opening the file: {:?}", other_error)
+            }
+        }, };
+}
+
+
+// 版本2
+let f = File::open("hello.txt").unwrap_or_else(|error| {
+        if error.kind() == ErrorKind::NotFound { File::create("hello.txt").unwrap_or_else(|error| {
+            panic!("Problem creating the file: {:?}", error);
+        })
+        } else {
+            panic!("Problem opening the file: {:?}", error);
+        }
+    });
+```
+
+可使用unwrap() 和 except("Error Msg") 来处理错误。
+
+使用 ？传播错误
+
+```
+use std::fs::File;
+use std::io;
+use std::io::Read;
+fn read_username_from_file() -> Result<String, io::Error> {
+    let mut f = File::open("hello.txt")?;
+    let mut s = String::new();
+    f.read_to_string(&mut s)?;
+    Ok(s)
+}
+
+// 版本2
+fn read_username_from_file() -> Result<String, io::Error> {
+     fs::read_to_string("hello.txt")
+}
+```
+
+match 表达式与问号运算符所做的有一点不同:? 运算符所使用的错误值被传递给了 from 函数，它定义于标准库的 From trait 中，其用来将错误从一种类型转换为另一种类型。当 ? 运算 符调用 from 函数时，收到的错误类型被转换为由当前函数返回类型所指定的错误类型。这在当函数 返回单个错误类型来代表所有可能失败的方式时很有用，即使其可能会因很多种原因失败。只要每一 个错误类型都实现了 from 函数来定义如何将自身转换为返回的错误类型，? 运算符会自动处理这些转换
+
+
+### 泛型
+可以为实现了某种trait的类型，实现其它trait
+如：标准库为任何实现了 Display trait 的类型实现了 ToString trait
+```
+impl<T: Display> ToString for T {...}
+```
+
+##### 范型作为参数
+```
+pub fn notify(item: &impl Summary) {}
+
+pub fn notify<T: Summary>(item: &T) {}
+
+pub fn notify(item: &(impl Summary + Display)) {}
+
+pub fn notify<T: Summary + Display>(item: &T) {}
+
+fn some_function<T: Display + Clone, U: Clone + Debug>(t: &T, u: &U) -> i32{}
+
+fn some_function<T, U>(t: &T, u: &U) -> i32 
+where T: Display + Clone,
+      U: Clone + Debug
+{}
+```
+
+##### 范型作为返回值
+
+```
+// 作为返回值，如果有统一trait多个实现。返回可能是其中一个时，这个函数是
+// 不能编译通过的。
+fn returns_summarizable() -> impl Summary {}
+```
+
+##### trait bound
+通过使用带有 trait bound 的泛型参数的 impl 块，可以有条件地只为那些实现了特定 trait 的类型实现方法。
+```
+use std::fmt::Display;
+struct Pair<T> {
+    x: T,
+    y: T,
+}
+// 为任意类型实现new方法
+impl<T> Pair<T> {
+    fn new(x: T, y: T) -> Self {
+        Self { x, y }
+    }
+}
+impl<T: Display + PartialOrd> Pair<T> {
+    fn cmp_display(&self) {
+        if self.x >= self.y {
+            println!("The largest member is x = {}", self.x);
+        } else {
+            println!("The largest member is y = {}", self.y);
+        }
+    }
+}
+```
+
+也可以对任何实现了特定 trait 的类型有条件地实现 trait
+
+```
+// 标准库为任何实现了 Display trait 的类型实现了 ToString trait
+impl<T: Display> ToString for T {
+    // --snip--
+}
+```
+
+##### 生命周期泛型
+其它泛型帮助我们确保类型拥有期望的行为，生命周期则有助于确保 引用 在我们需要的时候保持有效
+
+生命周期避免了悬垂引用。
+
+生命周期并不改变任何引用的生命周期的长度，当指定了泛型生命周期后函数也能接受任何生命周期的引用。
+
+```
+&i32 // 引用
+&'a i32 // 带显示生命周期的引用
+&'a mut i32 // 带有显示生命周期的可变引用
+```
+
+单个的生命周期注解本身没有多少意义，因为生命周期注解告诉 Rust 多个引用的泛型生命周期参数如 何相互联系的。泛型生命周期 ’ a 的具体生命周期等同于参数生命周期中较小的那一个
+
+生命周期省略规则
+
+- 每一个是引用的参数都有它自己的生命周期参数
+- 如果只有一个输入生命周期参数，那么它将被赋给所有输出的生命周期参数
+- 如果方法有多个输入生命周期参数，并且其中一个是&self/&mut self,那么所有输出生命周期参数都是self生命周期
+
+
+’ static ，其生命周期能够存活于整个程序期间。所有的字符串字 面值都拥有 ’ static 生命周期
+
+ ```
+ let s: &'static str = "I have a static lifetime.";
+ ```
+
+### 闭包
+闭包不能被推断为两种类型
+
+ ```
+// panic
+fn main() {
+    let example_closure = |x| x;
+    let s = example_closure(String::from("hello"));
+    let n = example_closure(5);
+}
+ ```
+
+当闭包从环境中捕获一个值，闭包会在闭包体中储存这个值以供使用。这会使用内存并产生额外的开销， 在更一般的场景中，当我们不需要闭包来捕获环境时，我们不希望产生这些开销。因为函数从未允许捕 获环境，定义和使用函数也就从不会有这些额外开销。
+
+闭包可以通过三种方式捕获其环境，他们直接对应函数的三种获取参数的方式:获取所有权，可变借用 和不可变借用。这三种捕获值的方式被编码为如下三个 Fn trait:
+
+• FnOnce 消费从周围作用域捕获的变量，闭包周围的作用域被称为其 环境，environment。为了消 费捕获到的变量，闭包必须获取其所有权并在定义闭包时将其移动进闭包。其名称的 Once 部分代 表了闭包不能多次获取相同变量的所有权的事实，所以它只能被调用一次。
+• FnMut 获取可变的借用值所以可以改变其环境
+• Fn 从其环境获取不可变的借用值
+
+当创建一个闭包时，Rust 根据其如何使用环境中变量来推断我们希望如何引用环境。由于所有闭包都 可以被调用至少一次，所以所有闭包都实现了 FnOnce 。那些并没有移动被捕获变量的所有权到闭包 内的闭包也实现了 FnMut ，而不需要对被捕获的变量进行可变访问的闭包则也实现了 Fn 。
+
+如果你希望强制闭包获取其使用的环境值的所有权，可以在参数列表前使用 move 关键字。这个技巧在 将闭包传递给新线程以便将数据移动到新线程中时最为实用。
+
+注意:即使其捕获的值已经被移动了，move 闭包仍需要实现 Fn 或 FnMut。这是因为闭包所实现的 trait 是由闭包所捕获了什么值而不是如何捕获所决定的。而 move 关键字仅代表了后者。
+
+大部分需要指定一个 Fn 系列 trait bound 的时候，可以从 Fn 开始，而编译器会根据闭包体中的情况告 诉你是否需要 FnMut 或 FnOnce。
+
+### 迭代器
+迭代器都实现了一个叫做 Iterator 的定义于标准库的 trait。这个 trait 的定义看起来像这样:
+```
+pub trait Iterator { 
+    type Item;
+    fn next(&mut self) -> Option<Self::Item>;
+}
+
+// 实现例子
+impl Iterator for Counter {
+    type Item = u32;
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.count < 5 {
+            self.count += 1;
+            Some(self.count)
+        } else {
+            None
+        }
+    }
+}
+```
+
+在迭代器上调用 next 方法改变了迭代器中用来记录序列位置的状态。换句
+话说，代码 消费(consume)了，或使用了迭代器。每一个 next 调用都会从迭代器中消费一个项。使 用 for 循环时无需使 v1_iter 可变因为 for 循环会获取 v1_iter 的所有权并在后台使 v1_iter 可变。
+
+三种迭代方式：
+- iter: 不可变借用
+- into_iter: 获取所有权
+- iter_mut: 可变借用
+
+### 智能指针
+指针(pointer)是一个包含内存地址的变量的通用概念
+智能指针(smart pointers)是一类数据结构，他们的表现类似指针，但是也拥有额外的元数
+据和功能。智能指针的概念并不为 Rust 所独有;其起源于 C++ 并存在于其他语言中。
+
+在 Rust 中，普通引用和智能指针的一个额外的区别是引用是一类只借用数据的指针;相反，在大部分情 况下，智能指针 拥有他们指向的数据。
+
+智能指针通常使用结构体实现。智能指针区别于常规结构体的显著特性在于其实现了 Deref 和 Drop trait。Deref trait 允许智能指针结构体实例表现的像引用一样，这样就可以编写既用于引用、又用于智 能指针的代码。Drop trait 允许我们自定义当智能指针离开作用域时运行的代码。
+
+
+- Box<T>，用于在堆上分配值
+- Rc<T>，一个引用计数类型，其数据可以有多个所有者
+- Ref<T> 和 RefMut<T>，通过 RefCell<T> 访问。(RefCell<T> 是一个在运行时而不是在编译时执行借用规则的类型)。
+
+#### Box<T> 堆上分配内存
+- 当有一个在编译时未知大小的类型，而又想要在需要确切大小的上下文中使用这个类型值的时候(创建递归类型)
+- 当有大量数据并希望在确保数据不被拷贝的情况下转移所有权的时候
+- 当希望拥有一个值并只关心它的类型是否实现了特定 trait 而不是其具体类型的时候(Box<dyn Error>)
+
+Box<T> 类型是一个智能指针，因为它实现了 Deref trait，它允许 Box<T> 值被当作引用对待。当 Box<T> 值离开作用域时，由于 Box<T> 类型 Drop trait 的实现，box 所指向的堆数据也会被清除。
+
+#### 实现 Deref trait 将某类型像引用一样处理
+
+```
+struct MyBox<T>(T);
+
+impl<T> MyBox<T> {
+    fn new(x: T) -> MyBox<T> {
+        MyBox(x)
+    }
+}
+
+use std::ops::Deref;
+
+impl<T> Deref for MyBox<T> {
+    type Target = T; // 关联类型
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+```
+
+#### 自动Deref
+比如：某一个函数A的参数是&str, 有一个类型为MyBox<String>的变量B。
+可以直接调用：A(&B)
+
+Rust 在发现类型和 trait 实现满足三种情况时会进行 Deref 强制转换:
+
+- 当 T: Deref<Target=U> 时从 &T 到 &U。
+- 当 T: DerefMut<Target=U> 时从 &mut T 到 &mut U。
+- 当 T: Deref<Target=U> 时从 &mut T 到 &U。
+
+头两个情况除了可变性之外是相同的:第一种情况表明如果有一个 &T，而 T 实现了返回 U 类型的 Deref， 则可以直接得到 &U。第二种情况表明对于可变引用也有着相同的行为。
+
+第三个情况有些微妙:Rust 也会将可变引用强转为不可变引用。但是反之是 不可能的:不可变引用永远 也不能强转为可变引用。因为根据借用规则，如果有一个可变引用，其必须是这些数据的唯一引用(否 则程序将无法编译)。将一个可变引用转换为不可变引用永远也不会打破借用规则。将不可变引用转换为 可变引用则需要初始的不可变引用是数据唯一的不可变引用，而借用规则无法保证这一点。因此，Rust 无法假设将不可变引用转换为可变引用是可能的。
+
+
+类似于如何使用 Deref trait 重载不可变引用的 * 运算符，Rust 提供了 DerefMut trait 用于重载可变引用的 * 运算符。
+
+#### Drop Trait
+能指针模式来说第二个重要的 trait 是 Drop，其允许我们在值要离开作用域时执行一些代码
+
+Drop trait 包含在 prelude 中，所以无需导入它
+
+
+不幸的是，我们并不能直截了当的禁用 drop 这个功能。通常也不需要禁用 drop ;整个 Drop trait 存在的意义在于其是自动处理的。然而，有时你可能需要提早清理某个值。一个例子是当使用智能指针管理 锁时;你可能希望强制运行 drop 方法来释放锁以便作用域中的其他代码可以获取锁。Rust 并不允许我 们主动调用 Drop trait 的 drop 方法;当我们希望在作用域结束之前就强制释放变量的话，我们应该使 用的是由标准库提供的 std :: mem::drop。
+
+在值离开作用域之前调用 std::mem::drop 显式清理
+
+```
+// prelude
+let x = Box::new(String::from("value"));
+drop(x);
+```
+#### Rc<T>
+大部分情况下所有权是非常明确的:可以准确地知道哪个变量拥有某个值。然而，有些情况单个值可能 会有多个所有者。例如，在图数据结构中，多个边可能指向相同的节点，而这个节点从概念上讲为所有 指向它的边所拥有。节点直到没有任何边指向它之前都不应该被清理。
+
+为了启用多所有权，Rust 有一个叫做 Rc<T> 的类型。其名称为 引用计数(reference counting)的缩写。 引用计数意味着记录一个值引用的数量来知晓这个值是否仍在被使用。如果某个值有零个引用，就代表 没有任何有效引用并可以被清理。
+
+- Rc::clone(&a) 克隆，计数增加
+- Rc::strong_count(&a) 计数个数
+
+#### RefCell<T>和内部可变性模式
+内部可变性(Interior mutability)是 Rust 中的一个设计模式，它允许你即使在有不可变引用时也可以改 变数据，这通常是借用规则所不允许的。为了改变数据，该模式在数据结构中使用 unsafe 代码来模糊 Rust 通常的可变性和借用规则。
+
+类似于 Rc<T>，RefCell<T> 只能用于单线程场景。如果尝试在多线程上下文中使用RefCell<T>，会得到 一个编译错误。第十六章会介绍如何在多线程程序中使用 RefCell<T> 的功能。
+如下为选择 Box<T>，Rc<T> 或 RefCell<T> 的理由:
+
+• Rc<T> 允许相同数据有多个所有者;Box<T> 和 RefCell<T> 有单一所有者。
+• Box<T> 允许在编译时执行不可变或可变借用检查;Rc<T>仅允许在编译时执行不可变借用检查; RefCell<T> 允许在运行时执行不可变或可变借用检查。
+• 因为 RefCell<T> 允许在运行时执行可变借用检查，所以我们可以在即便 RefCell<T> 自身是不可变 的情况下修改其内部的值。
+
+
+- rc.borrow_mut() 获取可变借用
+- rc.borrow() 获取不可变借用
+
+RefCell获取借用的规则和普通借用规则一样。同一时刻只能有一个可变借用或多个不可变借用
+
+#### Weak<T>
+
+Rc :: clone 会增加 Rc<T> 实例的 strong_count，和只在其 strong_count
+为 0 时才会被清理的 Rc<T> 实例。你也可以通过调用 Rc::downgrade 并传递 Rc<T> 实例的引用来创建其值的 弱引用(weak reference)。调用 Rc::downgrade 时会得到 Weak<T> 类型的智能指针。不同 于将 Rc<T> 实例的 strong_count 加 1，调用 Rc::downgrade 会将 weak_count 加 1。Rc<T> 类型使用 weak_count 来记录其存在多少个 Weak<T> 引用，类似于 strong_count。其区别在于 weak_count 无 需计数为 0 就能使 Rc<T> 实例被清理。
+
+
+### 并发
+
+##### 创建
+```
+use std::thread;
+
+thread::spawn(|| {
+    for i in 1..10 {
+    println!("hi number {} from the spawned thread!", i);
+                thread::sleep(Duration::from_millis(1));
+            }
+});
+```
+##### 等待线程结束 join
+```
+let handle = thread::spawn(|| {
+for i in 1..10 {
+    println!("hi number {} from the spawned thread!", i);
+                thread::sleep(Duration::from_millis(1));
+            }
+});
+
+handle.join().unwrap();
+```
+##### 通讯
+```
+// mpsc 多个生产者，单个消费者
+use std::sync::mpsc;
+fn main() {
+    let (tx, rx) = mpsc::channel();
+    // tx.clone() 可以克隆出多个生产者
+    thread::spawn(move || {
+        let val = String::from("hi");
+        // send 返回Result类型
+        tx.send(val).unwrap();
+    });
+    // recv 阻塞获取 try_recv 直接返回，可循环获取    
+    let received = rx.recv().unwrap();
+    println!("Got: {}", received);  
+    // 可循环接受
+    for received in rx {
+        // ...
+    }
+}
+```
+
+##### 互斥访问
+
+```
+use std::sync::Mutex;
+
+let m = Mutex::new(5);
+
+{
+    let mut num = m.lock().unwrap();
+    *num = 6;
+    // 自动释放锁
+}
+```
+
+##### 原子引用计数 Arc<T>
+Arc<T> 和 Rc<T> 有着相同的 API
+
+counter 是不可变的，不过可以获取其内部值的可变引用;这意味着 Mutex<T> 提供了内部可变性，就像 Cell 系列类型那样
+```
+use std::sync::{Arc, Mutex};
+use std::thread;
+fn main() {
+    let counter = Arc::new(Mutex::new(0));
+    let mut handles = vec![];
+    for _ in 0..10 {
+        let counter = Arc::clone(&counter);
+        let handle = thread::spawn(move || {
+            let mut num = counter.lock().unwrap();
+            *num += 1;
+        });
+        handles.push(handle);
+    }
+    for handle in handles {
+        handle.join().unwrap();
+    }
+    println!("Result: {}", *counter.lock().unwrap());
+}
+```
+##### RefCell<T>∕Rc<T>与Mutex<T>∕Arc<T>的相似性
+因为 counter 是不可变的，不过可以获取其内部值的可变引用;这意味着 Mutex<T> 提供了内部可变性，就像 Cell 系列类型那样。正如使用 RefCell<T> 可以改变 Rc<T> 中的内 容那样，同样的可以使用 Mutex<T> 来改变 Arc<T> 中的内容。另一个值得注意的细节是 Rust 不能避免使用 Mutex<T> 的全部逻辑错误。使用 Rc<T> 就有造成引用循环的风险，这时两个 Rc<T> 值相互引用，造成内存泄漏。同理，Mutex<T> 也有造成 死 锁(deadlock)的风险。这发生于当一个操作需要锁住两个资源而两个线程各持一个锁，这会造成它们 永远相互等待。如果你对这个主题感兴趣，尝试编写一个带有死锁的 Rust 程序，接着研究任何其他语言 中使用互斥器的死锁规避策略并尝试在 Rust 中实现他们。标准库中 Mutex<T> 和 MutexGuard 的 API 文档会提供有用的信息。
+
+##### Sync 和 Send trait
+Send 标记 trait 表明实现了 Send 的类型值的所有权可以在线程间传送。几乎所有的 Rust 类型都是Send 的，不过有一些例外，包括 Rc<T>:这是不能 Send 的，因为如果克隆了 Rc<T> 的值并尝试将克隆的所有权转移到另一个线程，这两个线程都可能同时更新引用计数。为此，Rc<T> 被实现为用于单线程场景， 这时不需要为拥有线程安全的引用计数而付出性能代价。
+
+任何完全由 Send 的类型组成的类型也会自动被标记为 Send。几乎所有基本类型都是 Send 的，除了裸指针(raw pointer)。
+
+Sync 标记 trait 表明一个实现了 Sync 的类型可以安全的在多个线程中拥有其值的引用。换一种方式来说， 对于任意类型 T，如果 &T(T 的不可变引用)是 Send 的话 T 就是 Sync 的，这意味着其引用就可以安全的发送到另一个线程。类似于 Send 的情况，基本类型是 Sync 的，完全由 Sync 的类型组成的类型也是 Sync 的。智能指针 Rc<T> 也不是 Sync 的，出于其不是 Send 相同的原因。RefCell<T>和 Cell<T> 系列类型不是 Sync 的。RefCell<T> 在运行时所进行的借用检查也不是线程安全的。Mutex<T> 是 Sync 的。它可以被用来在多线程中共享访问。
+
+通常并不需要手动实现 Send 和 Sync trait，因为由 Send 和 Sync 的类型组成的类型，自动就是 Send 和Sync 的。
+
+
+### trait对象
+trait 对象指向一个实现了我们指定 trait 的类型的实例，以 及一个用于在运行时查找该类型的 trait 方法的表。
+
+
+我们通过指定某种指针来创建 trait 对象，例如 & 引用或 Box<T> 智能指针，还有 dyn keyword，以及指定相关的trait。我们可以使用 trait 对象代替泛型或具体类型。任何 使用 trait 对象的位置，Rust 的类型系统会在编译时确保任何在此上下文中使用的值会实现其 trait 对象 的 trait。如此便无需在编译时就知晓所有可能的类型。
+
+
+Rust 刻意不将结构体与枚举称为 ” 对象”，以便与其他语言中的对象相区别。在结构体或枚 举中，结构体字段中的数据和 impl 块中的行为是分开的，不同于其他语言中将数据和行为组合进一个称 为对象的概念中。trait 对象将数据和行为两者相结合，从这种意义上说 则其更类似其他语言中的对象。 不过 trait 对象不同于传统的对象，因为不能向 trait 对象增加数据。trait 对象并不像其他语言中的对象 那么通用:其(trait 对象)具体的作用是允许对通用行为进行抽象。
+
+```
+// 定义trait
+pub trait Draw {
+    fn draw(&self);
+}
+// 定义trait对象
+pub struct Screen {
+    pub components: Vec<Box<dyn Draw>>,
+}
+impl Screen {
+    pub fn run(&self) {
+            for component in self.components.iter() {
+                component.draw();
+            }
+    }
+}
+```
+这与定义使用了带有 trait bound 的泛型类型参数的结构体不同。泛型类型参数一次只能替代一个具体 类型，而 trait 对象则允许在运行时替代多种具体类型。
+
+##### trait 对象执行动态分发
+当对泛型使用 trait bound 时编译器所进行单态化处 理:编译器为每一个被泛型类型参数代替的具体类型生成了非泛型的函数和方法实现。单态化所产生的 代码进行 静态分发(static dispatch)。静态分发发生于编译器在编译时就知晓调用了什么方法的时候。 这与 动态分发(dynamic dispatch)相对，这时编译器在编译时无法知晓调用了什么方法。在动态分发 的情况下，编译器会生成在运行时确定调用了什么方法的代码。
+当使用 trait 对象时，Rust 必须使用动态分发。编译器无法知晓所有可能用于 trait 对象代码的类型，所 以它也不知道应该调用哪个类型的哪个方法实现。为此，Rust 在运行时使用 trait 对象中的指针来知晓 需要调用哪个方法。动态分发也阻止编译器有选择的内联方法代码，这会相应的禁用一些优化。
+
+##### trait 对象需要类型安全
+只有对象安全(object-safe)的 trait 可以实现为特征对象。这里有一些复杂的规则来实现 trait 的对象 安全，但在实践中，只有两个相关的规则。如果一个 trait 中定义的所有方法都符合以下规则，则该 trait 是对象安全的:
+
+• 返回值不是 Self
+• 没有泛型类型的参数
+
+Self 关键字是我们在 trait 与方法上的实现的别称，trait 对象必须是对象安全的，因为一旦使用 trait 对 象，Rust 将不再知晓该实现的返回类型。如果一个 trait 的方法返回了一个 Self 类型，但是该 trait 对象 忘记了 Self 的确切类型，那么该方法将不能使用原本的类型。当 trait 使用具体类型填充的泛型类型时 也一样:具体类型成为实现 trait 的对象的一部分，当使用 trait 对象却忘了类型是什么时，无法知道应 该用什么类型来填充泛型类型。
+
+
+一个非对象安全的 trait 例子是标准库中的 Clone trait
+```
+ pub trait Clone {
+    fn clone(&self) -> Self;
+}
+```
+
+String 类型实现了 Clone trait，当我们在 String 的实例对象上调用 clone 方法时，我们会得到一个 String 类型实例对象。相似地，如果我们调用 Vec<T> 实例对象上的 clone 方法，我们会得到一个 Vec<T> 类型的实例对象。clone 方法的标签需要知道哪个类型是 Self 类型，因为 Self 是它的返回类型。当我们尝试编译一些违反 trait 对象的对象安全规则的代码时，我们会收到编译器的提示。
+
+```
+pub struct Screen {
+    pub components: Vec<Box<dyn Clone>>,
+}
+// error
+```
+
+### 模式和模式匹配
+
+模式可能的内容
+
+- 字面值
+- 解构的数组、枚举、结构体或者元组
+- 变量
+- 通配符
+- 占位符
+
+##### 使用的地方
+- match分支
+- if let 条件表达式
+- while let 如：while let Some(top) = stack.pop()
+
+
+
+match 表达式必须是 穷尽(exhaustive)的，意为 match 表达式所有可能的值都必须被考虑到。通常会在最后一个分支捕获其余所有情况：` _ `
+
+##### Refutability(可反驳性): 模式是否会匹配失效
+
+模式有两种形式:refutable(可反驳的)和 irrefutable(不可反驳的)。能匹配任何传递的可能值的模式被称为是 不可反驳的(irrefutable)。一个例子就是 let x = 5; 语句中的 x，因为 x 可以匹配任何值所以不可能会失败。对某些可能的值进行匹配会失败的模式被称为是 可反驳的(refutable)。一个这样的例子 便是 if let Some(x) = a_value 表达式中的 Some(x);如果变量 a_value 中的值是 None 而不是 Some， 那么 Some(x) 模式不能匹配。函数参数、let 语句和 for 循环只能接受不可反驳的模式，因为通过不匹配的值程序无法进行有意义的工 作。 if let 和 while let 表达式被限制为只能接受可反驳的模式，因为根据定义他们意在处理可能的失 败:条件表达式的功能就是根据成功或失败执行不同的操作。
+
+##### match
+
+```
+// 匹配多个模式
+match x {
+    1 | 2 => println!("one or two"),
+    _ => println!("something else"),
+}
+// ..= 语法允许你匹配一个闭区间范围内的值
+match x {
+    1..=5 => println!("one through five"),
+    _ => println!("something else"),
+}
+
+// 结构体解构
+let p = Point { x: 0, y: 7 };
+match p {
+    Point { x, y: 0 } => println!("On the x axis at {}", x),
+    Point { x: 0, y } => println!("On the y axis at {}", y),
+    Point { x, y } => println!("On neither axis: ({}, {})", x, y),
+}
+```
+
+匹配守卫是一个指定于match分支模式周后的额外if条件
+```
+let num = Some(4);
+let y = 10;
+match num {
+    Some(x) if x < 5 => println!("less than five: {}", x),
+    Some(n) if n == y => println!("Matched, n = {}", n),
+    Some(x) => println!("{}", x),
+    None => (),
+}
+```
+
+at 运算符(@)允许我们在创建一个存放值的变量的同时测试其值是否匹配模式。
+```
+enum Message {
+    Hello { id: i32 },
+}
+let msg = Message::Hello { id: 5 };
+match msg {
+    Message::Hello {
+        id: id_variable @ 3..=7,
+    } => println!("Found an id in range: {}", id_variable),
+    Message::Hello { id: 10..=12 } => {
+        println!("Found an id in another range")
+    }
+    Message::Hello { id } => println!("Found some other id: {}", id),
+}
+```
+
+### 高级特征
+- 不安全 Rust:用于当需要舍弃 Rust 的某些保证并负责手动维持这些保证
+- 高级 trait:与 trait 相关的关联类型，默认类型参数，完全限定语法(fully qualified syntax)，超 (父)trait(supertraits)和 newtype 模式
+- 高级类型:关于 newtype 模式的更多内容，类型别名，never 类型和动态大小类型
+- 高级函数和闭包:函数指针和返回闭包
+- 宏:定义在编译时定义更多代码的方式
+
+#### 不安全Rust
+可以通过 unsafe 关键字来切换到不安全 Rust，接着可以开启一个新的存放不安全代码的块。这里有五类可以在不安全 Rust 中进行而不能用于安全 Rust 的操作.
+
+unsafe 并不会关闭借用检查器或禁用任何其他 Rust 安全检查:如果在不安全代码中使 用引用，它仍会被检查。unsafe 关键字只是提供了那五个不会被编译器检查内存安全的功能。
+
+- 解引用裸指针
+- 调用不安全的函数或方法
+- 访问或修改可变静态变量
+- 实现不安全 trait
+- 访问 union 的字段
+
+##### 解引用裸指针
+不安全 Rust 有两个被称 为 裸指针(raw pointers)的类似于引用的新类型。和引用一样，裸指针是不可变或可变的，分别写作 *const T 和 *mut T。这里的星号不是解引用运算符;它是类型名称的一部分。在裸指针的上下文中，不可变意味着指针解引用之后不能直接赋值。
+
+裸指针与引用和智能指针的区别在于：
+- 允许忽略借用规则，可以同时拥有不可变和可变的指针，或多个指向相同位置的可变指针
+- 不保证指向有效的内存
+- 允许为空
+- 不能实现任何自动清理功能
+
+```
+let mut num = 5;
+// 使用 as 将不可变和可变引用强转为对应的裸指针类型
+let r1 = &num as *const i32;
+let r2 = &mut num as *mut i32;
+
+unsafe {
+    println!("r1 is: {}", *r1);
+    println!("r2 is: {}", *r2);
+}
+```
+注意这里没有引入 unsafe 关键字。可以在安全代码中 创建裸指针，只是不能在不安全块之外 解引用裸指针
+
+```
+fn main(){
+    let mut vector = vec![1, 2, 3, 4, 5, 6];
+    let (left, right) = split_at_mut(&mut vector, 3);
+
+    println!("left = {:?} right = {:?}", left, right);
+}
+
+use std::slice;
+fn split_at_mut(slice: &mut [i32], mid: usize) -> (&mut [i32], &mut[i32]) {
+    let len = slice.len();
+    // as_mut_ptr 获取裸指针
+    let ptr = slice.as_mut_ptr();
+    assert!(mid <= len);
+    unsafe {
+        (
+            slice::from_raw_parts_mut(ptr, mid),
+            slice::from_raw_parts_mut(ptr.add(mid), len - mid),
+        )
+    }
+}
+```
+##### 访问或修改可变静态变量
+全局变量在 Rust 中被称为 静态(static)变量
+```
+// 任何读写 COUNTER 的代码都必须位于 unsafe 块中
+static mut COUNTER: u32 = 0;
+fn add_to_count(inc: u32) {
+    unsafe {
+        COUNTER += inc;
+    }
+}
+fn main() {
+    add_to_count(3);
+    unsafe {
+        println!("COUNTER: {}", COUNTER);
+    }
+}
+```
+##### 实现不安全 trait
+```
+unsafe trait Foo {
+    // methods go here
+}
+unsafe impl Foo for i32 {
+    // method implementations go here
+}
+```
+##### 访问 union 的字段
+unsafe 的最后一个操作是访问 联合体中的字段，union 和 struct 类似，但是在一个实例中同时只能使用一个声明的字段。联合体主要用于和 C 代码中的联合体交互。访问联合体的字段是不安全的，因 为 Rust 无法保证当前存储在联合体实例中数据的类型。
+
+#### 高级trait
+关联类型(associated types)是一个将类型占位符与 trait 相关联的方式，这样 trait 的方法签名中就可 以使用这些占位符类型。trait 的实现者会针对特定的实现在这个类型的位置指定相应的具体类型。如此 可以定义一个使用多种类型的 trait，直到实现此 trait 时都无需知道这些类型具体是什么。
+
+```
+pub trait Iterator { type Item;
+    fn next(&mut self) -> Option<Self::Item>;
+}
+
+impl Iterator for Counter {
+    type Item = u32;
+    fn next(&mut self) -> Option<Self::Item> {
+        //...
+    }
+}
+```
+
+这类似于泛型。那么为什么 Iterator trait 不像如下定义呢?
+```
+pub trait Iterator<T> {
+    fn next(&mut self) -> Option<T>;
+}
+```
+
+如上，则不得不在每一个实现中标注类型。这是因为我们也可以实现为 Iterator<String> for Counter，或任何其他类型，这样就可以有多个 Counter 的 Iterator 的实现。 换句话说，当 trait 有泛型参数时，可以多次实现这个 trait，每次需改变泛型参数的具体类型。接着当使用Counter 的 next 方法时，必须提供类型注解来表明希望使用 Iterator 的哪一个实现。通过关联类型，则无需标注类型，因为不能多次实现这个 trait。而使用关联类型的定义，我们只能选择一次 Item 会是什么类型，因为只能有一个 impl Iterator for Counter。当调用 Counter 的 next 时不必每次指定我们需要 u32 值的迭代器。
+
+##### 默认泛型类型参数和运算符重载
+当使用泛型类型参数时，可以为泛型指定一个默认的具体类型。如果默认类型就足够的话，这 消除了为具体类型实现 trait 的需要。为泛型类型指定默认类型的语法是在声明泛型类型时使用<PlaceholderType=ConcreteType>
+
+Rust 并不允许创建自定义运算符或重载任意运算符，不过 std :: ops 中所列出的运算符和相应的 trait 可 以通过实现运算符相关 trait 来重载。
+
+```
+// std::ops::Add
+// Rhs=Self:这个语法叫做 默认类型参数
+pub trait Add<Rhs = Self> {
+    type Output;
+
+    fn add(self, rhs: Rhs) -> Self::Output;
+}
+
+impl Add for Point {
+    type Output = Point;
+    fn add(self, other: Point) -> Point {
+        // ...
+    }
+}
+```
+
+```
+use std::ops::Add;
+
+// 将现有类型简单封装进另一个结构体的方式被称为 newtype 模式
+struct Millimeters(u32);
+struct Meters(u32);
+
+// 在 Millimeters 上实现 Add，以便能够将 Millimeters 与 Meters 
+impl Add<Meters> for Millimeters {
+    type Output = Millimeters;
+    fn add(self, other: Meters) -> Millimeters {
+            Millimeters(self.0 + (other.0 * 1000))
+    }
+}
+```
+
+##### 完全限定语法
+<Type as Trait>::function(receiver_if_method, next_arg, ...);
+
+##### 父 trait 用于在另一个 trait 中使用某 trait 的功能
+有时我们可能会需要某个 trait 使用另一个 trait 的功能。在这种情况下，需要能够依赖相关的 trait 也被实现。这个所需的 trait 是我们实现的 trait 的 父(超)trait(supertrait)
+
+```
+use std::fmt;
+// 指定一个OutlinePrint trait
+trait OutlinePrint: fmt::Display {
+    fn outline_print(&self) {
+        // 使用Display trait中的 to_string()中
+        let output = self.to_string();
+        let len = output.len();
+        println!("{}", "*".repeat(len + 4));
+        println!("*{}*", " ".repeat(len + 2));
+        println!("* {} *", output);
+        println!("*{}*", " ".repeat(len + 2));
+        println!("{}", "*".repeat(len + 4));
+    }
+}
+```
+##### newtype 模式用以在外部类型上实现外部 trait
+孤儿规则(orphan rule)要求只要 trait 或类型对于当前 crate 是本地的话就可以在此类型上实现该 trait。一个绕开这个限制的方法是使用 newtype模式(newtype pattern)
+
+##### 从不返回的 never type
+Rust 有一个叫做 ! 的特殊类型。在函数从不返回的时候充当返回值。
+
+##### 动态大小类型和 Sized trait
+因为 Rust 需要知道例如应该为特定类型的值分配多少空间这样的信息其类型系统的一个特定的角落可 能令人迷惑:这就是 动态大小类型(dynamically sized types)的概念。这有时被称为 ”DST” 或 ”unsized types”，这些类型允许我们处理只有在运行时才知道大小的类型。
+
+
+所以虽然 &T 是一个储存了 T 所在的内存位置的单个值，&str 则是 两个值:str 的地址和其长度。这样， &str 就有了一个在编译时可以知道的大小:它是 usize 长度的两倍。也就是说，我们总是知道 &str 的大 小，而无论其引用的字符串是多长。这里是 Rust 中动态大小类型的常规用法:他们有一些额外的元信息 来储存动态信息的大小。这引出了动态大小类型的黄金规则:必须将动态大小类型的值置于某种指针之 后。
+
+
+可以将 str 与所有类型的指针结合:比如 Box<str> 或 Rc<str>。事实上，之前我们已经见过了，不过是 另一个动态大小类型:trait。每一个 trait 都是一个可以通过 trait 名称来引用的动态大小类型。为了将 trait 用于 trait 对象，必须将 他们放入指针之后，比如 &dyn Trait 或 Box<dyn Trait>(Rc<dyn Trait> 也可以)。
+
+为了处理 DST，Rust 有一个特定的 trait 来决定一个类型的大小是否在编译时可知:这就是 Sized trait。 这个 trait 自动为编译器在编译时就知道大小的类型实现。
+
+```
+fn generic<T>(t: T) {
+    // --snip--
+}
+// 实际上被当作如下处理:
+fn generic<T: Sized>(t: T) {
+    // --snip--
+}
+// 泛型函数默认只能用于在编译时已知大小的类型。然而可以使用如下特殊语法来放宽这个限制
+fn generic<T: ?Sized>(t: &T) {
+    // --snip--
+}
+```
+
+?Sized 上的 trait bound 意味着 ”T 可能是也可能不是 Sized” 同时这个注解会覆盖泛型类型必须在编译 时拥有固定大小的默认规则。这种意义的 ?Trait 语法只能用于 Sized ，而不能用于任何其他 trait。另外注意我们将 t 参数的类型从 T 变为了 &T:因为其类型可能不是 Sized 的，所以需要将其置于某种指 针之后。在这个例子中选择了引用。
+

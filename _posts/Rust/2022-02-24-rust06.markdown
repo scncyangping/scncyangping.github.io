@@ -1,6 +1,6 @@
 ---
 layout:     post
-title:      "Rust系列(七)内置结构"
+title:      "Rust系列(六)内置结构"
 subtitle:   ""
 date:       2022-02-24 13:10:00
 author:     "YaPi"
