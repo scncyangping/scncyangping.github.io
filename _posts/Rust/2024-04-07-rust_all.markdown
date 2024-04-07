@@ -1,0 +1,1233 @@
+---
+layout:     post
+title:      "Rust常用知识点总结"
+subtitle:   ""
+date:       2024-04-07 13:10:00
+author:     "YaPi"
+header-img: ""
+tags:
+   - Rust
+---
+
+# 基础库
+
+## 字符串
+Rust 中的字符是 Unicode 类型，因此每个字符占据 4 个字节内存空间，但是在字符串中不一样，字符串是 UTF-8 编码，也就是字符串中的字符所占的字节数是变化的(1 - 4)，这样有助于大幅降低字符串所占用的内存空间。
+
+Rust 在语言级别，只有一种字符串类型： str，str 类型是硬编码进可执行文件,它通常是以引用类型出现 &str，也就是上文提到的字符串切片。虽然语言级别只有上述的 str 类型，但是在标准库里，还有多种不同用途的字符串类型，其中使用最广的即是 String 类型
+
+
+#### 转换
+- String::from("hello,world")
+- "hello,world".to_string()
+- push() 添加字符char
+- push_str() 添加字面量
+- insert(索引位置,字符): 索引位置不一定对
+- replace(匹配字符串,替换字符串): str类型和string类型都可调用,返回一个string类型
+- replacen 同上,指定替换次数,这两个都可以替换中文
+- replace_range(1..2,"aa"): 指定替换范围内字符串,不会生成新的,所以仅string类型可用
+- String类型和&str字面量进行相加的时候,String类型要在左边。不能在右边或者两个&str相加。若有拼接情况可使用format!()
+#### 删除
+- pop方法删除并返回字符串的最后一个字符
+- remove方法删除并返回字符串中指定位置的字符
+- truncate方法删除字符串中从指定位置开始到结尾的全部字符
+- clear方法该方法是直接操作原来的字符串
+
+#### 连接
+使用 + 或者 += 连接字符串，要求右边的参数必须为字符串的切片引用（Slice）类型。其实当调用 + 的操作符时，相当于调用了 std::string 标准库中的 add() 方法，这里 add() 方法的第二个参数是一个引用的类型。因此我们在使用 + 时， 必须传递切片引用类型。不能直接传递 String 类型。同时add第一个参数是self，所以会转移所有权。使用format! 宏进行拼接不会消耗所有权。
+
+#### 操作UTF-8
+使用chars方法转换为字符
+```
+for c in xxx.chars(){}
+```
+替换可以使用replace和replacen方法。查找则需要外部库支持utf8_slice等
+
+## 数组
+数组是 Rust 的基本类型，是固定长度的，这点与其他编程语言不同，其它编程语言的数组往往是可变长度的，与 Rust 中的动态数组 Vector 类似.数组的元素类型要统一，长度要固定
+```
+let a: [i32; 5] = [1, 2, 3, 4, 5];
+```
+
+这种分号后面跟数字的语法底层是不断Copy出来的，对于String等没有实现Copy的就不能使用此语法。需要使用 std::array::from_fn方法生成,同时必须明确指定类型及数组个数
+```
+let array: [String; 3] = std::array::from_fn(|_i|String::from("value"));
+```
+
+数组类型容易跟数组切片混淆，[T;n]描述了一个数组的类型，而[T]描述了切片的类型， 因为切片是运行期的数据结构，它的长度无法在编译期得知，因此不能用[T;n]的形式去描述
+[u8; 3]和[u8; 4]是不同的类型，数组的长度也是类型的一部分
+在实际开发中，使用最多的是数组切片[T]，我们往往通过引用的方式去使用&[T]，因为后者有固定的类型大小
+
+## 循环/迭代器
+rust中有三种循环for,while,loop
+for 元素 in 数据 可以获取元素,同时分为所有权、可变借用、不可变借用三种方式
+如果想获取到下标,需要将其变为一个迭代器 a.iter().enumerate()
+
+## Match
+模式匹配可以用到的地方
+1. let
+2. if let
+3. while let
+4. match
+5. for循环 for (i,k) in a.iter().enumerate()
+6. 函数参数 fn xxx(&(x,y): (i32,i32)){}
+### matchs!宏
+
+```
+let v = vec![MyEnum::Foo, MyEnum::Bar];
+let x: Vec<&MyEnum> = v.iter()
+    // 直接 == 判断会报错
+    //.filter(|x| x == MyEnum::Foo)
+    .filter(|x| matches!(x, MyEnum::Foo)).collect();
+```
+
+### 变量遮蔽
+无论是 match 还是 if let，这里都是一个新的代码块，而且这里的绑定相当于新变量，如果你使用同名变量，会发生变量遮蔽
+```
+fn main() {
+   let age = Some(30);
+   println!("在匹配前，age是{:?}",age);
+   if let Some(age) = age {
+       println!("匹配出来的age是{}",age);
+   }
+
+   println!("在匹配后，age是{:?}",age);
+}
+```
+
+### 匹配模式
+```
+// 单分支多模式
+let x = 1;
+match x {
+    1 | 2 => println!("one or two"),
+    3 => println!("three"),
+    _ => println!("anything"),
+}
+// 结构结构体
+let p = Point { x: 0, y: 7 };
+match p {
+    Point { x, y: 0 } => println!("On the x axis at {}", x),
+    Point { x: 0, y } => println!("On the y axis at {}", y),
+    Point { x, y } => println!("On neither axis: ({}, {})", x, y),
+}
+
+
+
+match enum3 {
+    // 直接使用 _ 就不会匹配,不会转移所有权(若有)
+    // MyEnum::Dar(_) => println!("match dar1"),
+    // _s 会忽略这个未使用的提示,但是还是会赋值
+    MyEnum::Dar(_s) => println!("match dar2"),
+    MyEnum::Ear(x, y) => println!("ear {}: {}", x, y),
+    //  变量绑定,必须有 = 符号
+    MyEnum::Far {
+        A: x @ 1..=10,
+        B: b,
+    } => println!("ear {}: {}", x, b),
+    // 可以使用 .. 符号来忽略模式匹配中其他的值
+    MyEnum::Far { A: a, .. } => println!("far {}: {}", a, a),
+    // 匹配守卫: 可以在匹配中增加判断,匹配守卫可以使用外部的变量
+    MyEnum::Bar(z) if z < zz => println!("{}", z),
+    MyEnum::Bar(x) => println!("x {}", x),
+    _ => println!("unknown"),
+    }
+```
+
+## 范型
+### const范型
+const 泛型，也就是针对值的泛型，正好可以用于处理数组长度
+```
+fn display_array<T: std::fmt::Debug, const N: usize>(arr: [T; N]) {
+    println!("{:?}", arr);
+}
+fn main() {
+    let arr: [i32; 3] = [1, 2, 3];
+    display_array(arr);
+
+    let arr: [i32; 2] = [1, 2];
+    display_array(arr);
+}
+```
+
+## Trait
+1. 孤儿规则,定义的Trait或者为某个Trait实现方法的结构体及枚举要有一个在当前作用域
+2. 可作为参数,impl xxx。若有多个用加号连接
+3. 作为返回参数如果直接使用impl A这种,函数体内多个分支就只能返回一致的类型,或者使用trait object，可以通过 & 引用或者 Box<T> 智能指针的方式来创建特征对象
+4. 如果要使用一个特征的方法，则需要将该特征引入到当前作用域，常用的都引入到了std::prelude模块
+5. 使用冒号定义实现某个trait必须先实现冒号后的trait
+6. 可以在指定范型的地方使用等于符号指定默认类型,可以多个,但必须排在最后面
+7. 使用type=Item定义范型参数类型
+8. trait对象表示运行时trait的动态分发,定义的两种方式一种使用取地址符号加上dyn + 具体类型,另一种使用Box定义dyn + 具体类型
+9. 实现了多个trait，如果想要调用具体的某个trait的方法,需要使用全限定方式。类型 as Trait名称+双冒号+方法名。有self参数的可以直接Trait名+冒号+方法名即可。<Type as Trait>::function(receiver_if_method, next_arg, ...);。
+
+```
+pub trait traitA<T: Default, R = u8, D = u8>: traitB {
+    type Item;
+    fn add(&self, r: R, i: Self::Item, t: T) -> Self;
+}
+
+
+impl<T> traitA<usize> for StructC<T>
+where
+    T: Default,
+{
+    type Item = u16;
+
+    fn add(&self, r: u8, i: Self::Item, t: usize) -> Self {
+        todo!()
+    }
+}
+
+/// 报错,即使type Item定义类型不同
+impl<T> traitA<usize> for StructC<T>
+where
+    T: Default,
+{
+    type Item = String;
+
+    fn add(&self, r: u8, i: Self::Item, t: usize) -> Self {
+        todo!()
+    }
+}
+```
+
+## 集合类型
+### Vector
+01. 创建 vec::new或则 vec![],使用with_capacity创建默认容量vec
+02. 取数据可用下标方式和get方法
+03. extend方法,将某个实现了迭代器的数据附加到此集合
+04. apend方法,添加一个集合到此集合,同时原始集合删除
+05. reserve方法,调整集合容量到指定值
+06. shrink_to_fit方法,释放剩余容量
+07. is_empty方法,检查是否为空
+08. insert方法，在指定索引位置插入值
+09. remove方法，删除指定索引值
+10. pop方法,删除并返回尾部元素
+11. clear方法,清空集合
+12. truncate方法,保留指定长度的元素,多余的被删除
+13. retain方法,保留满足条件的元素
+14. drain方法,删除指定范围的元素,并返回被删除的元素
+15. 使用sort、sort_by、sort_unstable、sort_unstatble_by进行排序
+
+### HashMap
+需要引入std::collections::HashMap
+1. HashMap::new方法创建,使用with_capacity创建默认容量map
+2. 可使用集合转换，集合 + into_iter方法 + collect()方法转换,注意需要指定map的key和value的类型
+3. insert方法插入
+4. 不存在则插入值,map.entry(key).or_insert(value)
+
+## 项目管理
+
+### 包crate和项目package
+对于Rust而言，包是一个独立的可编译单元，它编译后会生成一个可执行文件或者一个库。
+Package 就是一个项目，因此它包含有独立的 Cargo.toml 文件，以及因为功能性被组织在一起的一个或多个包。一个 Package 只能包含一个库(library)类型的包，但是可以包含多个二进制可执行类型的包。
+
+```
+.
+├── Cargo.toml
+├── Cargo.lock
+├── src
+│   ├── main.rs
+│   ├── lib.rs
+│   └── bin
+│       └── main1.rs
+│       └── main2.rs
+├── tests
+│   └── some_integration_tests.rs
+├── benches
+│   └── simple_bench.rs
+└── examples
+    └── simple_example.rs
+
+```
+
+可以有多个可执行的二进制crate,比如main.rs、bin/main1.rs、bin/main2.rs等。若需要cargo能运行,需要再cargo.toml文件里配置
+
+```
+[[bin]]
+name="main1"
+path ="src/cccc/main1.rs"
+[[bin]]
+name="main2"
+path ="src/cccc/main2.rs"
+[[bin]]
+name="main"
+path ="src/main.rs"
+```
+
+或者,使用rustc 编译这个文件,然后再手动运行。
+
+
+Rust 出于安全的考虑，默认情况下，所有的类型都是私有化的，包括函数、方法、结构体、枚举、常量，是的，就连模块本身也是私有化的。父模块完全无法访问子模块中的私有项，但是子模块却可以访问父模块、父父..模块的私有项。设置为pub模块可见不代表模块内部项的可见性，模块的可见性仅仅是允许其它模块去引用它，但是想要引用它内部的项，还得继续将对应的项标记为 pub。而结构体和枚举的可见性也不同。将结构体设置为 pub，但它的所有字段依然是私有的
+将枚举设置为 pub，它的所有字段也将对外可见。
+
+#### 文件可见性
+如果需要将文件夹作为一个模块，我们需要进行显示指定暴露哪些子模块。
+- 在 front_of_house 目录里创建一个 mod.rs，如果你使用的 rustc 版本 1.30 之前，这是唯一的方法。
+- 在 front_of_house 同级目录里创建一个与模块（目录）同名的 rs 文件 front_of_house.rs，在新版本里，更建议使用这样的命名方式来避免项目中存在大量同名的 mod.rs 文件（ Python 点了个 踩）。
+
+
+```
+// 一个名为 `my_mod` 的模块
+mod my_mod {
+    // 模块中的项默认具有私有的可见性
+    fn private_function() {
+        println!("called `my_mod::private_function()`");
+    }
+
+    // 使用 `pub` 修饰语来改变默认可见性。
+    pub fn function() {
+        println!("called `my_mod::function()`");
+    }
+
+    // 在同一模块中，项可以访问其它项，即使它是私有的。
+    pub fn indirect_access() {
+        print!("called `my_mod::indirect_access()`, that\n> ");
+        private_function();
+    }
+
+    // 模块也可以嵌套
+    pub mod nested {
+        pub fn function() {
+            println!("called `my_mod::nested::function()`");
+        }
+
+        #[allow(dead_code)]
+        fn private_function() {
+            println!("called `my_mod::nested::private_function()`");
+        }
+
+        // 使用 `pub(in path)` 语法定义的函数只在给定的路径中可见。
+        // `path` 必须是父模块（parent module）或祖先模块（ancestor module）
+        pub(in crate::my_mod) fn public_function_in_my_mod() {
+            print!("called `my_mod::nested::public_function_in_my_mod()`, that\n > ");
+            public_function_in_nested()
+        }
+
+        // 使用 `pub(self)` 语法定义的函数则只在当前模块中可见。
+        pub(self) fn public_function_in_nested() {
+            println!("called `my_mod::nested::public_function_in_nested");
+        }
+
+        // 使用 `pub(super)` 语法定义的函数只在父模块中可见。
+        pub(super) fn public_function_in_super_mod() {
+            println!("called my_mod::nested::public_function_in_super_mod");
+        }
+    }
+
+    pub fn call_public_function_in_my_mod() {
+        print!("called `my_mod::call_public_funcion_in_my_mod()`, that\n> ");
+        nested::public_function_in_my_mod();
+        print!("> ");
+        nested::public_function_in_super_mod();
+    }
+
+    // `pub(crate)` 使得函数只在当前包中可见
+    pub(crate) fn public_function_in_crate() {
+        println!("called `my_mod::public_function_in_crate()");
+    }
+
+    // 嵌套模块的可见性遵循相同的规则
+    mod private_nested {
+        #[allow(dead_code)]
+        pub fn function() {
+            println!("called `my_mod::private_nested::function()`");
+        }
+    }
+}
+
+fn function() {
+    println!("called `function()`");
+}
+
+fn main() {
+    // 模块机制消除了相同名字的项之间的歧义。
+    function();
+    my_mod::function();
+
+    // 公有项，包括嵌套模块内的，都可以在父模块外部访问。
+    my_mod::indirect_access();
+    my_mod::nested::function();
+    my_mod::call_public_function_in_my_mod();
+
+    // pub(crate) 项可以在同一个 crate 中的任何地方访问
+    my_mod::public_function_in_crate();
+
+    // pub(in path) 项只能在指定的模块中访问
+    // 报错！函数 `public_function_in_my_mod` 是私有的
+    //my_mod::nested::public_function_in_my_mod();
+    // 试一试 ^ 取消该行的注释
+
+    // 模块的私有项不能直接访问，即便它是嵌套在公有模块内部的
+
+    // 报错！`private_function` 是私有的
+    //my_mod::private_function();
+    // 试一试 ^ 取消此行注释
+
+    // 报错！`private_function` 是私有的
+    //my_mod::nested::private_function();
+    // 试一试 ^ 取消此行的注释
+
+    // 报错！ `private_nested` 是私有的
+    //my_mod::private_nested::function();
+    // 试一试 ^ 取消此行的注释
+}
+```
+
+## 注释
+cargo doc --open命令打开生成的文档
+#### 代码注释
+1. 行注释 //
+2. 块注释 /* ..... */
+#### 文档注释
+文档注释里面可以写Markdown语法。必须位于lib类型的包中
+1. 行注释 ///
+2. 块注释 /** .... */
+
+可以在文档注释里面写测试,若是指定某个测试必须panic,可以使用should_panic。有的时候需要隐藏一些测试的代码，但是又要测试执行,可以在前面使用#号。也可以指定跳转,使用中括号加引号使用。[`crate::xxx`]。使用#[doc(alias="x")]做别名搜索。
+
+```
+# 别名搜索
+#[doc(alias = "x")]
+#[doc(alias = "big")]
+pub struct BigX;
+#[doc(alias("y", "big"))]
+pub struct BigY;
+```
+
+#### 包/模块注释
+这些注释要添加到包、模块的最上方
+1. 行注释 //!
+2. 块注释 /*! ... */
+
+## 格式化输出
+1. print! 将格式化文本输出到标准输出,不带换行符
+2. println! 同上,但是在行的末尾添加换行符
+3. format! 将格式化文本输出到String字符串
+4. eprint! 、eprintln输出到标准错误输出
+5. println!("{1}{0}", 1, 2); // =>"21"
+6. println!("{name} {}", 1, name = 2); // => "2 1",带名称的参数必须放在不带名称参数的后面
+7. println!("{:.2}", v) 2位小数
+
+
+输出使用 {} 和 {:?}。{} 适用于实现了Display特征的类型,后者适用于实现了Debug特征的类型。{:#?} 是 {:?}的优化,优化了输出。
+
+
+## 生命周期
+
+#### 复杂例子
+
+
+```
+struct Interface<'a> {
+    manager: &'a mut Manager<'a>
+}
+
+impl<'a> Interface<'a> {
+    pub fn noop(self) {
+        println!("interface consumed");
+    }
+}
+
+struct Manager<'a> {
+    text: &'a str
+}
+
+struct List<'a> {
+    manager: Manager<'a>,
+}
+
+impl<'a> List<'a> {
+    // 使用List的生命周期参数,这个方法占用可变借用生命周期时间
+    // 会和List一样
+    pub fn get_interface(&'a mut self) -> Interface {
+        Interface {
+            manager: &mut self.manager
+        }
+    }
+    // 这种不带指定生命周期就可以使用
+    // pub fn get_interface(&mut self) {
+    // }
+}
+
+fn main() {
+    let mut list = List {
+        manager: Manager {
+            text: "hello"
+        }
+    };
+    // get_interface方法持有可变借用的生命周期
+    // 范围和list一样,所以下面的不可变借用会报错
+    list.get_interface().noop();
+    println!("Interface should be dropped here and the borrow released");
+    // 下面的调用会失败，因为同时有不可变/可变借用
+    use_list(&list);
+}
+
+fn use_list(list: &List) {
+    println!("{}", list.manager.text);
+}
+```
+
+按照如下修改也可以使用
+
+```
+struct Interface<'b, 'a: 'b> {
+    manager: &'b mut Manager<'a>
+}
+
+impl<'b, 'a: 'b> Interface<'b, 'a> {
+    pub fn noop(self) {
+        println!("interface consumed");
+    }
+}
+
+struct Manager<'a> {
+    text: &'a str
+}
+
+struct List<'a> {
+    manager: Manager<'a>,
+}
+
+impl<'a> List<'a> {
+    pub fn get_interface<'b>(&'b mut self) -> Interface<'b, 'a>
+    where 'a: 'b {
+        Interface {
+            manager: &mut self.manager
+        }
+    }
+}
+
+fn main() {
+
+    let mut list = List {
+        manager: Manager {
+            text: "hello"
+        }
+    };
+
+    list.get_interface().noop();
+
+    println!("Interface should be dropped here and the borrow released");
+
+    // 下面的调用可以通过，因为Interface的生命周期不需要跟list一样长
+    use_list(&list);
+}
+
+fn use_list(list: &List) {
+    println!("{}", list.manager.text);
+}
+```
+
+## &‘static 和 T:'static
+&'static 对于生命周期有着非常强的要求：一个引用必须要活得跟剩下的程序一样久，才能被标注为 &'static。
+对于字符串字面量来说，它直接被打包到二进制文件中，永远不会被 drop，因此它能跟程序活得一样久，自然它的生命周期是 'static。
+但是，&'static 生命周期针对的仅仅是引用，而不是持有该引用的变量，对于变量来说，还是要遵循相应的作用域规则
+
+
+T: 'static 的意思是对T约束 拥有所有权 或者 不包含非'static生命周期的引用
+
+
+```
+use std::{slice::from_raw_parts, str::from_utf8_unchecked};
+
+fn get_memory_location() -> (usize, usize) {
+  // “Hello World” 是字符串字面量，因此它的生命周期是 `'static`.
+  // 但持有它的变量 `string` 的生命周期就不一样了，它完全取决于变量作用域，对于该例子来说，也就是当前的函数范围
+  let string = "Hello World!";
+  let pointer = string.as_ptr() as usize;
+  let length = string.len();
+  (pointer, length)
+  // `string` 在这里被 drop 释放
+  // 虽然变量被释放，无法再被访问，但是数据依然还会继续存活
+}
+
+fn get_str_at_location(pointer: usize, length: usize) -> &'static str {
+  // 使用裸指针需要 `unsafe{}` 语句块
+  unsafe { from_utf8_unchecked(from_raw_parts(pointer as *const u8, length)) }
+}
+
+fn main() {
+  let (pointer, length) = get_memory_location();
+  let message = get_str_at_location(pointer, length);
+  println!(
+    "The {} bytes at 0x{:X} stored: {}",
+    length, pointer, message
+  );
+  // 如果大家想知道为何处理裸指针需要 `unsafe`，可以试着反注释以下代码
+  // let message = get_str_at_location(1000, 10);
+}
+```
+
+
+```
+
+use std::fmt::Display;
+
+fn main() {
+  let r1;
+  let r2;
+  {
+    static STATIC_EXAMPLE: i32 = 42;
+    r1 = &STATIC_EXAMPLE;
+    let x = "&'static str";
+    r2 = x;
+    // r1 和 r2 持有的数据都是 'static 的，因此在花括号结束后，并不会被释放
+  }
+
+  println!("&'static i32: {}", r1); // -> 42
+  println!("&'static str: {}", r2); // -> &'static str
+
+  let r3: &str;
+
+  {
+    let s1 = "String".to_string();
+    // s1虽然不是‘static的变量,但是s1满足不包含非static生命周期的数据
+    static_bound(&s1);
+
+    // s1 是 String 类型，没有 'static 的生命周期，因此下面代码会报错
+    r3 = &s1;
+
+    // s1 在这里被 drop
+  }
+  println!("{}", r3);
+}
+
+fn static_bound<T: Display + 'static>(t: &T) {
+  println!("{}", t);
+}
+```
+
+## 闭包
+闭包是一种匿名函数，它可以赋值给变量也可以作为参数传递给其它函数，不同于函数的是，它允许捕获调用者作用域中的值。
+
+一个闭包实现了哪种 Fn 特征取决于该闭包如何使用被捕获的变量，而不是取决于闭包如何捕获它们。
+
+1. FnOnce，该类型的闭包会拿走被捕获变量的所有权。
+2. FnMut，它以可变借用的方式捕获了环境中的值
+3. Fn 特征，它以不可变借用的方式捕获环境中的值
+4. 所有的闭包都自动实现了 FnOnce 特征，因此任何一个闭包都至少可以被调用一次
+5. 没有移除所捕获变量的所有权的闭包自动实现了 FnMut 特征
+6. 不需要对捕获变量进行改变的闭包自动实现了 Fn 特征
+
+写法位置问题
+
+1. fn do1(c: String) {}：表示实参会将所有权传递给 c
+2. fn do2(c: &String) {}：表示实参的不可变引用（指针）传递给 c，实参需带 & 声明
+3. fn do3(c: &mut String) {}：表示实参可变引用（指针）传递给 c，实参需带 let mut 声明，且传入需带 &mut
+4. fn do4(mut c: String) {}：表示实参会将所有权传递给 c，且在函数体内 c 是可读可写的，实参无需 mut 声明
+5. fn do5(mut c: &mut String) {}：表示实参可变引用指向的值传递给 c，且 c 在函数体内部是可读可写的，实参需带 let mut 声明，且传入需带 &mut
+6. 一句话总结：在函数参数中，冒号左边的部分，如：mut c，这个 mut 是对🪄函数体内部有效🪄；冒号右边的部分，如：&mut String，这个 &mut 是针对🪄外部实参传入时的形式（声明）说明🪄。
+
+![](media/17103818104579/17109855785478.jpg)
+
+## 迭代器
+1. into_iter 夺走所有权
+2. iter 借用
+3. iter_mut 可变借用
+
+#### Iterator 和 IntoIterator 的区别
+Iterator 就是迭代器特征，只有实现了它才能称为迭代器，才能调用 next。
+而 IntoIterator 强调的是某一个类型如果实现了该特征，它可以通过 into_iter，iter 等方法变成一个迭代器。
+
+#### 消费者适配器
+只要迭代器上的某个方法 A 在其内部调用了 next 方法，那么 A 就被称为消费性适配器：因为 next 方法会消耗掉迭代器上的元素，所以方法 A 的调用也会消耗掉迭代器上的元素。
+
+其中一个例子是 sum 方法，它会拿走迭代器的所有权，然后通过不断调用 next 方法对里面的元素进行求和
+
+#### 迭代器适配器
+费者适配器是消费掉迭代器，然后返回一个值。那么迭代器适配器，顾名思义，会返回一个新的迭代器，这是实现链式方法调用的关键：v.iter().map().filter()...。
+与消费者适配器不同，迭代器适配器是惰性的，意味着你需要一个消费者适配器来收尾，最终将迭代器转换成一个具体的值。比如：collect
+
+```
+use std::collections::HashMap;
+fn main() {
+    let names = ["sunface", "sunfei"];
+    let ages = [18, 18];
+    let folks: HashMap<_, _> = names.into_iter().zip(ages.into_iter()).collect();
+
+    println!("{:?}",folks);
+}
+```
+
+可以使用闭包作为适配器参数,捕获环境中的变量,然后在迭代时做具体的操作
+
+
+## 类型
+1. as 操作符
+2. .操作符
+
+假设有一个方法 foo，它有一个接收器(接收器就是 self、&self、&mut self 参数)。如果调用 value.foo()，编译器在调用 foo 之前，需要决定到底使用哪个 Self 类型来调用。现在假设 value 拥有类型 T。
+1. 首先，编译器检查它是否可以直接调用 T::foo(value)，称之为值方法调用
+2. 如果上一步调用无法完成(例如方法类型错误或者特征没有针对 Self 进行实现(特征不能进行强制转换))，那么编译器会尝试增加自动引用，例如会尝试以下调用： <&T>::foo(value) 和 <&mut T>::foo(value)，称之为引用方法调用
+3. 若上面两个方法依然不工作，编译器会试着解引用 T ，然后再进行尝试。这里使用了 Deref 特征 —— 若 T: Deref<Target = U> (T 可以被解引用为 U)，那么编译器会使用 U 类型进行尝试，称之为解引用方法调用
+4. 若 T 不能被解引用，且 T 是一个定长类型(在编译期类型长度是已知的)，那么编译器也会尝试将 T 从定长类型转为不定长类型，例如将 [i32; 2] 转为 [i32]
+
+例：
+```
+let array: Rc<Box<[T; 3]>> = ...;
+let first_entry = array[0];
+array 数组的底层数据隐藏在了重重封锁之后，那么编译器如何使用 array[0] 这种数组原生访问语法通过重重封锁，准确的访问到数组中的第一个元素？
+
+1. 首先， array[0] 只是Index特征的语法糖：编译器会将 array[0] 转换为 array.index(0) 调用，当然在调用之前，编译器会先检查 array 是否实现了 Index 特征
+2. 接着，编译器检查 Rc<Box<[T; 3]>> 是否有实现 Index 特征，结果是否，不仅如此，&Rc<Box<[T; 3]>> 与 &mut Rc<Box<[T; 3]>> 也没有实现
+3. 上面的都不能工作，编译器开始对 Rc<Box<[T; 3]>> 进行解引用，把它转变成 Box<[T; 3]>
+4. 此时继续对 Box<[T; 3]> 进行上面的操作 ：Box<[T; 3]>， &Box<[T; 3]>，和 &mut Box<[T; 3]> 都没有实现 Index 特征，所以编译器开始对 Box<[T; 3]> 进行解引用，然后我们得到了 [T; 3]
+5. [T; 3] 以及它的各种引用都没有实现 Index 索引(是不是很反直觉:D，在直觉中，数组都可以通过索引访问，实际上只有数组切片才可以!)，它也不能再进行解引用，因此编译器只能祭出最后的大杀器：将定长转为不定长，因此 [T; 3] 被转换成 [T]，也就是数组切片，它实现了 Index 特征，因此最终我们可以通过 index 方法访问到对应的元素
+```
+
+#### 转换
+1. mem::transmute<T, U> 将类型 T 直接转成类型 U，唯一的要求就是，这两个类型占用同样大小的字节数
+2. mem::transmute_copy<T, U>从 T 类型中拷贝出 U 类型所需的字节数，然后转换成 U
+
+```
+// 将裸指针变成函数指针
+fn foo() -> i32 {
+    0
+}
+
+let pointer = foo as *const ();
+let function = unsafe { 
+    // 将裸指针转换为函数指针
+    std::mem::transmute::<*const (), fn() -> i32>(pointer) 
+};
+assert_eq!(function(), 0);
+
+// 延长生命周期，或者缩短一个静态生命周期寿命
+struct R<'a>(&'a i32);
+
+// 将 'b 生命周期延长至 'static 生命周期
+unsafe fn extend_lifetime<'b>(r: R<'b>) -> R<'static> {
+    std::mem::transmute::<R<'b>, R<'static>>(r)
+}
+
+// 将 'static 生命周期缩短至 'c 生命周期
+unsafe fn shorten_invariant_lifetime<'b, 'c>(r: &'b mut R<'static>) -> &'b mut R<'c> {
+    std::mem::transmute::<&'b mut R<'static>, &'b mut R<'c>>(r)
+}
+
+```
+
+### 创建类型
+1. newType: 使用元组结构体将原始的类型包裹起来形成新类型。struct XXX(u32)
+2. 类型别名: type AAA = u32
+
+类型别名仅仅是别名，只是为了让可读性更好，并不是全新的类型，newtype 才是！
+类型别名无法实现为外部类型实现外部特征等功能，而 newtype 可以
+
+### sized和DST
+1. 定长类型( sized )，这些类型的大小在编译时是已知的
+2. 不定长类型( unsized )，与定长类型相反，它的大小只有到了程序运行时才能动态获知，这种类型又被称之为 DST
+
+之前学过的几乎所有类型，都是固定大小的类型，包括集合 Vec、String 和 HashMap 等，而动态大小类型刚好与之相反：编译器无法在编译期得知该类型值的大小，只有到了程序运行时，才能动态获知。对于动态类型，我们使用 DST(dynamically sized types)或者 unsized 类型来称呼它。
+
+上述的这些集合虽然底层数据可动态变化，感觉像是动态大小的类型。但是实际上，这些底层数据只是保存在堆上，在栈中还存有一个引用类型，该引用包含了集合的内存地址、元素数目、分配空间信息，通过这些信息，编译器对于该集合的实际大小了若指掌，最最重要的是：栈上的引用类型是固定大小的，因此它们依然是固定大小的类型
+
+将动态数据固定化的秘诀就是使用引用指向这些动态数据，然后在引用中存储相关的内存位置、长度等信息。
+
+Rust 中常见的 DST 类型有: str、[T]、dyn Trait，它们都无法单独被使用，必须要通过引用或者 Box 来间接使用
+
+每一个特征都是一个可以通过名称来引用的动态大小类型。因此如果想把特征作为具体的类型来传递给函数，你必须将其转换成一个特征对象：诸如 &dyn Trait 或者 Box<dyn Trait> (还有 Rc<dyn Trait>)这些引用类型
+
+#### enum
+Rust中enum类型若想类型golang iota定义。可以直接使用A=1赋值,下面的字段会自动加1。默认直接定义的类型为isize。可使用repr宏指定
+```
+#[repr(i32)]
+enum MyEnum {
+    A = 1,
+    B,
+    C,
+}
+```
+
+## 智能指针
+智能指针的名称来源主要就在于它实现了 Deref 和 Drop 特征，这两个特征可以智能地帮助我们节省使用上的负担
+1. Deref 可以让智能指针像引用那样工作，这样你就可以写出同时支持智能指针和引用的代码，例如 *T
+2. Drop 允许你指定智能指针超出作用域后自动执行的代码，例如做一些数据清除等收尾工作
+### BOX
+使用场景
+1. 特意的将数据分配在堆上
+2. 数据较大时，又不想在转移所有权时进行数据拷贝
+3. 类型的大小在编译期无法确定，但是我们又需要固定大小的类型时
+4. 特征对象，用于说明对象实现了一个特征，而不是某个特定的类型
+
+```
+fn main() {
+    let arr = vec![Box::new(1), Box::new(2)];
+    let (first, second) = (&arr[0], &arr[1]);
+    let sum = **first + **second;
+}
+// 使用 & 借用数组中的元素，否则会报所有权错误
+// 表达式不能隐式的解引用，因此必须使用 ** 做两次解引用，第一次将 &Box<i32> 类型转成 Box<i32>，第二次将 Box<i32> 转成 i32
+```
+
+Box::leak方法，将目标值从内存中泄漏。
+一个简单的场景，你需要一个在运行期初始化的值，但是可以全局有效，也就是和整个程序活得一样久，那么就可以使用 Box::leak，例如有一个存储配置的结构体实例，它是在运行期动态插入内容，那么就可以将其转为全局有效，虽然 Rc/Arc 也可以实现此功能，但是 Box::leak 是性能最高的
+```
+fn gen_static_str() -> &'static str{
+    let mut s = String::new();
+    s.push_str("hello, world");
+
+    Box::leak(s.into_boxed_str())
+}
+```
+
+### Deref
+1. 当 T: Deref<Target=U>，可以将 &T 转换成 &U
+2. 当 T: DerefMut<Target=U>，可以将 &mut T 转换成 &mut U
+3. 当 T: Deref<Target=U>，可以将 &mut T 转换成 &U
+
+在Rust中，任何给定的类型只能为 Deref trait 实现一次。实现Deref的方法时,self是不可变借用,并没有获取所有权。不然任何情况下,只Deref一次,原数据就不能使用了。
+
+一个类型为 T 的对象 foo，如果 T: Deref<Target=U>，那么，相关 foo 的引用 &foo 在应用的时候会自动转换为 &U。
+
+Deref trait 被用来重载不可变引用的解引用运算符 *（星号）。同样地，DerefMut trait 用来重载可变引用的解引用运算符，对于同一个类型，DerefMut 也只能实现一次。这些trait的实现允许一个类型的实例表现得像一个引用，从而可以通过引用的方式来访问其内部数据或行为。
+
+对于函数和方法的传参，Rust 提供了一个极其有用的隐式转换：Deref 转换。若一个类型实现了 Deref 特征，那它的引用在传给函数或方法时，会根据参数签名来决定是否进行隐式的 Deref 转换
+
+```
+let s = Box::new(String::from("hello world"));
+let sss = *s; // *s是String类型
+let ss = s.deref(); // s.deref()是&String?
+```
+1. 当你使用*s时，Rust首先调用s.deref()来获取一个原始数据（在这个例子中是String）的引用（&String），然后它进一步解引用这个引用以获取String本身。这是因为*操作符意味着完全解引用：它不仅仅调用deref方法，还会继续解引用直到得到一个值。对于Box<T>、Rc<T>、Arc<T>等智能指针，使用*操作符会转移所有权，因此在这个例子中，*s的结果是一个String值，而不是引用
+2. 相对地，当你直接调用s.deref()时，你仅仅是调用了Deref trait的方法，这个方法返回一个指向原始数据的引用。因此，s.deref()的结果是&String。
+
+**总结**
+会自动Deref的地方
+1. 使用*运算符进行显式解引用：当你对实现了Deref特质的类型使用*运算符时，Deref::deref方法会被调用，返回被引用值的引用。然后再做*运算,获取到真实数据的所有权
+   以下几种方式都会在引用类型(&T类型)的时候触发
+2. 当调用方法时，如果接收者的类型与方法签名中指定的类型不匹配，Rust会尝试使用Deref强制转换来匹配类型
+3. 当引用被赋值给不同类型的引用时，例如将&String赋值给&str类型的变量。
+
+#### 归集
+1. 对于&&&&&&v 会归一成&v。
+   源码定义如下
+```
+impl<T: ?Sized> Deref for &T {
+    type Target = T;
+    // 这里会消耗掉一个&
+    fn deref(&self) -> &T {
+        *self
+    }
+}
+```
+所以
+
+```
+fn foo(s: &str) {}
+
+// 由于 String 实现了 Deref<Target=str>
+let owned = "Hello".to_string();
+
+// 因此下面的函数可以正常运行：
+foo(&owned);
+```
+&owned触发deref，返回&str类型，加上原来的&应该是&&类型，然后再次deref，变成&str类型？？？不确定这种,还没debug
+
+#### Drop
+1. 实现Drop的是可变借用,没有拿走所有权。
+2. 若需手动执行Drop,可以使用std::mem::drop提供的drop(xxx).
+3. 无法为一个类型同时实现 Copy 和 Drop 特征。
+4. Drop trait 允许你定义当类型的实例被丢弃时应该执行的清理代码。
+5. 你不能手动调用 Drop trait 的 drop 方法，Rust 自动在值被丢弃时调用它。
+6. std::mem::drop 函数可以用来显式地立即丢弃一个值，并触发其 Drop trait 的 drop 方法（如果已实现）。
+
+### Rc\Arc
+1. Rc::new创建
+2. Rc::clone拷贝
+3. Rc::strong_count统计当前引用条数
+4. 内部是指向底层数据的不可变引用,无法改变数据,若需改变,则需使用RefCell或者Mutex类型。
+#### 内部可见性Cell\RefCell
+1. Cell与RefCell不同在于Cell<T>只适用于T实现Copy的情况
+2. Cell使用get方法获取值,使用set方法设置值,因为实现了Copy,获取和设置可以交替存在
+3. RefCell使用 borrow获取不可变借用,使用borrow_mut获取可变借用。交替存在时编译期不会出错,运行期panic。
+
+例子:
+```
+// 定义在外部库中的特征
+pub trait Messenger {
+    fn send(&self, msg: String);
+}
+
+// --------------------------
+// 我们的代码中的数据结构和实现
+struct MsgQueue {
+    msg_cache: Vec<String>,
+}
+
+impl Messenger for MsgQueue {
+    fn send(&self, msg: String) {
+        self.msg_cache.push(msg)
+    }
+}
+如上所示，外部库中定义了一个消息发送器特征 Messenger，它只有一个发送消息的功能：fn send(&self, msg: String)，因为发送消息不需要修改自身，因此原作者在定义时，使用了 &self 的不可变借用，这个无可厚非。
+
+我们要在自己的代码中使用该特征实现一个异步消息队列，出于性能的考虑，消息先写到本地缓存(内存)中，然后批量发送出去，因此在 send 方法中，需要将消息先行插入到本地缓存 msg_cache 中。但是问题来了，该 send 方法的签名是 &self，因此上述代码会报错.
+
+引入Refcell解决
+use std::cell::RefCell;
+pub trait Messenger {
+    fn send(&self, msg: String);
+}
+
+pub struct MsgQueue {
+    msg_cache: RefCell<Vec<String>>,
+}
+
+impl Messenger for MsgQueue {
+    fn send(&self, msg: String) {
+        self.msg_cache.borrow_mut().push(msg)
+    }
+}
+
+fn main() {
+    let mq = MsgQueue {
+        msg_cache: RefCell::new(Vec::new()),
+    };
+    mq.send("hello, world".to_string());
+}
+```
+
+由于 Rust 的 mutable 特性，一个结构体中的字段，要么全都是 immutable，要么全部是 mutable，不支持针对部分字段进行设置。比如，在一个 struct 中，可能只有个别的字段需要修改，而其他字段并不需要修改，为了一个字段而将整个 struct 变为 &mut 也是不合理的。
+所以，实现 内部可变性 的 Cell 和 RefCell 正是为了解决诸如这类问题存在的，通过它们可以实现 struct 部分字段可变，而不用将整个 struct 设置为 mutable
+
+## 并发/并行
+1. let handle = thread::spawn(闭包)创建
+2. thread::sleep暂停
+3. 使用 handle.join等待创建的线程执行完成
+
+#### 线程的结束
+main 线程是程序的主线程，一旦结束，则程序随之结束，同时各个子线程也将被强行终止。那么有一个问题，如果父线程不是 main 线程，那么父线程的结束会导致什么？自生自灭还是被干掉？线程的代码执行完，线程就会自动结束。但是如果线程中的代码不会执行完呢？那么情况可以分为两种进行讨论
+1. 线程的任务是一个循环 IO 读取，任务流程类似：IO 阻塞，等待读取新的数据 -> 读到数据，处理完成 -> 继续阻塞等待 ··· -> 收到 socket 关闭的信号 -> 结束线程，在此过程中，绝大部分时间线程都处于阻塞的状态，因此虽然看上去是循环，CPU 占用其实很小，也是网络服务中最最常见的模型
+2. 线程的任务是一个循环，里面没有任何阻塞，包括休眠这种操作也没有，此时 CPU 很不幸的会被跑满，而且你如果没有设置终止条件，该线程将持续跑满一个 CPU 核心，并且不会被终止，直到 main 线程的结束
+
+#### 线程屏障
+可以使用 Barrier 让多个线程都执行到某个点后，才继续一起往后执行
+```
+use std::sync::{Arc, Barrier};
+use std::thread;
+
+fn main() {
+    let mut handles = Vec::with_capacity(6);
+    let barrier = Arc::new(Barrier::new(6));
+
+    for _ in 0..6 {
+        let b = barrier.clone();
+        handles.push(thread::spawn(move|| {
+            println!("before wait");
+            b.wait();
+            println!("after wait");
+        }));
+    }
+
+    for handle in handles {
+        handle.join().unwrap();
+    }
+}
+```
+
+#### 线程局部变量
+```
+use std::cell::RefCell;
+use std::thread;
+
+thread_local!(static FOO: RefCell<u32> = RefCell::new(1));
+
+FOO.with(|f| {
+    assert_eq!(*f.borrow(), 1);
+    *f.borrow_mut() = 2;
+});
+
+// 每个线程开始时都会拿到线程局部变量的FOO的初始值
+let t = thread::spawn(move|| {
+    FOO.with(|f| {
+        assert_eq!(*f.borrow(), 1);
+        *f.borrow_mut() = 3;
+    });
+});
+
+// 等待线程完成
+t.join().unwrap();
+
+// 尽管子线程中修改为了3，我们在这里依然拥有main线程中的局部值：2
+FOO.with(|f| {
+    assert_eq!(*f.borrow(), 2);
+});
+```
+
+#### 条件变量
+```
+use std::thread;
+use std::sync::{Arc, Mutex, Condvar};
+
+fn main() {
+    let pair = Arc::new((Mutex::new(false), Condvar::new()));
+    let pair2 = pair.clone();
+
+    thread::spawn(move|| {
+        let (lock, cvar) = &*pair2;
+        let mut started = lock.lock().unwrap();
+        println!("changing started");
+        *started = true;
+        cvar.notify_one();
+    });
+
+    let (lock, cvar) = &*pair;
+    let mut started = lock.lock().unwrap();
+    while !*started {
+        started = cvar.wait(started).unwrap();
+    }
+
+    println!("started changed");
+}
+```
+
+#### 只执行一次
+```
+use std::thread;
+use std::sync::Once;
+
+static mut VAL: usize = 0;
+static INIT: Once = Once::new();
+
+fn main() {
+    let handle1 = thread::spawn(move || {
+        INIT.call_once(|| {
+            unsafe {
+                VAL = 1;
+            }
+        });
+    });
+
+    let handle2 = thread::spawn(move || {
+        INIT.call_once(|| {
+            unsafe {
+                VAL = 2;
+            }
+        });
+    });
+
+    handle1.join().unwrap();
+    handle2.join().unwrap();
+
+    println!("{}", unsafe { VAL });
+}
+```
+
+### 线程消息传递
+
+#### 通道
+```
+use std::sync::mpsc;
+use std::thread;
+
+fn main() {
+    // 创建一个消息通道, 返回一个元组：(发送者，接收者)
+    let (tx, rx) = mpsc::channel();
+
+    // 创建线程，并发送消息
+    thread::spawn(move || {
+        // 发送一个数字1, send方法返回Result<T,E>，通过unwrap进行快速错误处理
+        tx.send(1).unwrap();
+
+        // 下面代码将报错，因为编译器自动推导出通道传递的值是i32类型，那么Option<i32>类型将产生不匹配错误
+        // tx.send(Some(1)).unwrap()
+    });
+
+    // 在主线程中接收子线程发送的消息并输出
+    println!("receive {}", rx.recv().unwrap());
+}
+```
+**注意**
+01. 接收消息的操作rx.recv()会阻塞当前线程，直到读取到值，或者通道被关闭
+02. 需要使用move将tx的所有权转移到子线程的闭包中
+03. 对比recv()方法。还可以使用try_recv尝试接收一次消息，该方法并不会阻塞线程，当通道中没有消息时，它会立刻返回一个错误。
+04. 发送的时候若值的类型实现了Copy特征，则直接复制一份该值，然后传输过去，例如的i32类型
+05. 若值没有实现Copy，则它的所有权会被转移给接收端，在发送端继续使用该值将报错
+06. 多发送者的时候,直接 tx.clone()方法 创建多个副本即可。所有tx都关闭时,recv方法才会退出
+07. 通道数据是有序的,FIFO
+08. 上述例子是异步通道,无论是否有接受者,发送数据过后就完成发送。另一种是同步通道,发送消息是阻塞的,只有在消息被接受后才解除阻塞。使用mpsc::sync_channel()创建。可以指定缓冲大小,缓存没满的时候和异步通道一样。
+09. 关闭通道：所有发送者被drop或者所有接收者被drop后，通道会自动关闭。
+10. 进行drop send的时候要注意，drop掉mpsc创建的原始的send。不然通道还是不会关闭，接收者会一直接收。
+
+#### 锁
+1. 互斥锁Mutex配置Arc进行多线程运用
+2. 互斥锁若一个线程获取到了锁,若在未归还时panic,那么整个锁的状态会变成异常,其他线程获取锁也会错误,所以获取到锁过后,处理完毕可以drop手动释放锁,避免代码块儿过大引起的执行panic。
+3. 互斥锁Mutex::new(2) => mu.lock().unwarp()
+4. 读写锁RWLock::new(5) => rw.read().unwrap() => rw.write().unwrap()
+5. 需要注意的是，RwLock虽然看上去貌似提供了高并发读取的能力，但这个不能说明它的性能比Mutex高，事实上Mutex性能要好不少，后者唯一的问题也仅仅在于不能并发读取。
+
+一个常见的、错误的使用RwLock的场景就是使用HashMap进行简单读写，因为HashMap的读和写都非常快，RwLock的复杂实现和相对低的性能反而会导致整体性能的降低，因此一般来说更适合使用Mutex。
+如果你要使用RwLock要确保满足以下两个条件：并发读，且需要对读到的资源进行"长时间"的操作，HashMap也许满足了并发读的需求，但是往往并不能满足后者："长时间"的操作.
+
+#### Atomic
+1. 创建 AtomicU64::new(1);
+2. 修改 ato.fetch_add(1,Ordering::Relaxed);
+3. 获取 ato.load(ordering::Relaxed));
+
+内存顺序可能存在的改变:
+1. 编译器优化
+2. 运行期缓存问题
+
+排序方式
+1. Relaxed，这是最宽松的规则，它对编译器和 CPU 不做任何限制，可以乱序
+2. Release 释放，设定内存屏障(Memory barrier)，保证它之前的操作永远在它之前，但是它后面的操作可能被重排到它前面
+3. Acquire 获取, 设定内存屏障，保证在它之后的访问永远在它之后，但是它之前的操作却有可能被重排到它后面，往往和Release在不同线程中联合使用
+4. AcqRel, 是 Acquire 和 Release 的结合，同时拥有它们俩提供的保证。比如你要对一个 atomic 自增 1，同时希望该操作之前和之后的读取或写入操作不会被重新排序
+5. SeqCst 顺序一致性， SeqCst就像是AcqRel的加强版，它不管原子操作是属于读取还是写入的操作，只要某个线程有用到SeqCst的原子操作，线程中该SeqCst操作前的数据操作绝对不会被重新排在该SeqCst操作之后，且该SeqCst操作后的数据操作也绝对不会被重新排在SeqCst操作前
+
+原则上，Acquire用于读取，而Release用于写入。但是由于有些原子操作同时拥有读取和写入的功能，此时就需要使用AcqRel来设置内存顺序了。在内存屏障中被写入的数据，都可以被其它线程读取到，不会有 CPU 缓存的问题
+
+不知道怎么选择时，优先使用SeqCst，虽然会稍微减慢速度，但是慢一点也比出现错误好
+多线程只计数fetch_add而不使用该值触发其他逻辑分支的简单使用场景，可以使用Relaxed
+
+
+### sync/send
+- 实现Send的类型可以在线程间安全的传递其所有权
+- 实现Sync的类型可以在线程间安全的共享(通过引用).若T是Sync，则类型T的引用&T是Send
+- 绝大部分类型都实现了Send和Sync，常见的未实现的有：裸指针、Cell、RefCell、Rc
+- UnsafeCell不是Sync，因此Cell和RefCell也不是
+- Rc两者都没实现(因为内部的引用计数器不是线程安全的)
+- 手动实现 Send 和 Sync 是不安全的，通常并不需要手动实现 Send 和 Sync trait，实现者需要使用unsafe小心维护并发安全保证
+
+```
+unsafe impl<T: ?Sized + Send + Sync> Sync for RwLock<T> {}
+
+首先RwLock可以在线程间安全的共享，那它肯定是实现了Sync，但是我们的关注点不在这里。众所周知，RwLock可以并发的读，说明其中的值T必定也可以在线程间共享，那T必定要实现Sync。
+
+unsafe impl<T: ?Sized + Send> Sync for Mutex<T> {}
+不出所料，Mutex<T>中的T并没有Sync特征约束。
+```
+
+### 常量/变量
+
+#### 常量
+- 关键字是const而不是let
+- 定义常量必须指明类型（如 i32）不能省略
+- 定义常量时变量的命名规则一般是全部大写
+- 常量可以在任意作用域进行定义，其生命周期贯穿整个程序的生命周期。编译时编译器会尽可能将其内联到代码中，所以在不同地方对同一常量的引用并不能保证引用到相同的内存地址
+- 常量的赋值只能是常量表达式/数学表达式，也就是说必须是在编译期就能计算出的值，如果需要在运行时才能得出结果的值比如函数，则不能赋值给常量表达式
+- 对于变量出现重复的定义(绑定)会发生变量遮盖，后面定义的变量会遮住前面定义的变量，常量则不允许出现重复的定义
+
+#### 全局变量
+- 编译期初始化的全局变量，const创建常量，static创建静态变量，Atomic创建原子类型
+- 运行期初始化的全局变量，lazy_static用于懒初始化，Box::leak利用内存泄漏将一个变量的生命周期变为'static
+#### 静态变量
+- 静态变量不会被内联，在整个程序中，静态变量只有一个实例，所有的引用都会指向同一个地址
+- 存储在静态变量中的值必须要实现 Sync trait
+- unsafe语句块才能访问和修改static变量
+
+```
+use std::sync::Mutex;
+use lazy_static::lazy_static;
+lazy_static! {
+    static ref NAMES: Mutex<String> = Mutex::new(String::from("Sunface, Jack, Allen"));
+}
+
+fn main() {
+    let mut v = NAMES.lock().unwrap();
+    v.push_str(", Myth");
+    println!("{}",v);
+}
+```
+
+在 Rust 标准库中提供了实验性的 lazy::OnceCell 和 lazy::SyncOnceCell (在 Rust 1.70.0版本及以上的标准库中，替换为稳定的 cell::OnceCell 和 sync::OnceLock )两种 Cell ，前者用于单线程，后者用于多线程，它们用来存储堆上的信息，并且具有最 多只能赋值一次的特性。 如实现一个多线程的日志组件 Logger
+
+```
+// 低于Rust 1.70版本中， OnceCell 和 SyncOnceCell 的API为实验性的 ，
+// 需启用特性 `#![feature(once_cell)]`。
+#![feature(once_cell)]
+use std::{lazy::SyncOnceCell, thread};
+
+// Rust 1.70版本以上,
+// use std::{sync::OnceLock, thread};
+
+fn main() {
+    // 子线程中调用
+    let handle = thread::spawn(|| {
+        let logger = Logger::global();
+        logger.log("thread message".to_string());
+    });
+
+    // 主线程调用
+    let logger = Logger::global();
+    logger.log("some message".to_string());
+
+    let logger2 = Logger::global();
+    logger2.log("other message".to_string());
+
+    handle.join().unwrap();
+}
+
+#[derive(Debug)]
+struct Logger;
+
+// 低于Rust 1.70版本
+static LOGGER: SyncOnceCell<Logger> = SyncOnceCell::new();
+
+// Rust 1.70版本以上
+// static LOGGER: OnceLock<Logger> = OnceLock::new();
+
+impl Logger {
+    fn global() -> &'static Logger {
+        // 获取或初始化 Logger
+        LOGGER.get_or_init(|| {
+            println!("Logger is being created..."); // 初始化打印
+            Logger
+        })
+    }
+
+    fn log(&self, message: String) {
+        println!("{}", message)
+    }
+}
+```
+
+
+### Option/Result
+- or()，表达式按照顺序求值，若任何一个表达式的结果是 Some 或 Ok，则该值会立刻返回
+- and()，若两个表达式的结果都是 Some 或 Ok，则第二个表达式中的值被返回。若任何一个的结果是 None 或 Err ，则立刻返回
+- or_els,同or,第二个参数为闭包
+- and_then,同and,第二个参数为闭包
+- map(): 将 Some 或 Ok 中的值映射为另一个,但是改变不了Err
+- map_err(): 可以将Err修改为另外一种类型,但是处理不了ok
+- map_or 在 map 的基础上提供了一个默认值
+- map_or_else 与 map_or 类似，但是它是通过一个闭包来提供默认值
+- ok_or或ok_or_else 可以将 Option 类型转换为 Result 类型。其中 ok_or 接收一个默认的 Err 参数
+
+#### or/and操作
+```
+fn main() {
+  let s1 = Some("some1");
+  let s2 = Some("some2");
+  let n: Option<&str> = None;
+
+  let o1: Result<&str, &str> = Ok("ok1");
+  let o2: Result<&str, &str> = Ok("ok2");
+  let e1: Result<&str, &str> = Err("error1");
+  let e2: Result<&str, &str> = Err("error2");
+
+  assert_eq!(s1.or(s2), s1); // Some1 or Some2 = Some1
+  assert_eq!(s1.or(n), s1);  // Some or None = Some
+  assert_eq!(n.or(s1), s1);  // None or Some = Some
+  assert_eq!(n.or(n), n);    // None1 or None2 = None2
+
+  assert_eq!(o1.or(o2), o1); // Ok1 or Ok2 = Ok1
+  assert_eq!(o1.or(e1), o1); // Ok or Err = Ok
+  assert_eq!(e1.or(o1), o1); // Err or Ok = Ok
+  assert_eq!(e1.or(e2), e2); // Err1 or Err2 = Err2
+
+  assert_eq!(s1.and(s2), s2); // Some1 and Some2 = Some2
+  assert_eq!(s1.and(n), n);   // Some and None = None
+  assert_eq!(n.and(s1), n);   // None and Some = None
+  assert_eq!(n.and(n), n);    // None1 and None2 = None1
+
+  assert_eq!(o1.and(o2), o2); // Ok1 and Ok2 = Ok2
+  assert_eq!(o1.and(e1), e1); // Ok and Err = Err
+  assert_eq!(e1.and(o1), e1); // Err and Ok = Err
+  assert_eq!(e1.and(e2), e1); // Err1 and Err2 = Err1
+}
+```
