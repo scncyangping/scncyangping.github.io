@@ -1229,3 +1229,29 @@ fn main() {
   assert_eq!(e1.and(e2), e1); // Err1 and Err2 = Err1
 }
 ```
+
+
+### Unsafe
+- 解引用裸指针
+- 调用unsafe函数或方法
+- 访问或修改一个可变的静态变量
+- 访问其他语言编写的函数
+- 实现 unsafe 特征
+#### 解引用裸指针
+裸指针
+- 可以绕过 Rust 的借用规则，可以同时拥有一个数据的可变、不可变指针，甚至还能拥有多个可变的指针
+- 并不能保证指向合法的内存
+- 可以是 null
+- 没有实现任何自动的回收 (drop)
+
+创建裸指针是安全的行为，而解引用裸指针才是不安全的行为
+```
+let mut num = 5;
+
+let r1 = &num as *const i32;
+let r2 = &mut num as *mut i32;
+
+unsafe {
+    println!("r1 is: {}", *r1);
+}
+```
