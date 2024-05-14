@@ -9,6 +9,14 @@ tags:
    - Rust
 ---
 
+### 知识点
+##### cfg!(debug_assertions)
+cfg!(debug_assertions) 是 Rust 的一个内置宏，用于检查代码是否在调试模式下编译。在 Rust 中，可以通过两种模式之一编译代码：调试模式和发布模式
+- 在调试模式下（使用 cargo build 或 cargo run），编译器会生成额外的调试信息，以便在出现错误时更容易进行调试。此时 cfg!(debug_assertions) 会被评估为 true
+- 在发布模式下（使用 cargo build --release），编译器会进行优化，并且不会生成额外的调试信息。此时 cfg!(debug_assertions) 会被评估为 false
+
+### 基础
+
 #### 字符串
 Rust 中的字符是 Unicode 类型，因此每个字符占据 4 个字节内存空间，但是在字符串中不一样，字符串是 UTF-8 编码，也就是字符串中的字符所占的字节数是变化的(1 - 4)，这样有助于大幅降低字符串所占用的内存空间。
 
