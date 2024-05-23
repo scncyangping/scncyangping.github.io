@@ -10,6 +10,73 @@ tags:
 ---
 
 ### 知识点
+##### async自动转换
+假设有trait定义如下
+```rust
+pub trait AsyncScheduler {
+    fn tick(&mut self) -> impl Future<Output = ()> + Send;
+}
+```
+有实现如下
+```rust
+impl AsyncScheduler for AsyncJobScheduler {
+    async fn tick(&mut self) {
+        self.tick().await
+    }
+}
+```
+这个实现是有效的
+1. 编译器转换：编译器将 async fn tick(&mut self) 转换为返回 impl Future<Output = ()> + Send。因此，尽管看起来签名不同，但实际返回类型是一致的。
+2. 自动实现 Future：async fn 自动实现了 Future 特性，并且 async fn 默认是 Send，只要它们内部不包含非 Send 的数据
+
+当编写某个async fn后实际会转换为一个类似与以下的状态机
+```rust
+fn tick(&mut self) -> impl Future<Output = ()> + Send {
+    async move {
+        // 异步代码
+    }
+}
+```
+##### for<'a>
+在 Rust 中，for<'a> 用于声明泛型生命周期参数，表示这个泛型参数可以适用于任何生命周期。它在一些高级用法中非常有用，特别是处理涉及多个生命周期参数的复杂场景。以下是一些常见的用途，以及如何在某些情况下使用其他语法达到相同的效果
+- 函数指针类型
+```rust
+pub type AsyncCronJob = for<'a> fn(id: Uuid, data: &'a mut Map, last_tick: DateTime) -> BoxFuture<'a>;
+```
+- 闭包
+```rust
+let closure: for<'a> fn(&'a str) -> &'a str = |s| s;
+```
+- Trait Bound
+```rust
+fn process<T>(value: T)
+where
+    T: for<'a> SomeTrait<&'a str>,
+{
+    // Function body
+}
+```
+- Higher-Rank Trait Bounds (HRTBs)
+```rust
+fn apply<F>(f: F)
+where
+    F: for<'a> Fn(&'a i32) -> &'a i32,
+{
+    let x = 10;
+    let y = f(&x);
+    println!("{}", y);
+}
+```
+##### 零大小类型
+零大小类型初始化直接使用名称即可
+```rust
+/// chrono crate中对日期的处理Local即为零大小类型
+pub struct Local;
+
+/// 调用Local::now()获取本地时间
+Utc::now().with_timezone(&Local)
+```
+
 ##### cfg!(debug_assertions)
 cfg!(debug_assertions) 是 Rust 的一个内置宏，用于检查代码是否在调试模式下编译。在 Rust 中，可以通过两种模式之一编译代码：调试模式和发布模式
 - 在调试模式下（使用 cargo build 或 cargo run），编译器会生成额外的调试信息，以便在出现错误时更容易进行调试。此时 cfg!(debug_assertions) 会被评估为 true
