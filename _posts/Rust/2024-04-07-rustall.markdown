@@ -10,6 +10,9 @@ tags:
 ---
 
 ### 知识点
+##### as_mut
+- Box中as_mut可获取到内部值的可变引用
+- Option中as_mut可获取到Option<&mut XX>
 ##### async自动转换
 假设有trait定义如下
 ```rust
